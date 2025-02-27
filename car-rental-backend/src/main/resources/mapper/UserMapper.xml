@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.mapper.UserMapper">
+
+    <resultMap id="BaseResultMap" type="com.my.domain.entity.User">
+            <id property="id" column="id" />
+            <result property="userAccount" column="userAccount" />
+            <result property="userPassword" column="userPassword" />
+            <result property="userName" column="userName" />
+            <result property="userAvatar" column="userAvatar" />
+            <result property="userProfile" column="userProfile" />
+            <result property="realName" column="realName" />
+            <result property="idCardNumber" column="idCardNumber" />
+            <result property="phoneNumber" column="phoneNumber" />
+            <result property="email" column="email" />
+            <result property="drivingLicenseNo" column="drivingLicenseNo" />
+            <result property="drivingYears" column="drivingYears" />
+            <result property="creditScore" column="creditScore" />
+            <result property="memberLevel" column="memberLevel" />
+            <result property="userRole" column="userRole" />
+            <result property="editTime" column="editTime" />
+            <result property="createTime" column="createTime" />
+            <result property="updateTime" column="updateTime" />
+            <result property="isDelete" column="isDelete" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,userAccount,userPassword,userName,userAvatar,userProfile,
+        realName,idCardNumber,phoneNumber,email,drivingLicenseNo,
+        drivingYears,creditScore,memberLevel,userRole,editTime,
+        createTime,updateTime,isDelete
+    </sql>
+</mapper>
