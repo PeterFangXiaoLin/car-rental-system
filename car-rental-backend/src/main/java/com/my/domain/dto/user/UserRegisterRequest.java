@@ -1,4 +1,4 @@
-package com.my.domain.dto;
+package com.my.domain.dto.user;
 
 import io.swagger.annotations.ApiOperation;
 import lombok.Data;

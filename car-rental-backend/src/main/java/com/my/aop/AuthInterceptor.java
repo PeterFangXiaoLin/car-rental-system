@@ -3,8 +3,8 @@ package com.my.aop;
 import cn.hutool.core.util.ObjUtil;
 import com.my.annotation.AuthCheck;
 import com.my.common.ErrorCode;
-import com.my.controller.vo.user.UserRespVO;
 import com.my.domain.enums.UserRoleEnum;
+import com.my.domain.vo.LoginUserVO;
 import com.my.exception.BusinessException;
 import com.my.service.UserService;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -41,10 +41,10 @@ public class AuthInterceptor {
         // 获取request
         RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
         HttpServletRequest request = (HttpServletRequest) requestAttributes.resolveReference(RequestAttributes.REFERENCE_REQUEST);
-        UserRespVO loginUser = userService.getLoginUser(request);
+        LoginUserVO loginUser = userService.getLoginUser(request);
         // 2. 获取 mustRole 属性
         String mustRole = authCheck.mustRole();
-        UserRoleEnum mustRoleEnum = UserRoleEnum.getEnumByValue(mustRole);
+        UserRoleEnum mustRoleEnum = UserRoleEnum.getEnumByName(mustRole);
         // 不需要权限，放行
         if (ObjUtil.isNull(mustRoleEnum)) {
             return joinPoint.proceed();

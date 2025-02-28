@@ -1,13 +1,14 @@
 package com.my.domain.enums;
 
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
 
 @Getter
 public enum UserRoleEnum {
-    REVIEWING("用户", 0),
-    PASS("司机", 1),
-    REJECT("管理员", 2);
+    USER("用户", 0),
+    DRIVER("司机", 1),
+    ADMIN("管理员", 2);
 
     private final String text;
     private final int value;
@@ -30,5 +31,23 @@ public enum UserRoleEnum {
             }
         }  
         return null;  
-    }  
+    }
+
+    /**
+     * 根据 text 获取枚举
+     *
+     * @param text
+     * @return
+     */
+    public static UserRoleEnum getEnumByName(String text) {
+        if (StrUtil.isBlank(text)) {
+            return null;
+        }
+        for (UserRoleEnum userRoleEnum : UserRoleEnum.values()) {
+            if (userRoleEnum.text.equals(text)) {
+                return userRoleEnum;
+            }
+        }
+        return null;
+    }
 }

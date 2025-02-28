@@ -1,24 +1,36 @@
 package com.my.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.lang.Validator;
+import cn.hutool.core.util.IdcardUtil;
+import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.common.ErrorCode;
-import com.my.domain.dto.UserRegisterRequest;
+import com.my.domain.dto.user.UserLoginRequest;
+import com.my.domain.dto.user.UserRegisterRequest;
+import com.my.domain.dto.user.UserUpdatePasswordRequest;
+import com.my.domain.dto.user.UserUpdateRequest;
 import com.my.domain.entity.User;
+import com.my.domain.enums.UserRoleEnum;
+import com.my.domain.vo.LoginUserVO;
 import com.my.exception.BusinessException;
 import com.my.service.UserService;
 import com.my.mapper.UserMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import static com.my.constant.RedisConstant.CAPTCHA_PREFIX;
-import static com.my.constant.UserConstant.DEFAULT_USER_NAME;
-import static com.my.constant.UserConstant.SALT;
+import static com.my.constant.UserConstant.*;
 
 /**
 * @author Administrator
@@ -26,11 +38,15 @@ import static com.my.constant.UserConstant.SALT;
 * @createDate 2025-02-27 11:50:27
 */
 @Service
+@Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     implements UserService{
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private UserMapper userMapper;
 
     @Override
     public Long userRegister(UserRegisterRequest userRegisterRequest) {
@@ -44,15 +60,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (StrUtil.hasBlank(userAccount, userPassword, checkPassword, captchaCode, captchaKey)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
-        if (userAccount.length() < 4) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号过短");
-        }
-        if (userPassword.length() < 8 || checkPassword.length() < 8) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码过短");
+        if (userAccount.length() < MIN_ACCOUNT_LEN || userAccount.length() > MAX_ACCOUNT_LEN) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号在 4-20 位之间");
         }
         // 密码和校验密码相同
         if (!userPassword.equals(checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
+        }
+        if (userPassword.length() < MIN_PASSWORD_LEN || userPassword.length() > MAX_PASSWORD_LEN) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码在 6-20 位之间");
         }
 
         // 2. 验证码校验
@@ -90,6 +106,222 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         return user.getId();
+    }
+
+    @Override
+    public LoginUserVO userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request) {
+        String userAccount = userLoginRequest.getUserAccount();
+        String userPassword = userLoginRequest.getUserPassword();
+
+        // 1. 校验参数
+        if (StrUtil.hasBlank(userAccount, userPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+        }
+        if (userAccount.length() < MIN_ACCOUNT_LEN || userAccount.length() > MAX_ACCOUNT_LEN) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号在 4-20 位之间");
+        }
+        if (userPassword.length() < MIN_PASSWORD_LEN || userPassword.length() > MAX_PASSWORD_LEN) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码在 6-20 位之间");
+        }
+
+        // 2. 加密密码
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+
+        // 3. 查询用户是否存在
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userAccount", userAccount);
+        queryWrapper.eq("userPassword", encryptPassword);
+        User user = this.baseMapper.selectOne(queryWrapper);
+
+        // 用户不存在
+        if (user == null) {
+            log.info("user login failed, userAccount cannot match userPassword");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
+        }
+
+        // 4. 记录用户的登录态
+        HttpSession session = request.getSession();
+        session.setAttribute(USER_LOGIN_STATE, user);
+
+        // 5. 将用户信息脱敏后返回
+        return this.getLoginUserVO(user);
+    }
+
+    @Override
+    public LoginUserVO getLoginUserVO(User user) {
+        return BeanUtil.toBean(user, LoginUserVO.class);
+    }
+
+    @Override
+    public LoginUserVO getLoginUser(HttpServletRequest request) {
+        // 先判断是否已登录
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User currentUser = (User) userObj;
+        if (currentUser == null || currentUser.getId() == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        // 从数据库查询（追求性能的话可以注释，直接走缓存）
+        long userId = currentUser.getId();
+        currentUser = this.getById(userId);
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        }
+        return this.getLoginUserVO(currentUser);
+    }
+
+    @Override
+    public Boolean userLogout(HttpServletRequest request) {
+        if (request.getSession().getAttribute(USER_LOGIN_STATE) == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        // 移除登录态
+        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        return true;
+    }
+
+    @Override
+    public boolean isAdmin(HttpServletRequest request) {
+        // 仅管理员可查询
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User user = (User) userObj;
+        return isAdmin(user);
+    }
+
+    @Override
+    public boolean isAdmin(User user) {
+        return user != null && UserRoleEnum.ADMIN.getValue() == user.getUserRole();
+    }
+
+    @Override
+    public boolean updateUserPassword(UserUpdatePasswordRequest userUpdatePasswordRequest, HttpServletRequest request) {
+        if (userUpdatePasswordRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        // 1. 获取当前登录用户
+        LoginUserVO loginUser = this.getLoginUser(request);
+
+        // 2. 校验参数
+        String oldPassword = userUpdatePasswordRequest.getOldPassword();
+        String newPassword = userUpdatePasswordRequest.getNewPassword();
+        String checkPassword = userUpdatePasswordRequest.getCheckPassword();
+
+        if (StrUtil.hasBlank(oldPassword, newPassword, checkPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+        }
+
+        // 新密码和确认密码相同
+        if (!newPassword.equals(checkPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的新密码不一致");
+        }
+
+        // 密码长度不能小于 8 位
+        if (newPassword.length() < MIN_PASSWORD_LEN || newPassword.length() > MAX_PASSWORD_LEN) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度在 6-20 位之间");
+        }
+
+        // 3. 验证原密码是否正确
+        User user = userMapper.selectById(loginUser.getId());
+        String encryptOldPassword = DigestUtils.md5DigestAsHex((SALT + oldPassword).getBytes());
+        if (!encryptOldPassword.equals(user.getUserPassword())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "原密码错误");
+        }
+
+        // 4. 新密码不能与原密码相同
+        if (oldPassword.equals(newPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "新密码不能与原密码相同");
+        }
+
+        // 5. 加密新密码
+        String encryptNewPassword = DigestUtils.md5DigestAsHex((SALT + newPassword).getBytes());
+
+        // 6. 更新数据库中的用户密码
+        User updateUser = new User();
+        updateUser.setId(loginUser.getId());
+        updateUser.setUserPassword(encryptNewPassword);
+        boolean result = this.updateById(updateUser);
+        if (!result) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "密码更新失败");
+        }
+
+        // 7. 退出登录，让用户重新登录
+        this.userLogout(request);
+
+        return true;
+    }
+
+    @Override
+    public LoginUserVO updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
+        // 1. 校验参数
+        if (userUpdateRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        // 2. 获取当前登录用户
+        LoginUserVO loginUser = this.getLoginUser(request);
+        Long userId = loginUser.getId();
+
+        // 3. 参数校验
+        String phoneNumber = userUpdateRequest.getPhoneNumber();
+        String email = userUpdateRequest.getEmail();
+        String drivingLicenseNo = userUpdateRequest.getDrivingLicenseNo();
+        String idCardNumber = userUpdateRequest.getIdCardNumber();
+
+        // 手机号格式校验
+        if (StrUtil.isNotBlank(phoneNumber)) {
+            if (!PhoneUtil.isPhone(phoneNumber)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "手机号格式错误");
+            }
+            // 判断手机号是否已被其他用户使用
+            long count = this.lambdaQuery().eq(User::getPhoneNumber, phoneNumber).ne(User::getId, userId).count();
+            if (count > 0) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "手机号已被使用");
+            }
+        }
+
+        // 校验身份证号格式
+        if (StrUtil.isNotBlank(idCardNumber)) {
+            if (!IdcardUtil.isValidCard(idCardNumber)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "身份证号格式错误");
+            }
+        }
+
+        // 邮箱格式校验
+        if (StrUtil.isNotBlank(email)) {
+            if (!Validator.isEmail(email)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误");
+            }
+        }
+
+        // 驾驶证号码格式校验
+        if (StrUtil.isNotBlank(drivingLicenseNo)) {
+            if (!Validator.isCarDrivingLicence(drivingLicenseNo)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "驾驶证号码格式错误");
+            }
+        }
+
+        // 4. 创建更新对象
+        User user = BeanUtil.toBean(userUpdateRequest, User.class);
+        user.setId(userId);
+
+        // 5. 更新数据库
+        boolean result = this.updateById(user);
+        if (!result) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新失败");
+        }
+
+        // 6. 返回更新后的用户信息
+        User updatedUser = this.getById(userId);
+        return this.getLoginUserVO(updatedUser);
+    }
+
+    @Override
+    public String updateAvatar(MultipartFile file, HttpServletRequest request) {
+        // 1. 校验参数
+        if (file == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return null;
     }
 }
 
