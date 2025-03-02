@@ -37,5 +37,31 @@ public interface UserConstant {
      */
     int MAX_PASSWORD_LEN = 20;
 
+    /**
+     * 最大用户名长度
+     */
+    int MAX_USERNAME_LEN = 20;
+
+    /**
+     * 最大简介长度
+     */
+    int MAX_PROFILE_LEN = 1024;
+
+    /**
+     * 最大信用评分
+     */
+    int MAX_CREDIT_SCORE = 10;
+
     String SALT = "car_rental";
+
+    //  region 权限
+    /**
+     * 默认角色
+     */
+    String DEFAULT_ROLE = "user";
+    /**
+     * 管理员角色
+     */
+    String ADMIN_ROLE = "admin";
+    // endregion
 }

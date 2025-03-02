@@ -1,24 +1,28 @@
 package com.my.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.IdcardUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.my.common.DeleteRequest;
 import com.my.common.ErrorCode;
-import com.my.domain.dto.user.UserLoginRequest;
-import com.my.domain.dto.user.UserRegisterRequest;
-import com.my.domain.dto.user.UserUpdatePasswordRequest;
-import com.my.domain.dto.user.UserUpdateRequest;
+import com.my.domain.dto.user.*;
 import com.my.domain.entity.User;
 import com.my.domain.enums.UserRoleEnum;
 import com.my.domain.vo.LoginUserVO;
+import com.my.domain.vo.UserVO;
 import com.my.exception.BusinessException;
-import com.my.service.UserService;
+import com.my.manager.CosManager;
 import com.my.mapper.UserMapper;
+import com.my.service.UserService;
+import com.qcloud.cos.model.ObjectMetadata;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -28,7 +32,11 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Date;
+import java.util.UUID;
 
+import static com.my.constant.FileConstant.ALLOWED_FILE_SUFFIXES;
+import static com.my.constant.FileConstant.ONE_MB;
 import static com.my.constant.RedisConstant.CAPTCHA_PREFIX;
 import static com.my.constant.UserConstant.*;
 
@@ -47,6 +55,85 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Resource
     private UserMapper userMapper;
+
+    @Resource
+    private CosManager cosManager;
+
+    @Override
+    public void validate(User user, boolean isAdd) {
+        String userAccount = user.getUserAccount();
+        String userPassword = user.getUserPassword();
+        String userName = user.getUserName();
+        String userProfile = user.getUserProfile();
+        String idCardNumber = user.getIdCardNumber();
+        String phoneNumber = user.getPhoneNumber();
+        String email = user.getEmail();
+        String drivingLicenseNo = user.getDrivingLicenseNo();
+        Integer creditScore = user.getCreditScore();
+
+        if (isAdd) {
+            if (StrUtil.isBlank(userAccount)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号不能为空");
+            }
+            if (StrUtil.isBlank(userPassword)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码不能为空");
+            }
+        }
+
+        if (StrUtil.isNotBlank(userAccount)) {
+            if (userAccount.length() < MIN_ACCOUNT_LEN || userAccount.length() > MAX_ACCOUNT_LEN) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号在 4-20 位之间");
+            }
+        }
+
+        if (StrUtil.isNotBlank(userPassword)) {
+            if (userPassword.length() < MIN_PASSWORD_LEN || userPassword.length() > MAX_PASSWORD_LEN) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码在 6-20 位之间");
+            }
+        }
+
+        if (StrUtil.isNotBlank(userName)) {
+            if (userName.length() > MAX_USERNAME_LEN) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "昵称不能超过 20 个字符");
+            }
+        }
+
+        if (StrUtil.isNotBlank(userProfile)) {
+            if (userProfile.length() > MAX_PROFILE_LEN) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "简介不能超过 200 个字符");
+            }
+        }
+
+        if (StrUtil.isNotBlank(idCardNumber)) {
+            if (!IdcardUtil.isValidCard(idCardNumber)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "身份证号格式错误");
+            }
+        }
+
+        if (StrUtil.isNotBlank(phoneNumber)) {
+            if (!PhoneUtil.isMobile(phoneNumber)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "手机号格式错误");
+            }
+        }
+
+        if (StrUtil.isNotBlank(email)) {
+            if (!Validator.isEmail(email)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误");
+            }
+        }
+
+        if (StrUtil.isNotBlank(drivingLicenseNo)) {
+            if (!Validator.isCarDrivingLicence(drivingLicenseNo)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "驾驶证号码格式错误");
+            }
+        }
+
+        if (ObjUtil.isNotNull(creditScore)) {
+            if (creditScore > MAX_CREDIT_SCORE) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "信用分不能超过 10");
+            }
+        }
+    }
 
     @Override
     public Long userRegister(UserRegisterRequest userRegisterRequest) {
@@ -269,7 +356,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         // 手机号格式校验
         if (StrUtil.isNotBlank(phoneNumber)) {
-            if (!PhoneUtil.isPhone(phoneNumber)) {
+            if (!PhoneUtil.isMobile(phoneNumber)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "手机号格式错误");
             }
             // 判断手机号是否已被其他用户使用
@@ -303,6 +390,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 4. 创建更新对象
         User user = BeanUtil.toBean(userUpdateRequest, User.class);
         user.setId(userId);
+        user.setEditTime(new Date());
 
         // 5. 更新数据库
         boolean result = this.updateById(user);
@@ -321,7 +409,136 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (file == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        return null;
+        // 校验文件大小
+        long fileSize = file.getSize();
+        if (fileSize > 5 * ONE_MB) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小不能超过5MB");
+        }
+
+        // 校验文件类型
+        String originalFilename = file.getOriginalFilename();
+        String fileSuffix = FileUtil.getSuffix(originalFilename);
+        if (!ALLOWED_FILE_SUFFIXES.contains(fileSuffix)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件格式不支持");
+        }
+
+        // 2. 获取当前登录用户
+        LoginUserVO loginUser = this.getLoginUser(request);
+
+        try {
+            // 上传文件到 OSS，得到访问地址（这里假设你使用的是阿里云 OSS）
+            String filePath = String.format("avatar/%s/%s.%s", loginUser.getId(),
+                    UUID.randomUUID().toString(), fileSuffix);
+
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentLength(fileSize);
+
+            String avatarUrl = cosManager.putObjectByStream(filePath, file.getInputStream(), objectMetadata);
+
+            // 更新用户头像地址
+            User user = new User();
+            user.setId(loginUser.getId());
+            user.setUserAvatar(avatarUrl);
+            boolean result = this.updateById(user);
+            if (!result) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新头像失败");
+            }
+
+            return avatarUrl;
+        } catch (Exception e) {
+            log.error("文件上传失败", e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "文件上传失败");
+        }
+    }
+
+    @Override
+    public Long addUser(UserAddRequest userAddRequest) {
+        // 1. 校验参数
+        if (userAddRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        // 2. 校验必要参数
+        User user = BeanUtil.toBean(userAddRequest, User.class);
+        validate(user, true);
+
+        // 3. 校验账号是否重复
+        String userAccount = user.getUserAccount();
+
+        long count = this.lambdaQuery()
+                .eq(User::getUserAccount, userAccount)
+                .count();
+        if (count > 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号已存在");
+        }
+
+        // 4. 加密密码
+        String userPassword = user.getUserPassword();
+        if (StrUtil.isBlank(userPassword)) {
+            userPassword = DEFAULT_PASSWORD;
+        }
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+
+        // 5. 构建用户对象
+        user.setUserPassword(encryptPassword);
+        // 设置默认值
+        String userName = user.getUserName();
+        if (StrUtil.isBlank(userName)) {
+            user.setUserName(userAccount);
+        }
+        // 其他默认值由数据库默认值完成
+
+        // 6. 保存用户
+        boolean saveResult = this.save(user);
+        if (!saveResult) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "添加用户失败");
+        }
+
+        return user.getId();
+    }
+
+    @Override
+    public Boolean adminUpdateUser(UserAdminUpdateRequest userAdminUpdateRequest) {
+        // 1. 校验参数
+        if (userAdminUpdateRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        User user = BeanUtil.toBean(userAdminUpdateRequest, User.class);
+        validate(user, false);
+
+        // 2. 更新用户
+        boolean result = this.updateById(user);
+        if (!result) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新用户失败");
+        }
+
+        return true;
+    }
+
+    @Override
+    public Boolean adminDeleteUser(DeleteRequest deleteRequest) {
+        if (deleteRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        Long id = deleteRequest.getId();
+        User user = this.getById(id);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        }
+        int delete = userMapper.deleteById(id);
+        if (delete < 0) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除失败");
+        }
+        return true;
+    }
+
+    @Override
+    public Page<UserVO> pageUserVO(UserQueryRequest userQueryRequest) {
+        if (userQueryRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
     }
 }
 

@@ -1,11 +1,13 @@
 package com.my.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.my.annotation.AuthCheck;
 import com.my.common.BaseResponse;
-import com.my.domain.dto.user.UserLoginRequest;
-import com.my.domain.dto.user.UserRegisterRequest;
-import com.my.domain.dto.user.UserUpdatePasswordRequest;
-import com.my.domain.dto.user.UserUpdateRequest;
+import com.my.common.DeleteRequest;
+import com.my.constant.UserConstant;
+import com.my.domain.dto.user.*;
 import com.my.domain.vo.LoginUserVO;
+import com.my.domain.vo.UserVO;
 import com.my.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -65,5 +67,33 @@ public class UserController {
     @ApiOperation(value = "修改头像")
     public BaseResponse<String> updateAvatar(@RequestPart("file")MultipartFile file, HttpServletRequest request) {
         return success(userService.updateAvatar(file, request));
+    }
+
+    @PostMapping("/admin/add")
+    @ApiOperation(value = "添加用户 (管理员)")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest) {
+        return success(userService.addUser(userAddRequest));
+    }
+
+    @PostMapping("/admin/update")
+    @ApiOperation(value = "更新用户（仅管理员）")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> AdminUpdateUser(@RequestBody UserAdminUpdateRequest userAdminUpdateRequest) {
+        return success(userService.adminUpdateUser(userAdminUpdateRequest));
+    }
+
+    @PostMapping("/admin/delete")
+    @ApiOperation(value = "删除用户")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> AdminDeleteUser(@RequestBody DeleteRequest deleteRequest) {
+        return success(userService.adminDeleteUser(deleteRequest));
+    }
+
+    @PostMapping("/admin/list/vo")
+    @ApiOperation(value = "获取用户列表（仅管理员）")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Page<UserVO>> pageUserVO(@RequestBody UserQueryRequest userQueryRequest) {
+        return success(userService.pageUserVO(userQueryRequest));
     }
 }

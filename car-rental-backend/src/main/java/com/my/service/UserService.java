@@ -1,12 +1,12 @@
 package com.my.service;
 
-import com.my.domain.dto.user.UserLoginRequest;
-import com.my.domain.dto.user.UserRegisterRequest;
-import com.my.domain.dto.user.UserUpdatePasswordRequest;
-import com.my.domain.dto.user.UserUpdateRequest;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.my.common.DeleteRequest;
+import com.my.domain.dto.user.*;
 import com.my.domain.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.my.domain.vo.LoginUserVO;
+import com.my.domain.vo.UserVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +17,13 @@ import javax.servlet.http.HttpServletRequest;
 * @createDate 2025-02-27 11:50:27
 */
 public interface UserService extends IService<User> {
+
+    /**
+     * 用户信息校验
+     * @param user
+     * @param isAdd
+     */
+    void validate(User user, boolean isAdd);
 
     /**
      * 用户注册
@@ -101,4 +108,34 @@ public interface UserService extends IService<User> {
      * @return
      */
     String updateAvatar(MultipartFile file, HttpServletRequest request);
+
+    /**
+     * 添加用户
+     * @param userAddRequest
+     * @return
+     */
+    Long addUser(UserAddRequest userAddRequest);
+
+    /**
+     * 管理员更新用户信息
+     *
+     * @param userAdminUpdateRequest
+     * @return
+     */
+    Boolean adminUpdateUser(UserAdminUpdateRequest userAdminUpdateRequest);
+
+    /**
+     * 管理员删除用户
+     * @param deleteRequest
+     * @return
+     */
+    Boolean adminDeleteUser(DeleteRequest deleteRequest);
+
+    /**
+     * 管理员获取用户列表
+     *
+     * @param userQueryRequest
+     * @return
+     */
+    Page<UserVO> pageUserVO(UserQueryRequest userQueryRequest);
 }
