@@ -21,7 +21,6 @@ import static com.my.common.ResultUtils.success;
 
 @RestController
 @RequestMapping("/user")
-@Api(tags = "用户接口")
 public class UserController {
 
     @Resource

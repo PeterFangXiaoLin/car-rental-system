@@ -1,5 +1,6 @@
 package com.my.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.my.common.DeleteRequest;
 import com.my.domain.dto.user.*;
@@ -10,6 +11,7 @@ import com.my.domain.vo.UserVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
 * @author Administrator
@@ -138,4 +140,29 @@ public interface UserService extends IService<User> {
      * @return
      */
     Page<UserVO> pageUserVO(UserQueryRequest userQueryRequest);
+
+    /**
+     * 获取查询 Wrapper
+     *
+     * @param userQueryRequest
+     * @return
+     */
+    QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
+
+    /**
+     * 获取脱敏后的用户
+     *
+     * @param user
+     * @return
+     */
+    UserVO getUserVO(User user);
+
+
+    /**
+     * 获取脱敏后的用户列表
+     *
+     * @param userList
+     * @return
+     */
+    List<UserVO> getUserVOList(List<User> userList);
 }

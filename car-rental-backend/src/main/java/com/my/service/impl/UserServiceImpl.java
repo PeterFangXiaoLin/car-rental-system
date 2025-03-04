@@ -1,6 +1,7 @@
 package com.my.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.IdcardUtil;
@@ -13,6 +14,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.common.DeleteRequest;
 import com.my.common.ErrorCode;
+import com.my.constant.CommonConstant;
 import com.my.domain.dto.user.*;
 import com.my.domain.entity.User;
 import com.my.domain.enums.UserRoleEnum;
@@ -32,8 +34,11 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.my.constant.FileConstant.ALLOWED_FILE_SUFFIXES;
 import static com.my.constant.FileConstant.ONE_MB;
@@ -539,6 +544,67 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (userQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
+
+        long current = userQueryRequest.getCurrent();
+        long pageSize = userQueryRequest.getPageSize();
+        if (current <= 0 || pageSize <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "分页参数不合法");
+        }
+
+        QueryWrapper<User> queryWrapper = getQueryWrapper(userQueryRequest);
+        Page<User> userPage = userMapper.selectPage(Page.of(current, pageSize), queryWrapper);
+        Page<UserVO> userVOPage = new Page<>(current, pageSize, userPage.getTotal());
+        userVOPage.setRecords(getUserVOList(userPage.getRecords()));
+        return userVOPage;
+    }
+
+    @Override
+    public QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        if (userQueryRequest == null) {
+            return queryWrapper;
+        }
+
+        Long id = userQueryRequest.getId();
+        String userAccount = userQueryRequest.getUserAccount();
+        String userName = userQueryRequest.getUserName();
+        String realName = userQueryRequest.getRealName();
+        String phoneNumber = userQueryRequest.getPhoneNumber();
+        String email = userQueryRequest.getEmail();
+        Integer memberLevel = userQueryRequest.getMemberLevel();
+        Integer userRole = userQueryRequest.getUserRole();
+        String sortField = userQueryRequest.getSortField();
+        String sortOrder = userQueryRequest.getSortOrder();
+
+        queryWrapper.eq(id != null, "id", id);
+        queryWrapper.eq(StrUtil.isNotBlank(userAccount), "userAccount", userAccount);
+        queryWrapper.eq(StrUtil.isNotBlank(userName), "userName", userName);
+        queryWrapper.eq(StrUtil.isNotBlank(realName), "realName", realName);
+        queryWrapper.eq(StrUtil.isNotBlank(phoneNumber), "phoneNumber", phoneNumber);
+        queryWrapper.eq(StrUtil.isNotBlank(email), "email", email);
+        queryWrapper.eq(memberLevel != null, "memberLevel", memberLevel);
+        queryWrapper.eq(userRole != null, "userRole", userRole);
+        queryWrapper.orderBy(StrUtil.isNotBlank(sortField), sortOrder.equalsIgnoreCase(CommonConstant.SORT_ORDER_ASC), sortField);
+
+        return queryWrapper;
+    }
+
+    @Override
+    public UserVO getUserVO(User user) {
+        if (user == null) {
+            return null;
+        }
+        return BeanUtil.toBean(user, UserVO.class);
+    }
+
+    @Override
+    public List<UserVO> getUserVOList(List<User> userList) {
+        if (CollUtil.isEmpty(userList)) {
+            return new ArrayList<>();
+        }
+        return userList.stream()
+                .map(this::getUserVO)
+                .collect(Collectors.toList());
     }
 }
 

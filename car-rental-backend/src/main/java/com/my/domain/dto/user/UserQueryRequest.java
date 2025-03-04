@@ -53,10 +53,5 @@ public class UserQueryRequest extends PageRequest implements Serializable {
      */
     private Integer userRole;
 
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-
     private static final long serialVersionUID = 1L;
 } 
