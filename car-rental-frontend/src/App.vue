@@ -1,12 +1,13 @@
 <template>
   <div id="app">
-    <BasicLayout />
+    <router-view />
   </div>
 </template>
 
-<script setup lang="ts">
-import BasicLayout from "@/layout/BasicLayout.vue";
-</script>
+<script setup lang="ts"></script>
 
-<style scoped>
+<style>
+#app {
+  height: 100vh;
+}
 </style>

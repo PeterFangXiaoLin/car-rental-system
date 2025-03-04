@@ -78,6 +78,11 @@ declare namespace API {
     total?: number
   }
 
+  type refreshCaptchaUsingGETParams = {
+    /** captchaKey */
+    captchaKey: string
+  }
+
   type UserAddRequest = {
     creditScore?: number
     drivingLicenseNo?: string

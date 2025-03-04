@@ -47,4 +47,12 @@ public class AuthServiceImpl implements AuthService {
 
         return new AuthCaptchaVO(base64, captchaKey);
     }
+
+    @Override
+    public AuthCaptchaVO refreshCaptcha(String captchaKey) {
+        // 将redis中旧的删除
+        stringRedisTemplate.delete(CAPTCHA_PREFIX + captchaKey);
+        // 重新生成验证码
+        return getCaptcha();
+    }
 }

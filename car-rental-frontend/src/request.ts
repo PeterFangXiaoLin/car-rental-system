@@ -23,9 +23,7 @@ myAxios.interceptors.request.use(
 myAxios.interceptors.response.use(
   function (response) {
     const { data } = response
-    if (data.code === 0) {
-      return data.data
-    }
+
     if (data.code === 40100) {
       if (
         !response.request.responseURL.includes('user/get/login') &&
@@ -35,7 +33,7 @@ myAxios.interceptors.response.use(
         window.location.href = `user/login?redirect=${window.location.href}`
       }
     }
-    return Promise.reject(new Error(data.message || '网络请求失败'))
+    return data
   },
   function (error) {
     // 超出 2xx 范围的状态码都会触发该函数。

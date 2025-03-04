@@ -4,7 +4,7 @@
       <el-aside width="200px" class="bg-red-500">Aside</el-aside>
       <el-container>
         <el-header class="bg-blue-500">Header</el-header>
-        <el-main class="bg-green-500">
+        <el-main>
           <router-view />
         </el-main>
       </el-container>
@@ -12,8 +12,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
 <style scoped>
 body {
