@@ -53,62 +53,10 @@
           </template>
           <el-tabs v-model="activeTab">
             <el-tab-pane label="基本资料" name="userinfo">
-              <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" class="mt-4">
-                <el-form-item label="用户昵称" prop="userName">
-                  <el-input v-model="form.user.userName" maxlength="30" />
-                </el-form-item>
-                <el-form-item label="用户简介" prop="userProfile">
-                  <el-input
-                    v-model="form.user.userProfile"
-                    type="textarea"
-                    :rows="4"
-                    maxlength="200"
-                    show-word-limit
-                  />
-                </el-form-item>
-                <el-form-item>
-                  <el-button type="primary" @click="handleSubmit">保存</el-button>
-                  <el-button @click="resetForm">重置</el-button>
-                </el-form-item>
-              </el-form>
+              <UserInfo :user="form.user" />
             </el-tab-pane>
             <el-tab-pane label="修改密码" name="resetPwd">
-              <el-form
-                ref="pwdFormRef"
-                :model="pwdForm"
-                :rules="pwdRules"
-                label-width="100px"
-                class="mt-4"
-              >
-                <el-form-item label="旧密码" prop="oldPassword">
-                  <el-input
-                    v-model="pwdForm.oldPassword"
-                    type="password"
-                    show-password
-                    placeholder="请输入旧密码"
-                  />
-                </el-form-item>
-                <el-form-item label="新密码" prop="newPassword">
-                  <el-input
-                    v-model="pwdForm.newPassword"
-                    type="password"
-                    show-password
-                    placeholder="请输入新密码"
-                  />
-                </el-form-item>
-                <el-form-item label="确认密码" prop="confirmPassword">
-                  <el-input
-                    v-model="pwdForm.confirmPassword"
-                    type="password"
-                    show-password
-                    placeholder="请确认新密码"
-                  />
-                </el-form-item>
-                <el-form-item>
-                  <el-button type="primary" @click="handleUpdatePwd">保存</el-button>
-                  <el-button @click="resetPwdForm">重置</el-button>
-                </el-form-item>
-              </el-form>
+              <ResetPassword />
             </el-tab-pane>
           </el-tabs>
         </el-card>
@@ -119,24 +67,13 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import { ElMessage } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
 import { User, UserFilled, Management, Timer } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
-import {
-  updateUserUsingPost,
-  updateUserPasswordUsingPost,
-  getLoginUserUsingGet,
-} from '@/api/userController'
-import { useRouter } from 'vue-router'
+import { getLoginUserUsingGet } from '@/api/userController'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 
-const loginUserStore = useLoginUserStore()
 const activeTab = ref('userinfo')
-const formRef = ref<FormInstance>()
-const pwdFormRef = ref<FormInstance>()
-const router = useRouter()
 
 // 获取最新的用户信息
 const getUser = async () => {
@@ -146,7 +83,6 @@ const getUser = async () => {
       form.user = res.data as API.LoginUserVO
     }
   } catch (error) {
-    console.error('获取用户信息失败:', error)
     ElMessage.error('获取用户信息失败')
   }
 }
@@ -155,106 +91,6 @@ const getUser = async () => {
 const form = reactive({
   user: {} as API.LoginUserVO,
 })
-
-// 密码表单
-const pwdForm = reactive({
-  oldPassword: '',
-  newPassword: '',
-  confirmPassword: '',
-})
-
-// 基本信息校验规则
-const rules = reactive<FormRules>({
-  userName: [
-    { required: true, message: '请输入用户昵称', trigger: 'blur' },
-    { min: 2, max: 30, message: '长度在 2 到 30 个字符', trigger: 'blur' },
-  ],
-})
-
-// 密码校验规则
-const pwdRules = reactive<FormRules>({
-  oldPassword: [{ required: true, message: '请输入旧密码', trigger: 'blur' }],
-  newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' },
-  ],
-  confirmPassword: [
-    { required: true, message: '请确认新密码', trigger: 'blur' },
-    {
-      validator: (rule, value, callback) => {
-        if (value !== pwdForm.newPassword) {
-          callback(new Error('两次输入的密码不一致'))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur',
-    },
-  ],
-})
-
-// 提交基本信息
-const handleSubmit = async () => {
-  if (!formRef.value) return
-  await formRef.value.validate(async (valid) => {
-    if (valid) {
-      try {
-        const { data: res } = await updateUserUsingPost(form)
-        if (res?.code === 0 && res?.data) {
-          ElMessage.success('修改成功')
-          // 更新用户信息
-          loginUserStore.setLoginUser(res.data)
-        } else {
-          ElMessage.error(res?.message || '修改失败')
-        }
-      } catch (error) {
-        ElMessage.error('修改失败，请稍后重试')
-        console.error(error)
-      }
-    }
-  })
-}
-
-// 重置基本信息表单
-const resetForm = () => {
-  formRef.value?.resetFields()
-}
-
-// 更新密码
-const handleUpdatePwd = async () => {
-  if (!pwdFormRef.value) return
-  await pwdFormRef.value.validate(async (valid: boolean) => {
-    if (valid) {
-      try {
-        const res = await updateUserPasswordUsingPost({
-          oldPassword: pwdForm.oldPassword,
-          newPassword: pwdForm.newPassword,
-          checkPassword: pwdForm.newPassword,
-        })
-
-        if (res?.code === 0 && res?.data) {
-          ElMessage.success('密码修改成功')
-          resetPwdForm()
-          // 自动退出登录
-          loginUserStore.setLoginUser({
-            userName: '未登录',
-          })
-          await router.push('/auth/login')
-        } else {
-          ElMessage.error(res?.message || '密码修改失败')
-        }
-      } catch (error) {
-        ElMessage.error('密码修改失败')
-        console.error(error)
-      }
-    }
-  })
-}
-
-// 重置密码表单
-const resetPwdForm = () => {
-  pwdFormRef.value?.resetFields()
-}
 
 onMounted(() => {
   // 获取最新的用户信息
