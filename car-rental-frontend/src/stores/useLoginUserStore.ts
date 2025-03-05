@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { getLoginUserUsingGet } from '@/api/userController.ts'
 
 export const useLoginUserStore = defineStore('loginUser', () => {
-  const loginUser = ref<API.UserRespVO>({
+  const loginUser = ref<API.LoginUserVO>({
     userName: '未登录',
   })
 
@@ -20,7 +20,7 @@ export const useLoginUserStore = defineStore('loginUser', () => {
   /**
    * 设置登录用户
    */
-  function setLoginUser(user: API.UserRespVO) {
+  function setLoginUser(user: API.LoginUserVO) {
     loginUser.value = user
   }
 

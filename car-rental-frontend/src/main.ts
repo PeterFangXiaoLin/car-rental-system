@@ -10,6 +10,9 @@ import 'element-plus/dist/index.css'
 import 'dayjs/locale/zh-cn' // 日期和时间本地化
 import dayjs from "dayjs"
 import 'virtual:uno.css' // unocss
+import VueCropper from 'vue-cropper'; // 图片编辑
+import 'vue-cropper/dist/index.css'
+
 
 import '@/access' // 权限控制
 
@@ -22,5 +25,6 @@ app.use(router)
 app.use(ElementPlus, {
   locale: zhCn,
 })
+app.use(VueCropper)
 
 app.mount('#app')
