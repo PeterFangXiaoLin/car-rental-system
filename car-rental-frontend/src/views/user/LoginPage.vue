@@ -54,9 +54,11 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 import { userLoginUsingPost, getLoginUserUsingGet } from '@/api/userController'
+import { useLoginUserStore } from '@/stores/useLoginUserStore'
 
 const router = useRouter()
 const route = useRoute()
+const loginUserStore = useLoginUserStore()
 
 // 检查登录状态
 const checkLoginStatus = async () => {
@@ -98,6 +100,7 @@ const handleLogin = async () => {
         const res = await userLoginUsingPost(loginForm.value)
 
         if (res?.code === 0 && res?.data) {
+          await loginUserStore.fetchLoginUser()
           ElMessage.success('登录成功')
           const redirect = route.query.redirect as string
           router.replace(redirect || '/')
@@ -121,8 +124,6 @@ const handleLogin = async () => {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-image: url('@/assets/login-background.jpg');
-  background-size: cover;
 }
 
 .title {

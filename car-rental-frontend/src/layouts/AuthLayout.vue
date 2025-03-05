@@ -9,8 +9,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  height: 100vh;
   background-image: url('@/assets/login-background.jpg');
   background-size: cover;
+  background-position: center;
+  overflow: hidden;
 }
 </style>

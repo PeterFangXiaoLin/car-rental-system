@@ -16,19 +16,19 @@
             <li class="list-group-item">
               <el-icon><User /></el-icon>
               用户账号
-              <div class="pull-right">{{ loginUserStore.loginUser.userAccount }}</div>
+              <div class="pull-right">{{ form.user.userAccount }}</div>
             </li>
             <li class="list-group-item">
               <el-icon><UserFilled /></el-icon>
               用户昵称
-              <div class="pull-right">{{ loginUserStore.loginUser.userName }}</div>
+              <div class="pull-right">{{ form.user.userName }}</div>
             </li>
             <li class="list-group-item">
               <el-icon><Management /></el-icon>
               用户角色
               <div class="pull-right">
-                <el-tag :type="loginUserStore.loginUser.userRole === 'admin' ? 'success' : 'info'">
-                  {{ loginUserStore.loginUser.userRole === 'admin' ? '管理员' : '普通用户' }}
+                <el-tag :type="form.user.userRole?.toString() === 'admin' ? 'success' : 'info'">
+                  {{ form.user.userRole?.toString() === 'admin' ? '管理员' : '普通用户' }}
                 </el-tag>
               </div>
             </li>
@@ -36,7 +36,7 @@
               <el-icon><Timer /></el-icon>
               创建时间
               <div class="pull-right">
-                {{ dayjs(loginUserStore.loginUser.createTime).format('YYYY-MM-DD HH:mm:ss') }}
+                {{ dayjs(form.user.createTime).format('YYYY-MM-DD HH:mm:ss') }}
               </div>
             </li>
           </ul>
@@ -55,11 +55,11 @@
             <el-tab-pane label="基本资料" name="userinfo">
               <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" class="mt-4">
                 <el-form-item label="用户昵称" prop="userName">
-                  <el-input v-model="form.userName" maxlength="30" />
+                  <el-input v-model="form.user.userName" maxlength="30" />
                 </el-form-item>
                 <el-form-item label="用户简介" prop="userProfile">
                   <el-input
-                    v-model="form.userProfile"
+                    v-model="form.user.userProfile"
                     type="textarea"
                     :rows="4"
                     maxlength="200"
@@ -124,7 +124,11 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { User, UserFilled, Management, Timer } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
-import { updateUserUsingPost, updateUserPasswordUsingPost } from '@/api/userController'
+import {
+  updateUserUsingPost,
+  updateUserPasswordUsingPost,
+  getLoginUserUsingGet,
+} from '@/api/userController'
 import { useRouter } from 'vue-router'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 
@@ -134,11 +138,22 @@ const formRef = ref<FormInstance>()
 const pwdFormRef = ref<FormInstance>()
 const router = useRouter()
 
+// 获取最新的用户信息
+const getUser = async () => {
+  try {
+    const res = await getLoginUserUsingGet()
+    if (res?.code === 0 && res?.data) {
+      form.user = res.data as API.LoginUserVO
+    }
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+    ElMessage.error('获取用户信息失败')
+  }
+}
+
 // 基本信息表单
 const form = reactive({
-  id: 0,
-  userName: '',
-  userProfile: '',
+  user: {} as API.LoginUserVO,
 })
 
 // 密码表单
@@ -178,70 +193,63 @@ const pwdRules = reactive<FormRules>({
   ],
 })
 
-// 初始化表单数据
-const initForm = () => {
-  const user = loginUserStore.loginUser
-  form.id = user.id || 0
-  form.userName = user.userName || ''
-  form.userProfile = user.userProfile || ''
-}
-
 // 提交基本信息
 const handleSubmit = async () => {
-  if (!formRef.value) return;
+  if (!formRef.value) return
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        const res = await updateUserUsingPost(form);
-        if (res.data?.data) {
-          ElMessage.success('修改成功');
+        const { data: res } = await updateUserUsingPost(form)
+        if (res?.code === 0 && res?.data) {
+          ElMessage.success('修改成功')
           // 更新用户信息
-          loginUserStore.setLoginUser(res.data.data);
+          loginUserStore.setLoginUser(res.data)
         } else {
-          ElMessage.error(res.data?.message || '修改失败');
+          ElMessage.error(res?.message || '修改失败')
         }
       } catch (error) {
-        ElMessage.error('修改失败，请稍后重试');
-        console.error(error);
+        ElMessage.error('修改失败，请稍后重试')
+        console.error(error)
       }
     }
-  });
-};
+  })
+}
 
 // 重置基本信息表单
 const resetForm = () => {
   formRef.value?.resetFields()
-  initForm()
 }
 
 // 更新密码
 const handleUpdatePwd = async () => {
-  if (!pwdFormRef.value) return;
+  if (!pwdFormRef.value) return
   await pwdFormRef.value.validate(async (valid: boolean) => {
     if (valid) {
       try {
         const res = await updateUserPasswordUsingPost({
           oldPassword: pwdForm.oldPassword,
           newPassword: pwdForm.newPassword,
-          checkPassword: pwdForm.newPassword
-        });
-        
-        if (res.data?.data) {
-          ElMessage.success('密码修改成功');
-          resetPwdForm();
+          checkPassword: pwdForm.newPassword,
+        })
+
+        if (res?.code === 0 && res?.data) {
+          ElMessage.success('密码修改成功')
+          resetPwdForm()
           // 自动退出登录
-          loginUserStore.logout()
+          loginUserStore.setLoginUser({
+            userName: '未登录',
+          })
           await router.push('/auth/login')
         } else {
-          ElMessage.error(res.data?.message || '密码修改失败');
+          ElMessage.error(res?.message || '密码修改失败')
         }
       } catch (error) {
-        ElMessage.error('密码修改失败');
-        console.error(error);
+        ElMessage.error('密码修改失败')
+        console.error(error)
       }
     }
-  });
-};
+  })
+}
 
 // 重置密码表单
 const resetPwdForm = () => {
@@ -249,8 +257,8 @@ const resetPwdForm = () => {
 }
 
 onMounted(() => {
-  // 初始化表单数据
-  initForm()
+  // 获取最新的用户信息
+  getUser()
 })
 </script>
 
@@ -311,4 +319,4 @@ onMounted(() => {
   margin-right: 8px;
   vertical-align: middle;
 }
-</style> 
+</style>

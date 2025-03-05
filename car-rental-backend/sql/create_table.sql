@@ -10,6 +10,7 @@ create table if not exists user
     userPassword     varchar(512)                       not null comment '密码',
     userName         varchar(256)                       null comment '用户昵称',
     userAvatar       varchar(1024)                      null comment '用户头像',
+    gender           tinyint                            null comment '性别: 0-男 1-女',
     userProfile      varchar(512)                       null comment '用户简介',
     realName         varchar(100)                       null comment '真实姓名',
     idCardNumber     varchar(50)                        null comment '身份证号码',

@@ -30,12 +30,6 @@ const toggleCollapse = () => {
 </script>
 
 <style scoped>
-body {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
 .common-layout {
   height: 100vh;
 }

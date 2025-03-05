@@ -14,14 +14,14 @@
         </el-breadcrumb-item>
       </el-breadcrumb>
     </div>
-    
+
     <div class="right-section">
       <!-- 未登录状态 -->
       <template v-if="!isLoggedIn">
         <el-button type="primary" link @click="handleLogin">登录</el-button>
         <el-button link class="register-btn" @click="handleRegister">注册</el-button>
       </template>
-      
+
       <!-- 已登录状态 -->
       <el-dropdown v-else trigger="click" @command="handleCommand">
         <div class="user-info">
@@ -50,25 +50,21 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { 
-  Fold, 
-  Expand, 
-  User, 
-  Setting, 
-  SwitchButton, 
-  ArrowDown 
-} from '@element-plus/icons-vue'
+import { Fold, Expand, User, Setting, SwitchButton, ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useLoginUserStore } from '@/stores/useLoginUserStore'
+import { userLogoutUsingPost } from '@/api/userController'
 
 const router = useRouter()
 const route = useRoute()
+const loginUserStore = useLoginUserStore()
 
 // 接收父组件传递的props
 defineProps({
   isCollapse: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 // 定义事件
@@ -79,10 +75,10 @@ const toggleCollapse = () => {
   emit('toggle-collapse')
 }
 
-// 模拟用户登录状态
-const isLoggedIn = ref(false)
-const userName = ref('张三')
-const userAvatar = ref('')
+// 从store获取登录状态和用户信息
+const isLoggedIn = computed(() => !!loginUserStore.loginUser?.id)
+const userName = computed(() => loginUserStore.loginUser?.userName || '未登录')
+const userAvatar = computed(() => loginUserStore.loginUser?.userAvatar || '')
 
 // 如果没有头像，显示用户名首字母
 const userInitials = computed(() => {
@@ -90,14 +86,10 @@ const userInitials = computed(() => {
 })
 
 // 面包屑数据
-const breadcrumbList = ref<Array<{ title: string; path: string }>>([
-  { title: '首页', path: '/' }
-])
+const breadcrumbList = ref<Array<{ title: string; path: string }>>([{ title: '首页', path: '/' }])
 
 // 根据路径获取面包屑标题
 const getBreadcrumbTitle = (path: string): string => {
-  // 这里可以根据实际路由配置获取标题
-  // 简单示例
   const routeMap: Record<string, string> = {
     '/': '首页',
     '/auth': '认证',
@@ -111,21 +103,18 @@ const getBreadcrumbTitle = (path: string): string => {
     '/car/category': '车辆分类',
     '/car/status': '车辆状态',
     '/order': '订单管理',
-    '/system': '系统设置'
+    '/system': '系统设置',
   }
-  
+
   return routeMap[path] || path.split('/').pop() || ''
 }
 
 // 更新面包屑
 const updateBreadcrumb = () => {
-  // 重置面包屑
   breadcrumbList.value = [{ title: '首页', path: '/' }]
-  
-  // 根据当前路由添加面包屑项
-  const pathSnippets = route.path.split('/').filter(i => i)
-  
-  // 构建面包屑
+
+  const pathSnippets = route.path.split('/').filter((i) => i)
+
   pathSnippets.forEach((_, index) => {
     const url = `/${pathSnippets.slice(0, index + 1).join('/')}`
     const title = getBreadcrumbTitle(url)
@@ -141,23 +130,21 @@ watch(
   () => {
     updateBreadcrumb()
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 // 处理登录按钮点击
 const handleLogin = () => {
-  // 跳转到登录页面
   router.push('/auth/login')
 }
 
 // 处理注册按钮点击
 const handleRegister = () => {
-  // 跳转到注册页面
   router.push('/auth/register')
 }
 
 // 处理下拉菜单命令
-const handleCommand = (command: string) => {
+const handleCommand = async (command: string) => {
   switch (command) {
     case 'profile':
       router.push('/user/profile')
@@ -166,10 +153,19 @@ const handleCommand = (command: string) => {
       router.push('/user/settings')
       break
     case 'logout':
-      ElMessage.success('退出登录成功')
-      isLoggedIn.value = false
-      // 退出登录后跳转到首页
-      router.push('/')
+      try {
+        const res = await userLogoutUsingPost()
+        if (res?.code === 0) {
+          ElMessage.success('退出登录成功')
+          // 清除用户信息
+          loginUserStore.setLoginUser({ userName: '未登录' })
+          // 退出登录后跳转到首页
+          router.push('/')
+        }
+      } catch (error) {
+        console.error('退出登录失败:', error)
+        ElMessage.error('退出登录失败')
+      }
       break
     default:
       break
@@ -243,7 +239,7 @@ const handleCommand = (command: string) => {
 }
 
 :deep(.el-breadcrumb__inner.is-link) {
-  color: #409EFF;
+  color: #409eff;
   font-weight: normal;
 }
 
@@ -251,6 +247,4 @@ const handleCommand = (command: string) => {
   color: #303133;
   font-weight: 600;
 }
-
 </style>
-

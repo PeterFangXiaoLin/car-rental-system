@@ -11,6 +11,7 @@
             <result property="userName" column="userName" />
             <result property="userAvatar" column="userAvatar" />
             <result property="userProfile" column="userProfile" />
+            <result property="gender" column="gender" />
             <result property="realName" column="realName" />
             <result property="idCardNumber" column="idCardNumber" />
             <result property="phoneNumber" column="phoneNumber" />
@@ -27,7 +28,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,userAccount,userPassword,userName,userAvatar,userProfile,
+        id,userAccount,userPassword,userName,userAvatar,userProfile,gender,
         realName,idCardNumber,phoneNumber,email,drivingLicenseNo,
         drivingYears,creditScore,memberLevel,userRole,editTime,
         createTime,updateTime,isDelete
