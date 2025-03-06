@@ -2,6 +2,8 @@ create database if not exists `car_system`;
 
 use `car_system`;
 
+drop table `user`;
+
 -- 用户表
 create table if not exists user
 (
@@ -10,7 +12,7 @@ create table if not exists user
     userPassword     varchar(512)                       not null comment '密码',
     userName         varchar(256)                       null comment '用户昵称',
     userAvatar       varchar(1024)                      null comment '用户头像',
-    gender           tinyint                            null comment '性别: 0-男 1-女',
+    gender           tinyint    default 0                       null comment '性别: 0-男 1-女',
     userProfile      varchar(512)                       null comment '用户简介',
     realName         varchar(100)                       null comment '真实姓名',
     idCardNumber     varchar(50)                        null comment '身份证号码',
@@ -20,7 +22,7 @@ create table if not exists user
     drivingYears     int                                null comment '驾龄',
     creditScore      int      default 10                not null comment '信用评分',
     memberLevel      int      default 0                 not null comment '会员等级: 0-普通用户，1-vip',
-    userRole         int      default 0                 not null comment '用户角色：0-用户，1-司机，2-管理员',
+    userRole         int      default 1                 not null comment '用户角色：1-用户，2-司机，3-管理员',
     editTime         datetime default CURRENT_TIMESTAMP not null comment '编辑时间',
     createTime       datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     updateTime       datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',

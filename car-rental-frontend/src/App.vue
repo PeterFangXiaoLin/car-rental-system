@@ -8,6 +8,6 @@
 
 <style>
 #app {
-  height: 100vh;
+  height: 100%;
 }
 </style>

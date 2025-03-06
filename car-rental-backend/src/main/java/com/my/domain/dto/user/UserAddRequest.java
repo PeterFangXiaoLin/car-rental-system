@@ -37,6 +37,11 @@ public class UserAddRequest implements Serializable {
     private String realName;
 
     /**
+     * 性别
+     */
+    private Integer gender;
+
+    /**
      * 身份证号码
      */
     private String idCardNumber;

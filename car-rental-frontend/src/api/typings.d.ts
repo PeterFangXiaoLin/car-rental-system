@@ -49,6 +49,7 @@ declare namespace API {
     creditScore?: number
     drivingYears?: number
     email?: string
+    gender?: number
     id?: number
     memberLevel?: number
     phoneNumber?: string
@@ -88,6 +89,7 @@ declare namespace API {
     drivingLicenseNo?: string
     drivingYears?: number
     email?: string
+    gender?: number
     idCardNumber?: string
     memberLevel?: number
     phoneNumber?: string
@@ -105,6 +107,7 @@ declare namespace API {
     drivingLicenseNo?: string
     drivingYears?: number
     email?: string
+    gender?: number
     id?: number
     idCardNumber?: string
     memberLevel?: number
@@ -125,6 +128,7 @@ declare namespace API {
   type UserQueryRequest = {
     current?: number
     email?: string
+    gender?: number
     id?: number
     memberLevel?: number
     pageSize?: number
@@ -155,6 +159,7 @@ declare namespace API {
     drivingLicenseNo?: string
     drivingYears?: number
     email?: string
+    gender?: number
     idCardNumber?: string
     phoneNumber?: string
     realName?: string
@@ -169,6 +174,7 @@ declare namespace API {
     drivingYears?: number
     editTime?: string
     email?: string
+    gender?: number
     id?: number
     idCardNumber?: string
     memberLevel?: number

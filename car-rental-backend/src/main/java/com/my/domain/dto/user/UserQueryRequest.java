@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 用户查询请求
@@ -32,6 +31,11 @@ public class UserQueryRequest extends PageRequest implements Serializable {
      * 真实姓名
      */
     private String realName;
+
+    /**
+     * 性别
+     */
+    private Integer gender;
 
     /**
      * 手机号码

@@ -1,19 +1,12 @@
 <template>
-  <div>
-    <div class="user-info-head" @click="editCropper">
-      <el-avatar
-        :size="120"
-        :src="loginUserStore.loginUser.userAvatar ?? defaultAvatar"
-        class="avatar-img"
-      />
-    </div>
-
+  <div class="user-info-head" @click="editCropper">
+    <img :src="options.img" title="点击上传头像" class="img-circle img-lg" />
     <!-- 头像裁剪弹窗 -->
     <el-dialog
       v-model="dialogVisible"
       title="修改头像"
       width="800px"
-      destroy-on-close
+      append-to-body
       @opened="handleDialogOpened"
       @close="handleDialogClose"
     >
@@ -21,64 +14,71 @@
         <el-col :xs="24" :md="12" :style="{ height: '350px' }">
           <vue-cropper
             ref="cropperRef"
-            :img="cropperOptions.img"
+            :img="options.img"
             :info="true"
-            :auto-crop="true"
-            :auto-crop-width="200"
-            :auto-crop-height="200"
-            :fixed-box="true"
-            :output-type="'png'"
+            :auto-crop="options.autoCrop"
+            :auto-crop-width="options.autoCropWidth"
+            :auto-crop-height="options.autoCropHeight"
+            :fixed-box="options.fixedBox"
+            :output-type="options.outputType"
             @real-time="handleRealTime"
             v-if="cropperVisible"
           />
         </el-col>
         <el-col :xs="24" :md="12" :style="{ height: '350px' }">
           <div class="avatar-upload-preview">
-            <img :src="previews.url" :style="previews.img" />
+            <img :src="options.img" :style="options.previews.img" />
           </div>
         </el-col>
       </el-row>
-
-      <div class="cropper-control mt-4">
-        <el-row :gutter="10" justify="center">
-          <el-col :span="6">
-            <el-upload
-              action="#"
-              :show-file-list="false"
-              :before-upload="handleBeforeUpload"
-              :http-request="uploadRequest"
-            >
-              <el-button>
-                <el-icon><Upload /></el-icon>
-                选择图片
-              </el-button>
-            </el-upload>
-          </el-col>
-          <el-col :span="12">
-            <el-button-group>
-              <el-button :icon="ZoomIn" @click="handleScale(1)" />
-              <el-button :icon="ZoomOut" @click="handleScale(-1)" />
-              <el-button :icon="RefreshLeft" @click="rotateLeft" />
-              <el-button :icon="RefreshRight" @click="rotateRight" />
-            </el-button-group>
-          </el-col>
-          <el-col :span="6">
-            <el-button type="primary" @click="handleUpload">
-              <el-icon><Check /></el-icon>
-              提交
+      <br />
+      <el-row>
+        <el-col :lg="2" :md="2">
+          <el-upload
+            action="#"
+            :http-request="requestUpload"
+            :show-file-list="false"
+            :before-upload="handleBeforeUpload"
+          >
+            <el-button>
+              选择
+              <el-icon class="el-icon--right"><Upload /></el-icon>
             </el-button>
-          </el-col>
-        </el-row>
-      </div>
+          </el-upload>
+        </el-col>
+        <el-col :lg="{ span: 1, offset: 2 }" :md="2">
+          <el-button @click="handleScale(1)">
+            <el-icon><Plus /></el-icon>
+          </el-button>
+        </el-col>
+        <el-col :lg="{ span: 1, offset: 1 }" :md="2">
+          <el-button @click="handleScale(-1)">
+            <el-icon><Minus /></el-icon>
+          </el-button>
+        </el-col>
+        <el-col :lg="{ span: 1, offset: 1 }" :md="2">
+          <el-button @click="rotateLeft()">
+            <el-icon><RefreshLeft /></el-icon>
+          </el-button>
+        </el-col>
+        <el-col :lg="{ span: 1, offset: 1 }" :md="2">
+          <el-button @click="rotateRight()">
+            <el-icon><RefreshRight /></el-icon>
+          </el-button>
+        </el-col>
+        <el-col :lg="{ span: 2, offset: 6 }" :md="2">
+          <el-button type="primary" @click="handleUpload">提 交</el-button>
+        </el-col>
+      </el-row>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
-import { Upload, ZoomIn, ZoomOut, RefreshLeft, RefreshRight, Check } from '@element-plus/icons-vue'
+import { Upload, Plus, Minus, RefreshLeft, RefreshRight } from '@element-plus/icons-vue'
 import { updateAvatarUsingPost, getLoginUserUsingGet } from '@/api/userController'
 
 const loginUserStore = useLoginUserStore()
@@ -90,20 +90,37 @@ const cropperRef = ref()
 
 // 定义预览数据的接口
 interface PreviewData {
-  url?: string;
+  url?: string
   img?: {
-    width?: string;
-    height?: string;
-    transform?: string;
-  };
+    width?: string
+    height?: string
+    transform?: string
+  }
 }
 
-const previews = ref<PreviewData>({})
-
-const cropperOptions = reactive({
-  img: loginUserStore.loginUser?.userAvatar ?? defaultAvatar,
-  filename: 'avatar.png',
+// 图片裁剪数据
+const options = reactive({
+  img: loginUserStore.loginUser?.userAvatar || defaultAvatar, // 裁剪图片的地址
+  autoCrop: true, // 是否默认生成截图框
+  autoCropWidth: 200, // 默认生成截图框宽度
+  autoCropHeight: 200, // 默认生成截图框高度
+  fixedBox: true, // 固定截图框大小 不允许改变
+  outputType: 'png', // 默认生成截图为PNG格式
+  filename: 'avatar', // 文件名称
+  previews: { img: {} } as { img: Record<string, string> }, //预览数据
 })
+
+// 实时预览
+const handleRealTime = (data: PreviewData) => {
+  if (data && data.img) {
+    options.previews.img = data.img as Record<string, string>
+  }
+}
+
+// 初始化用户头像
+const initUserAvatar = () => {
+  options.img = loginUserStore.loginUser?.userAvatar || defaultAvatar
+}
 
 // 打开裁剪弹窗
 const editCropper = () => {
@@ -118,12 +135,7 @@ const handleDialogOpened = () => {
 // 弹窗关闭回调
 const handleDialogClose = () => {
   cropperVisible.value = false
-  cropperOptions.img = loginUserStore.loginUser?.userAvatar ?? defaultAvatar
-}
-
-// 实时预览
-const handleRealTime = (data: PreviewData) => {
-  previews.value = data
+  options.img = loginUserStore.loginUser?.userAvatar || defaultAvatar
 }
 
 // 缩放
@@ -140,6 +152,9 @@ const rotateLeft = () => {
 const rotateRight = () => {
   cropperRef.value?.rotateRight()
 }
+
+/** 覆盖默认上传行为 */
+function requestUpload() {}
 
 // 上传前校验
 const handleBeforeUpload = (file: File) => {
@@ -158,15 +173,10 @@ const handleBeforeUpload = (file: File) => {
   const reader = new FileReader()
   reader.readAsDataURL(file)
   reader.onload = () => {
-    cropperOptions.img = reader.result as string
-    cropperOptions.filename = file.name
+    options.img = reader.result as string
+    options.filename = file.name
   }
   return false
-}
-
-// 覆盖默认的上传行为
-const uploadRequest = () => {
-  // 阻止默认上传
 }
 
 // 提交头像
@@ -174,25 +184,25 @@ const handleUpload = () => {
   cropperRef.value?.getCropBlob(async (blob: Blob) => {
     try {
       // 创建File对象
-      const file = new File([blob], cropperOptions.filename, { type: 'image/png' })
-      
-      // 上传头像 
+      const file = new File([blob], options.filename, { type: 'image/png' })
+
+      // 上传头像
       const loginUser = loginUserStore.loginUser
       const params = loginUser?.id ? { id: loginUser.id } : {}
-      
-      const res = await updateAvatarUsingPost(params, file)
-      
-      if (res?.code === 0) {
+
+      const { data: res } = await updateAvatarUsingPost(params, file)
+
+      if (res && res.code === 0) {
         ElMessage.success('头像修改成功')
         dialogVisible.value = false
-        
+
         // 重新获取用户信息
-        const userRes = await getLoginUserUsingGet()
-        if (userRes?.code === 0 && userRes?.data) {
+        const { data: userRes } = await getLoginUserUsingGet()
+        if (userRes && userRes.code === 0 && userRes.data) {
           loginUserStore.setLoginUser(userRes.data)
         }
       } else {
-        ElMessage.error('修改失败：' + (res?.message || '未知错误'))
+        ElMessage.error('修改失败：' + (res && res.message ? res.message : '未知错误'))
       }
     } catch (error) {
       console.error('上传头像失败:', error)
@@ -200,57 +210,56 @@ const handleUpload = () => {
     }
   })
 }
+
+// 组件挂载时初始化头像
+onMounted(() => {
+  initUserAvatar()
+})
 </script>
 
 <style scoped>
 .user-info-head {
   position: relative;
   display: inline-block;
-  cursor: pointer;
-  width: 120px;
   height: 120px;
-  border-radius: 50%;
-  overflow: hidden;
 }
 
-.user-info-head:hover::after {
+.user-info-head:hover:after {
   content: '+';
   position: absolute;
   left: 0;
   right: 0;
   top: 0;
   bottom: 0;
-  color: #fff;
+  color: #eee;
   background: rgba(0, 0, 0, 0.5);
   font-size: 24px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  line-height: 110px;
+  border-radius: 50%;
 }
 
-.avatar-img {
-  width: 100%;
-  height: 100%;
-  display: block;
+/* image */
+.img-circle {
+  border-radius: 50%;
+}
+
+.img-lg {
+  width: 120px;
+  height: 120px;
 }
 
 .avatar-upload-preview {
-  position: relative;
+  position: absolute;
   top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(50%, -50%);
   width: 200px;
   height: 200px;
   border-radius: 50%;
   box-shadow: 0 0 4px #ccc;
   overflow: hidden;
-}
-
-.cropper-control {
-  padding: 0 20px;
 }
 </style>

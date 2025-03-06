@@ -3,7 +3,7 @@
     <el-row :gutter="20">
       <!-- 左侧个人信息卡片 -->
       <el-col :span="6" :xs="24">
-        <el-card class="box-card">
+        <el-card>
           <template #header>
             <div class="card-header">
               <span>个人信息</span>
@@ -12,7 +12,7 @@
           <div class="text-center">
             <UserAvatar />
           </div>
-          <ul class="list-group">
+          <ul class="list-group list-group-striped">
             <li class="list-group-item">
               <el-icon><User /></el-icon>
               用户账号
@@ -27,8 +27,14 @@
               <el-icon><Management /></el-icon>
               用户角色
               <div class="pull-right">
-                <el-tag :type="form.user.userRole?.toString() === 'admin' ? 'success' : 'info'">
-                  {{ form.user.userRole?.toString() === 'admin' ? '管理员' : '普通用户' }}
+                <el-tag :type="form.user?.userRole === 3 ? 'success' : 'info'">
+                  {{
+                    form.user?.userRole === 3
+                      ? '管理员'
+                      : form.user?.userRole === 2
+                        ? '司机'
+                        : '普通用户'
+                  }}
                 </el-tag>
               </div>
             </li>
@@ -72,18 +78,25 @@ import { User, UserFilled, Management, Timer } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 import { getLoginUserUsingGet } from '@/api/userController'
 import UserAvatar from '@/components/user/UserAvatar.vue'
+import UserInfo from '@/components/user/UserInfo.vue'
+import ResetPassword from '@/components/user/ResetPassword.vue'
 
 const activeTab = ref('userinfo')
 
 // 获取最新的用户信息
 const getUser = async () => {
   try {
-    const res = await getLoginUserUsingGet()
-    if (res?.code === 0 && res?.data) {
+    const { data: res } = await getLoginUserUsingGet()
+    if (res && res.code === 0 && res.data) {
       form.user = res.data as API.LoginUserVO
     }
-  } catch (error) {
-    ElMessage.error('获取用户信息失败')
+  } catch (error: unknown) {
+    console.error('获取用户信息失败:', error)
+    if (error instanceof Error) {
+      ElMessage.error(error.message || '获取用户信息失败')
+    } else {
+      ElMessage.error('获取用户信息失败')
+    }
   }
 }
 
@@ -99,56 +112,42 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.app-container {
-  padding: 20px;
-}
-
-.box-card {
-  margin-bottom: 20px;
-}
-
-.card-header {
-  font-weight: bold;
+.card-header:after {
+  visibility: hidden;
+  display: block;
+  font-size: 0;
+  content: ' ';
+  clear: both;
+  height: 0;
 }
 
 .list-group {
-  padding: 0;
-  margin: 0;
+  padding-left: 0;
   list-style: none;
 }
 
-.list-group-item {
-  position: relative;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--el-border-color-lighter);
+.list-group-striped > .list-group-item {
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
-.list-group-item:last-child {
-  border-bottom: none;
+.list-group-item {
+  border-bottom: 1px solid #e7eaec;
+  border-top: 1px solid #e7eaec;
+  margin-bottom: -1px;
+  padding: 11px 0;
+  font-size: 13px;
 }
 
 .pull-right {
-  float: right;
+  float: right !important;
 }
 
 .text-center {
   text-align: center;
-  margin-bottom: 20px;
-}
-
-.avatar-uploader {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.upload-tip {
-  font-size: 14px;
-  color: #666;
-  margin-top: 8px;
-}
-
-.cursor-pointer {
-  cursor: pointer;
 }
 
 :deep(.el-icon) {

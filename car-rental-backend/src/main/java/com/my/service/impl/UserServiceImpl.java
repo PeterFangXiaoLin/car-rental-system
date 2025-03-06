@@ -17,6 +17,7 @@ import com.my.common.ErrorCode;
 import com.my.constant.CommonConstant;
 import com.my.domain.dto.user.*;
 import com.my.domain.entity.User;
+import com.my.domain.enums.UserGenderEnum;
 import com.my.domain.enums.UserRoleEnum;
 import com.my.domain.vo.LoginUserVO;
 import com.my.domain.vo.UserVO;
@@ -358,6 +359,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String email = userUpdateRequest.getEmail();
         String drivingLicenseNo = userUpdateRequest.getDrivingLicenseNo();
         String idCardNumber = userUpdateRequest.getIdCardNumber();
+        Integer gender = userUpdateRequest.getGender();
 
         // 手机号格式校验
         if (StrUtil.isNotBlank(phoneNumber)) {
@@ -368,6 +370,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             long count = this.lambdaQuery().eq(User::getPhoneNumber, phoneNumber).ne(User::getId, userId).count();
             if (count > 0) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "手机号已被使用");
+            }
+        }
+
+        // 性别校验
+        if (ObjUtil.isNotNull(gender)) {
+            UserGenderEnum enumByValue = UserGenderEnum.getEnumByValue(gender);
+            if (enumByValue == null) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "性别错误");
             }
         }
 

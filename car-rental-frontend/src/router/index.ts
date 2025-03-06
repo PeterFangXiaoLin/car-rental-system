@@ -43,33 +43,30 @@ export const routes = [
           access: ACCESS_ENUM.NOT_LOGIN,
         },
       },
+    ],
+  },
+  {
+    path: '/user',
+    name: '用户',
+    component: () => import('@/layouts/BasicLayout.vue'),
+    children: [
       {
-        path: 'user',
-        name: '用户',
+        path: 'profile',
+        name: '个人中心',
+        component: () => import('@/views/user/ProfilePage.vue'),
         meta: {
           access: ACCESS_ENUM.USER,
           hideInMenu: true,
         },
-        children: [
-          {
-            path: 'profile',
-            name: '个人中心',
-            component: () => import('@/views/user/ProfilePage.vue'),
-            meta: {
-              access: ACCESS_ENUM.USER,
-              hideInMenu: true,
-            },
-          },
-          {
-            path: 'settings',
-            name: '账号设置',
-            component: () => import('@/views/user/SettingsPage.vue'),
-            meta: {
-              access: ACCESS_ENUM.USER,
-              hideInMenu: true,
-            },
-          },
-        ],
+      },
+      {
+        path: 'settings',
+        name: '账号设置',
+        component: () => import('@/views/user/SettingsPage.vue'),
+        meta: {
+          access: ACCESS_ENUM.USER,
+          hideInMenu: true,
+        },
       },
     ],
   },

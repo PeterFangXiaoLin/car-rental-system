@@ -6,9 +6,9 @@ import lombok.Getter;
 
 @Getter
 public enum UserRoleEnum {
-    USER("用户", 0),
-    DRIVER("司机", 1),
-    ADMIN("管理员", 2);
+    USER("用户", 1),
+    DRIVER("司机", 2),
+    ADMIN("管理员", 3);
 
     private final String text;
     private final int value;

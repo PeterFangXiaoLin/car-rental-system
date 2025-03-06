@@ -31,7 +31,7 @@ const toggleCollapse = () => {
 
 <style scoped>
 .common-layout {
-  height: 100vh;
+  height: 100%;
 }
 
 .aside-container {
