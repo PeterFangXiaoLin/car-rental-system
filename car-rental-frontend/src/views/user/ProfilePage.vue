@@ -24,6 +24,47 @@
               <div class="pull-right">{{ form.user.userName }}</div>
             </li>
             <li class="list-group-item">
+              <el-icon><Avatar /></el-icon>
+              真实姓名
+              <div class="pull-right">{{ form.user.realName || '未设置' }}</div>
+            </li>
+            <li class="list-group-item">
+              <el-icon><Iphone /></el-icon>
+              手机号码
+              <div class="pull-right">{{ form.user.phoneNumber || '未绑定' }}</div>
+            </li>
+            <li class="list-group-item">
+              <el-icon><Message /></el-icon>
+              电子邮箱
+              <div class="pull-right">{{ form.user.email || '未绑定' }}</div>
+            </li>
+            <!-- 司机特有信息 -->
+            <template v-if="form.user.userRole === USER_ROLE_ENUM.DIRVER">
+              <li class="list-group-item">
+                <el-icon><Ticket /></el-icon>
+                驾驶证号
+                <div class="pull-right">{{ form.user.drivingLicenseNo || '未设置' }}</div>
+              </li>
+              <li class="list-group-item">
+                <el-icon><Van /></el-icon>
+                驾龄(年)
+                <div class="pull-right">{{ form.user.drivingYears || '0' }}</div>
+              </li>
+              <li class="list-group-item">
+                <el-icon><Star /></el-icon>
+                信用评分
+                <div class="pull-right">
+                  <el-rate
+                    v-model="creditScore"
+                    disabled
+                    show-score
+                    text-color="#ff9900"
+                    score-template="{value}"
+                  />
+                </div>
+              </li>
+            </template>
+            <li class="list-group-item">
               <el-icon><Management /></el-icon>
               用户角色
               <div class="pull-right">
@@ -72,23 +113,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { User, UserFilled, Management, Timer } from '@element-plus/icons-vue'
+import { User, UserFilled, Management, Timer, Iphone, Message, Avatar, Ticket, Van, Star } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 import { getLoginUserUsingGet } from '@/api/userController'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import UserInfo from '@/components/user/UserInfo.vue'
 import ResetPassword from '@/components/user/ResetPassword.vue'
+import USER_ROLE_ENUM from '@/enums/UserRoleEnum'
 
 const activeTab = ref('userinfo')
+
+// 计算信用评分（满分5分）
+const creditScore = computed(() => {
+  const score = form.user?.creditScore || 0
+  // 假设信用分满分为100，转换为5分制
+  return Math.min(5, Math.max(0, score / 2))
+})
 
 // 获取最新的用户信息
 const getUser = async () => {
   try {
-    const { data: res } = await getLoginUserUsingGet()
-    if (res && res.code === 0 && res.data) {
-      form.user = res.data as API.LoginUserVO
+    const res = await getLoginUserUsingGet()
+    if (res?.code === 0 && res?.data) {
+      form.user = res.data
     }
   } catch (error: unknown) {
     console.error('获取用户信息失败:', error)
@@ -139,11 +188,13 @@ onMounted(() => {
   border-top: 1px solid #e7eaec;
   margin-bottom: -1px;
   padding: 11px 0;
-  font-size: 13px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
 }
 
 .pull-right {
-  float: right !important;
+  margin-left: auto;
 }
 
 .text-center {
@@ -153,5 +204,9 @@ onMounted(() => {
 :deep(.el-icon) {
   margin-right: 8px;
   vertical-align: middle;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

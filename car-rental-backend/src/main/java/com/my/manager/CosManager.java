@@ -49,6 +49,6 @@ public class CosManager {
         PutObjectRequest putObjectRequest = new PutObjectRequest(cosClientConfig.getBucket(), key, inputStream, objectMetadata);
         Upload upload = transferManager.upload(putObjectRequest);
         upload.waitForCompletion();
-        return cosClientConfig.getHost() + key;
+        return cosClientConfig.getHost() + '/' +  key;
     }
 }

@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { updateUserUsingPost } from '@/api/userController'
-import { ref, type PropType } from 'vue'
+import { onMounted, ref, type PropType } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
@@ -73,7 +73,7 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        const { data: res } = await updateUserUsingPost(form.value)
+        const res = await updateUserUsingPost(form.value)
         if (res?.code === 0 && res?.data) {
           ElMessage.success('修改成功')
           // 更新用户信息
@@ -103,10 +103,13 @@ const initForm = () => {
       userProfile: props.user.userProfile || '',
       phoneNumber: props.user.phoneNumber || '',
       email: props.user.email || '',
+      gender: props.user.gender || 0,
     }
   }
 }
 
 // 初始化表单数据
-initForm()
+onMounted(() => {
+  initForm()
+})
 </script>
