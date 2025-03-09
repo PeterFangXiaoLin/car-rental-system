@@ -165,4 +165,20 @@ public interface UserService extends IService<User> {
      * @return
      */
     List<UserVO> getUserVOList(List<User> userList);
+
+    /**
+     * 根据id获取用户信息
+     *
+     * @param id
+     * @return
+     */
+    UserVO getUserById(Long id);
+
+    /**
+     * 根据id获取用户
+     *
+     * @param id
+     * @return
+     */
+    User getUser(Long id);
 }

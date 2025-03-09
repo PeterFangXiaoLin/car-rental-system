@@ -40,8 +40,30 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseUser_ = {
+    code?: number
+    data?: User
+    message?: string
+  }
+
+  type BaseResponseUserVO_ = {
+    code?: number
+    data?: UserVO
+    message?: string
+  }
+
   type DeleteRequest = {
     id?: number
+  }
+
+  type getUserByIdUsingGETParams = {
+    /** id */
+    id: number
+  }
+
+  type getUserUsingGETParams = {
+    /** id */
+    id: number
   }
 
   type LoginUserVO = {
@@ -82,6 +104,29 @@ declare namespace API {
   type refreshCaptchaUsingGETParams = {
     /** captchaKey */
     captchaKey: string
+  }
+
+  type User = {
+    createTime?: string
+    creditScore?: number
+    drivingLicenseNo?: string
+    drivingYears?: number
+    editTime?: string
+    email?: string
+    gender?: number
+    id?: number
+    idCardNumber?: string
+    isDelete?: number
+    memberLevel?: number
+    phoneNumber?: string
+    realName?: string
+    updateTime?: string
+    userAccount?: string
+    userAvatar?: string
+    userName?: string
+    userPassword?: string
+    userProfile?: string
+    userRole?: number
   }
 
   type UserAddRequest = {

@@ -1,18 +1,17 @@
 <template>
-  <div>
-    <div class="user-info-head" @click="editCropper">
-      <el-avatar
-        :size="120"
-        :src="loginUserStore.loginUser.userAvatar"
-        class="avatar-img"
-      />
-    </div>
-
+  <div class="user-info-head" @click="editCropper">
+    <el-avatar
+      :size="120"
+      :src="loginUserStore.loginUser?.userAvatar || defaultAvatar"
+      class="avatar-img"
+    />
     <!-- 头像裁剪弹窗 -->
     <el-dialog
       v-model="dialogVisible"
       title="修改头像"
       width="800px"
+      append-to-body
+      :z-index="2000"
       destroy-on-close
       @opened="handleDialogOpened"
       @close="handleDialogClose"
@@ -56,10 +55,18 @@
           </el-col>
           <el-col :span="12">
             <el-button-group>
-              <el-button :icon="ZoomIn" @click="handleScale(1)" />
-              <el-button :icon="ZoomOut" @click="handleScale(-1)" />
-              <el-button :icon="RefreshLeft" @click="rotateLeft" />
-              <el-button :icon="RefreshRight" @click="rotateRight" />
+              <el-button @click="handleScale(1)">
+                <el-icon><ZoomIn /></el-icon>
+              </el-button>
+              <el-button @click="handleScale(-1)">
+                <el-icon><ZoomOut /></el-icon>
+              </el-button>
+              <el-button @click="rotateLeft()">
+                <el-icon><RefreshLeft /></el-icon>
+              </el-button>
+              <el-button @click="rotateRight()">
+                <el-icon><RefreshRight /></el-icon>
+              </el-button>
             </el-button-group>
           </el-col>
           <el-col :span="6">
@@ -75,15 +82,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import { VueCropper } from 'vue-cropper'
 import 'vue-cropper/dist/index.css'
 import { Upload, ZoomIn, ZoomOut, RefreshLeft, RefreshRight, Check } from '@element-plus/icons-vue'
-import { updateAvatarUsingPost } from "@/api/userController.ts"
+import { updateAvatarUsingPost, getLoginUserUsingGet } from '@/api/userController'
 
 const loginUserStore = useLoginUserStore()
+const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 
 const dialogVisible = ref(false)
 const cropperVisible = ref(false)
@@ -91,18 +99,18 @@ const cropperRef = ref()
 
 // 定义预览数据的接口
 interface PreviewData {
-  url?: string;
+  url?: string
   img?: {
-    width?: string;
-    height?: string;
-    transform?: string;
-  };
+    width?: string
+    height?: string
+    transform?: string
+  }
 }
 
 const previews = ref<PreviewData>({})
 
 const cropperOptions = reactive({
-  img: loginUserStore.loginUser.userAvatar,
+  img: loginUserStore.loginUser?.userAvatar || defaultAvatar,
   filename: 'avatar.png',
 })
 
@@ -119,7 +127,7 @@ const handleDialogOpened = () => {
 // 弹窗关闭回调
 const handleDialogClose = () => {
   cropperVisible.value = false
-  cropperOptions.img = loginUserStore.loginUser.userAvatar
+  cropperOptions.img = loginUserStore.loginUser?.userAvatar || defaultAvatar
 }
 
 // 实时预览
@@ -176,23 +184,32 @@ const handleUpload = () => {
     try {
       // 创建File对象
       const file = new File([blob], cropperOptions.filename, { type: 'image/png' })
-      
+
       // 上传头像
-      const res = await updateAvatarUsingPost({}, file)
-      
-      if (res?.code === 0) {
+      const { data: res } = await updateAvatarUsingPost({}, file)
+
+      if (res && res.code === 0) {
         ElMessage.success('修改成功')
         dialogVisible.value = false
         // 重新获取用户信息
-        await loginUserStore.fetchLoginUser()
+        const { data: userRes } = await getLoginUserUsingGet()
+        if (userRes && userRes.code === 0 && userRes.data) {
+          loginUserStore.setLoginUser(userRes.data)
+        }
       } else {
-        ElMessage.error('修改失败：' + (res?.message || '未知错误'))
+        ElMessage.error('修改失败：' + (res && res.message ? res.message : '未知错误'))
       }
     } catch (error) {
-      ElMessage.error('上传失败：' + error)
+      console.error('上传失败：', error)
+      ElMessage.error('上传失败，请稍后重试')
     }
   })
 }
+
+// 组件挂载时初始化头像
+onMounted(() => {
+  cropperOptions.img = loginUserStore.loginUser?.userAvatar || defaultAvatar
+})
 </script>
 
 <style scoped>
@@ -245,5 +262,22 @@ const handleUpload = () => {
 
 .cropper-control {
   padding: 0 20px;
+}
+
+/* 确保弹窗在最顶层 */
+:deep(.el-overlay) {
+  z-index: 2000 !important;
+}
+
+:deep(.el-image__preview) {
+  z-index: 2100 !important;
+}
+
+:deep(.el-image-viewer__wrapper) {
+  z-index: 2100 !important;
+}
+
+:deep(.el-image-viewer__mask) {
+  z-index: 2100 !important;
 }
 </style>

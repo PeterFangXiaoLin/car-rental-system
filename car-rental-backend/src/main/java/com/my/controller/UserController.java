@@ -6,10 +6,10 @@ import com.my.common.BaseResponse;
 import com.my.common.DeleteRequest;
 import com.my.constant.UserConstant;
 import com.my.domain.dto.user.*;
+import com.my.domain.entity.User;
 import com.my.domain.vo.LoginUserVO;
 import com.my.domain.vo.UserVO;
 import com.my.service.UserService;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -78,14 +78,14 @@ public class UserController {
     @PostMapping("/admin/update")
     @ApiOperation(value = "更新用户（仅管理员）")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> AdminUpdateUser(@RequestBody UserAdminUpdateRequest userAdminUpdateRequest) {
+    public BaseResponse<Boolean> adminUpdateUser(@RequestBody UserAdminUpdateRequest userAdminUpdateRequest) {
         return success(userService.adminUpdateUser(userAdminUpdateRequest));
     }
 
     @PostMapping("/admin/delete")
     @ApiOperation(value = "删除用户")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> AdminDeleteUser(@RequestBody DeleteRequest deleteRequest) {
+    public BaseResponse<Boolean> adminDeleteUser(@RequestBody DeleteRequest deleteRequest) {
         return success(userService.adminDeleteUser(deleteRequest));
     }
 
@@ -94,5 +94,17 @@ public class UserController {
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Page<UserVO>> pageUserVO(@RequestBody UserQueryRequest userQueryRequest) {
         return success(userService.pageUserVO(userQueryRequest));
+    }
+
+    @GetMapping("/get/vo")
+    @ApiOperation(value = "根据id获取用户信息")
+    public BaseResponse<UserVO> getUserById(@RequestParam("id") Long id) {
+        return success(userService.getUserById(id));
+    }
+
+    @GetMapping("/get")
+    @ApiOperation(value = "根据id获取用户（管理员）")
+    public BaseResponse<User> getUser(@RequestParam("id") Long id) {
+        return success(userService.getUser(id));
     }
 }

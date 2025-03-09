@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { updateUserUsingPost } from '@/api/userController'
-import { onMounted, ref, type PropType } from 'vue'
+import { ref, watch, type PropType } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
@@ -46,12 +46,32 @@ const props = defineProps({
   },
 })
 
+// 定义事件
+const emit = defineEmits(['update:user', 'update'])
+
+// 使用ref创建可修改的表单数据
 const form = ref<API.UserUpdateRequest>({
   userName: '',
   userProfile: '',
   phoneNumber: '',
   email: '',
 })
+
+// 监听props变化，更新表单数据
+watch(
+  () => props.user,
+  (newUser) => {
+    if (newUser) {
+      form.value = {
+        userName: newUser.userName || '',
+        userProfile: newUser.userProfile || '',
+        phoneNumber: newUser.phoneNumber || '',
+        email: newUser.email || '',
+      }
+    }
+  },
+  { immediate: true, deep: true },
+)
 
 const loginUserStore = useLoginUserStore()
 const formRef = ref<FormInstance>()
@@ -78,6 +98,10 @@ const handleSubmit = async () => {
           ElMessage.success('修改成功')
           // 更新用户信息
           loginUserStore.setLoginUser(res.data)
+
+          // 通知父组件更新用户信息
+          emit('update:user', res.data)
+          emit('update', res.data)
         } else {
           ElMessage.error(res?.message || '修改失败')
         }
@@ -91,25 +115,17 @@ const handleSubmit = async () => {
 
 // 重置基本信息表单
 const resetForm = () => {
-  formRef.value?.resetFields()
-  initForm()
-}
-
-// 初始化表单数据
-const initForm = () => {
-  if (props.user) {
-    form.value = {
-      userName: props.user.userName || '',
-      userProfile: props.user.userProfile || '',
-      phoneNumber: props.user.phoneNumber || '',
-      email: props.user.email || '',
-      gender: props.user.gender || 0,
+  if (formRef.value) {
+    formRef.value.resetFields()
+    // 重新从props初始化表单
+    if (props.user) {
+      form.value = {
+        userName: props.user.userName || '',
+        userProfile: props.user.userProfile || '',
+        phoneNumber: props.user.phoneNumber || '',
+        email: props.user.email || '',
+      }
     }
   }
 }
-
-// 初始化表单数据
-onMounted(() => {
-  initForm()
-})
 </script>

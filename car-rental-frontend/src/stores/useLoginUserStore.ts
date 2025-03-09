@@ -12,7 +12,7 @@ export const useLoginUserStore = defineStore('loginUser', () => {
    */
   async function fetchLoginUser() {
     const res = await getLoginUserUsingGet()
-    if (res.code === 0 && res.data) {
+    if (res?.code === 0 && res.data) {
       setLoginUser(res.data)
     }
   }

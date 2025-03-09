@@ -587,11 +587,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String sortOrder = userQueryRequest.getSortOrder();
 
         queryWrapper.eq(id != null, "id", id);
-        queryWrapper.eq(StrUtil.isNotBlank(userAccount), "userAccount", userAccount);
-        queryWrapper.eq(StrUtil.isNotBlank(userName), "userName", userName);
-        queryWrapper.eq(StrUtil.isNotBlank(realName), "realName", realName);
-        queryWrapper.eq(StrUtil.isNotBlank(phoneNumber), "phoneNumber", phoneNumber);
-        queryWrapper.eq(StrUtil.isNotBlank(email), "email", email);
+        queryWrapper.like(StrUtil.isNotBlank(userAccount), "userAccount", userAccount);
+        queryWrapper.like(StrUtil.isNotBlank(userName), "userName", userName);
+        queryWrapper.like(StrUtil.isNotBlank(realName), "realName", realName);
+        queryWrapper.like(StrUtil.isNotBlank(phoneNumber), "phoneNumber", phoneNumber);
+        queryWrapper.like(StrUtil.isNotBlank(email), "email", email);
         queryWrapper.eq(memberLevel != null, "memberLevel", memberLevel);
         queryWrapper.eq(userRole != null, "userRole", userRole);
         queryWrapper.orderBy(StrUtil.isNotBlank(sortField), sortOrder.equalsIgnoreCase(CommonConstant.SORT_ORDER_ASC), sortField);
@@ -615,6 +615,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return userList.stream()
                 .map(this::getUserVO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserVO getUserById(Long id) {
+        if (id == null || id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = this.getById(id);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        }
+        return BeanUtil.toBean(user, UserVO.class);
+    }
+
+    @Override
+    public User getUser(Long id) {
+        if (id == null || id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = this.getById(id);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        }
+        return user;
     }
 }
 

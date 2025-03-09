@@ -59,10 +59,40 @@ export async function adminUpdateUserUsingPost(
   })
 }
 
+/** 根据id获取用户（管理员） GET /api/user/get */
+export async function getUserUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getUserUsingGETParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseUser_>('/api/user/get', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  })
+}
+
 /** 获取当前登录用户 GET /api/user/get/login */
 export async function getLoginUserUsingGet(options?: { [key: string]: any }) {
   return request<API.BaseResponseLoginUserVO_>('/api/user/get/login', {
     method: 'GET',
+    ...(options || {}),
+  })
+}
+
+/** 根据id获取用户信息 GET /api/user/get/vo */
+export async function getUserByIdUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getUserByIdUsingGETParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseUserVO_>('/api/user/get/vo', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
     ...(options || {}),
   })
 }

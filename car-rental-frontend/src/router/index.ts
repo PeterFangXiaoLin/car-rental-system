@@ -71,6 +71,21 @@ export const routes = [
     ],
   },
   {
+    path: '/admin',
+    name: '管理',
+    component: () => import('@/layouts/BasicLayout.vue'),
+    children: [
+      {
+        path: 'userManage',
+        name: '用户管理',
+        component: () => import('@/views/admin/UserManagePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+    ]
+  },
+  {
     path: '/401',
     name: '无权限',
     component: () => import('@/components/error/401.vue'),

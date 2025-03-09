@@ -14,44 +14,60 @@
           </div>
           <ul class="list-group list-group-striped">
             <li class="list-group-item">
-              <el-icon><User /></el-icon>
+              <el-icon>
+                <User />
+              </el-icon>
               用户账号
               <div class="pull-right">{{ form.user.userAccount }}</div>
             </li>
             <li class="list-group-item">
-              <el-icon><UserFilled /></el-icon>
+              <el-icon>
+                <UserFilled />
+              </el-icon>
               用户昵称
               <div class="pull-right">{{ form.user.userName }}</div>
             </li>
             <li class="list-group-item">
-              <el-icon><Avatar /></el-icon>
+              <el-icon>
+                <Avatar />
+              </el-icon>
               真实姓名
               <div class="pull-right">{{ form.user.realName || '未设置' }}</div>
             </li>
             <li class="list-group-item">
-              <el-icon><Iphone /></el-icon>
+              <el-icon>
+                <Iphone />
+              </el-icon>
               手机号码
               <div class="pull-right">{{ form.user.phoneNumber || '未绑定' }}</div>
             </li>
             <li class="list-group-item">
-              <el-icon><Message /></el-icon>
+              <el-icon>
+                <Message />
+              </el-icon>
               电子邮箱
               <div class="pull-right">{{ form.user.email || '未绑定' }}</div>
             </li>
             <!-- 司机特有信息 -->
             <template v-if="form.user.userRole === USER_ROLE_ENUM.DIRVER">
               <li class="list-group-item">
-                <el-icon><Ticket /></el-icon>
+                <el-icon>
+                  <Ticket />
+                </el-icon>
                 驾驶证号
                 <div class="pull-right">{{ form.user.drivingLicenseNo || '未设置' }}</div>
               </li>
               <li class="list-group-item">
-                <el-icon><Van /></el-icon>
+                <el-icon>
+                  <Van />
+                </el-icon>
                 驾龄(年)
                 <div class="pull-right">{{ form.user.drivingYears || '0' }}</div>
               </li>
               <li class="list-group-item">
-                <el-icon><Star /></el-icon>
+                <el-icon>
+                  <Star />
+                </el-icon>
                 信用评分
                 <div class="pull-right">
                   <el-rate
@@ -65,7 +81,9 @@
               </li>
             </template>
             <li class="list-group-item">
-              <el-icon><Management /></el-icon>
+              <el-icon>
+                <Management />
+              </el-icon>
               用户角色
               <div class="pull-right">
                 <el-tag :type="form.user?.userRole === 3 ? 'success' : 'info'">
@@ -80,7 +98,9 @@
               </div>
             </li>
             <li class="list-group-item">
-              <el-icon><Timer /></el-icon>
+              <el-icon>
+                <Timer />
+              </el-icon>
               创建时间
               <div class="pull-right">
                 {{ dayjs(form.user.createTime).format('YYYY-MM-DD HH:mm:ss') }}
@@ -100,7 +120,7 @@
           </template>
           <el-tabs v-model="activeTab">
             <el-tab-pane label="基本资料" name="userinfo">
-              <UserInfo :user="form.user" />
+              <UserInfo :user="form.user" @update="handleUserUpdate" />
             </el-tab-pane>
             <el-tab-pane label="修改密码" name="resetPwd">
               <ResetPassword />
@@ -115,15 +135,30 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { User, UserFilled, Management, Timer, Iphone, Message, Avatar, Ticket, Van, Star } from '@element-plus/icons-vue'
+import {
+  User,
+  UserFilled,
+  Management,
+  Timer,
+  Iphone,
+  Message,
+  Avatar,
+  Ticket,
+  Van,
+  Star,
+} from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
-import { getLoginUserUsingGet } from '@/api/userController'
+import { getUserByIdUsingGet } from '@/api/userController'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import UserInfo from '@/components/user/UserInfo.vue'
 import ResetPassword from '@/components/user/ResetPassword.vue'
-import USER_ROLE_ENUM from '@/enums/UserRoleEnum'
+import USER_ROLE_ENUM from '@/enums/UserRoleEnum.ts'
+import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+import router from '@/router'
 
 const activeTab = ref('userinfo')
+
+const loginUserStore = useLoginUserStore()
 
 // 计算信用评分（满分5分）
 const creditScore = computed(() => {
@@ -134,18 +169,21 @@ const creditScore = computed(() => {
 
 // 获取最新的用户信息
 const getUser = async () => {
+  const loginUser = loginUserStore.loginUser
+  if (!loginUser?.id) {
+    ElMessage.error('用户未登录')
+    router.replace('/auth/login')
+    return
+  }
   try {
-    const res = await getLoginUserUsingGet()
+    const res = await getUserByIdUsingGet({
+      id: loginUser.id,
+    })
     if (res?.code === 0 && res?.data) {
       form.user = res.data
     }
-  } catch (error: unknown) {
-    console.error('获取用户信息失败:', error)
-    if (error instanceof Error) {
-      ElMessage.error(error.message || '获取用户信息失败')
-    } else {
-      ElMessage.error('获取用户信息失败')
-    }
+  } catch (error) {
+    ElMessage.error(error.message || '获取用户信息失败')
   }
 }
 
@@ -153,6 +191,11 @@ const getUser = async () => {
 const form = reactive({
   user: {} as API.LoginUserVO,
 })
+
+// 处理用户信息更新
+const handleUserUpdate = (updatedUser: API.LoginUserVO) => {
+  form.user = updatedUser
+}
 
 onMounted(() => {
   // 获取最新的用户信息
@@ -208,5 +251,18 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+/* 确保图片预览在最顶层 */
+:deep(.el-image-viewer__wrapper) {
+  z-index: 2100 !important;
+}
+
+:deep(.el-image-viewer__mask) {
+  z-index: 2100 !important;
+}
+
+:deep(.el-overlay) {
+  z-index: 2000 !important;
 }
 </style>
