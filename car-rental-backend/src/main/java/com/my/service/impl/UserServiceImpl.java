@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Validator;
-import cn.hutool.core.util.IdcardUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.StrUtil;
@@ -71,11 +70,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String userPassword = user.getUserPassword();
         String userName = user.getUserName();
         String userProfile = user.getUserProfile();
-        String idCardNumber = user.getIdCardNumber();
         String phoneNumber = user.getPhoneNumber();
         String email = user.getEmail();
-        String drivingLicenseNo = user.getDrivingLicenseNo();
-        Integer creditScore = user.getCreditScore();
 
         if (isAdd) {
             if (StrUtil.isBlank(userAccount)) {
@@ -83,12 +79,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             }
             if (StrUtil.isBlank(userPassword)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码不能为空");
-            }
-        }
-
-        if (StrUtil.isNotBlank(userAccount)) {
-            if (userAccount.length() < MIN_ACCOUNT_LEN || userAccount.length() > MAX_ACCOUNT_LEN) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号在 4-20 位之间");
             }
         }
 
@@ -110,12 +100,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             }
         }
 
-        if (StrUtil.isNotBlank(idCardNumber)) {
-            if (!IdcardUtil.isValidCard(idCardNumber)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "身份证号格式错误");
-            }
-        }
-
         if (StrUtil.isNotBlank(phoneNumber)) {
             if (!PhoneUtil.isMobile(phoneNumber)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "手机号格式错误");
@@ -125,18 +109,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (StrUtil.isNotBlank(email)) {
             if (!Validator.isEmail(email)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误");
-            }
-        }
-
-        if (StrUtil.isNotBlank(drivingLicenseNo)) {
-            if (!Validator.isCarDrivingLicence(drivingLicenseNo)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "驾驶证号码格式错误");
-            }
-        }
-
-        if (ObjUtil.isNotNull(creditScore)) {
-            if (creditScore > MAX_CREDIT_SCORE) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "信用分不能超过 10");
             }
         }
     }
@@ -344,7 +316,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public LoginUserVO updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
+    public UserVO updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
         // 1. 校验参数
         if (userUpdateRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -357,8 +329,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 3. 参数校验
         String phoneNumber = userUpdateRequest.getPhoneNumber();
         String email = userUpdateRequest.getEmail();
-        String drivingLicenseNo = userUpdateRequest.getDrivingLicenseNo();
-        String idCardNumber = userUpdateRequest.getIdCardNumber();
         Integer gender = userUpdateRequest.getGender();
 
         // 手机号格式校验
@@ -381,24 +351,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             }
         }
 
-        // 校验身份证号格式
-        if (StrUtil.isNotBlank(idCardNumber)) {
-            if (!IdcardUtil.isValidCard(idCardNumber)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "身份证号格式错误");
-            }
-        }
-
         // 邮箱格式校验
         if (StrUtil.isNotBlank(email)) {
             if (!Validator.isEmail(email)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误");
-            }
-        }
-
-        // 驾驶证号码格式校验
-        if (StrUtil.isNotBlank(drivingLicenseNo)) {
-            if (!Validator.isCarDrivingLicence(drivingLicenseNo)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "驾驶证号码格式错误");
             }
         }
 
@@ -415,7 +371,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         // 6. 返回更新后的用户信息
         User updatedUser = this.getById(userId);
-        return this.getLoginUserVO(updatedUser);
+        return BeanUtil.toBean(updatedUser, UserVO.class);
     }
 
     @Override

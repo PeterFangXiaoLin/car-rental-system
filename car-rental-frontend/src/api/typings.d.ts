@@ -68,11 +68,25 @@ declare namespace API {
 
   type LoginUserVO = {
     createTime?: string
-    creditScore?: number
+    driverLicenseBackImg?: string
+    driverLicenseExpireDate?: string
+    driverLicenseFrontImg?: string
+    driverLicenseIssueDate?: string
+    driverLicenseNo?: string
+    driverLicenseType?: string
+    driverLicenseVerifyStatus?: number
     drivingYears?: number
     email?: string
     gender?: number
+    hasDriverLicense?: number
     id?: number
+    idCardBackImg?: string
+    idCardFrontImg?: string
+    idCardNumber?: string
+    idCardRejectReason?: string
+    idCardVerifyStatus?: number
+    idCardVerifyTime?: string
+    isDriver?: number
     memberLevel?: number
     phoneNumber?: string
     realName?: string
@@ -108,18 +122,31 @@ declare namespace API {
 
   type User = {
     createTime?: string
-    creditScore?: number
-    drivingLicenseNo?: string
+    driverLicenseBackImg?: string
+    driverLicenseExpireDate?: string
+    driverLicenseFrontImg?: string
+    driverLicenseIssueDate?: string
+    driverLicenseNo?: string
+    driverLicenseType?: string
+    driverLicenseVerifyStatus?: number
     drivingYears?: number
     editTime?: string
     email?: string
     gender?: number
+    hasDriverLicense?: number
     id?: number
+    idCardBackImg?: string
+    idCardFrontImg?: string
     idCardNumber?: string
+    idCardRejectReason?: string
+    idCardVerifyStatus?: number
+    idCardVerifyTime?: string
     isDelete?: number
+    isDriver?: number
     memberLevel?: number
     phoneNumber?: string
     realName?: string
+    status?: number
     updateTime?: string
     userAccount?: string
     userAvatar?: string
@@ -130,15 +157,10 @@ declare namespace API {
   }
 
   type UserAddRequest = {
-    creditScore?: number
-    drivingLicenseNo?: string
-    drivingYears?: number
     email?: string
     gender?: number
-    idCardNumber?: string
     memberLevel?: number
     phoneNumber?: string
-    realName?: string
     userAccount?: string
     userAvatar?: string
     userName?: string
@@ -148,17 +170,11 @@ declare namespace API {
   }
 
   type UserAdminUpdateRequest = {
-    creditScore?: number
-    drivingLicenseNo?: string
-    drivingYears?: number
     email?: string
     gender?: number
     id?: number
-    idCardNumber?: string
     memberLevel?: number
     phoneNumber?: string
-    realName?: string
-    userAccount?: string
     userAvatar?: string
     userName?: string
     userProfile?: string
@@ -201,30 +217,39 @@ declare namespace API {
   }
 
   type UserUpdateRequest = {
-    drivingLicenseNo?: string
-    drivingYears?: number
     email?: string
     gender?: number
-    idCardNumber?: string
     phoneNumber?: string
-    realName?: string
     userName?: string
     userProfile?: string
   }
 
   type UserVO = {
     createTime?: string
-    creditScore?: number
-    drivingLicenseNo?: string
+    driverLicenseBackImg?: string
+    driverLicenseExpireDate?: string
+    driverLicenseFrontImg?: string
+    driverLicenseIssueDate?: string
+    driverLicenseNo?: string
+    driverLicenseType?: string
+    driverLicenseVerifyStatus?: number
     drivingYears?: number
     editTime?: string
     email?: string
     gender?: number
+    hasDriverLicense?: number
     id?: number
+    idCardBackImg?: string
+    idCardFrontImg?: string
     idCardNumber?: string
+    idCardRejectReason?: string
+    idCardVerifyStatus?: number
+    idCardVerifyTime?: string
+    isDriver?: number
     memberLevel?: number
     phoneNumber?: string
     realName?: string
+    status?: number
     userAccount?: string
     userAvatar?: string
     userName?: string

@@ -13,12 +13,11 @@ import 'virtual:uno.css' // unocss
 import VueCropper from 'vue-cropper'; // 图片编辑
 import 'vue-cropper/dist/index.css'
 
-
 import '@/access' // 权限控制
 
 const app = createApp(App)
 
-dayjs.locale("zh-cn")
+dayjs.locale('zh-cn')
 
 app.use(createPinia())
 app.use(router)

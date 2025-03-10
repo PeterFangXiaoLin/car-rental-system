@@ -100,7 +100,7 @@ public interface UserService extends IService<User> {
      * @param request
      * @return
      */
-    LoginUserVO updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request);
+    UserVO updateUser(UserUpdateRequest userUpdateRequest, HttpServletRequest request);
 
     /**
      * 修改头像

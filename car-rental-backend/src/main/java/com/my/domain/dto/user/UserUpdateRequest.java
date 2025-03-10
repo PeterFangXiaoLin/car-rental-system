@@ -17,19 +17,9 @@ public class UserUpdateRequest implements Serializable {
     private String userProfile;
 
     /**
-     * 真实姓名
-     */
-    private String realName;
-
-    /**
      * 性别
      */
     private Integer gender;
-
-    /**
-     * 身份证号码
-     */
-    private String idCardNumber;
 
     /**
      * 手机号码
@@ -40,14 +30,4 @@ public class UserUpdateRequest implements Serializable {
      * 电子邮箱
      */
     private String email;
-
-    /**
-     * 驾驶证号码
-     */
-    private String drivingLicenseNo;
-
-    /**
-     * 驾龄
-     */
-    private Integer drivingYears;
 }

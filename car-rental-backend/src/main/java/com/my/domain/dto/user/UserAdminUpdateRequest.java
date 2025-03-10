@@ -15,11 +15,6 @@ public class UserAdminUpdateRequest implements Serializable {
     private Long id;
 
     /**
-     * 账号
-     */
-    private String userAccount;
-
-    /**
      * 用户昵称
      */
     private String userName;
@@ -35,19 +30,10 @@ public class UserAdminUpdateRequest implements Serializable {
     private String userProfile;
 
     /**
-     * 真实姓名
-     */
-    private String realName;
-
-    /**
      * 性别
      */
     private Integer gender;
 
-    /**
-     * 身份证号码
-     */
-    private String idCardNumber;
 
     /**
      * 手机号码
@@ -58,21 +44,6 @@ public class UserAdminUpdateRequest implements Serializable {
      * 电子邮箱
      */
     private String email;
-
-    /**
-     * 驾驶证号码
-     */
-    private String drivingLicenseNo;
-
-    /**
-     * 驾龄
-     */
-    private Integer drivingYears;
-
-    /**
-     * 信用评分
-     */
-    private Integer creditScore;
 
     /**
      * 会员等级: 0-普通用户，1-vip

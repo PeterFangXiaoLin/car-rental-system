@@ -58,7 +58,7 @@ public class UserController {
 
     @PostMapping("/update/info")
     @ApiOperation(value = "更新用户信息")
-    public BaseResponse<LoginUserVO> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
+    public BaseResponse<UserVO> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
         return success(userService.updateUser(userUpdateRequest, request));
     }
 

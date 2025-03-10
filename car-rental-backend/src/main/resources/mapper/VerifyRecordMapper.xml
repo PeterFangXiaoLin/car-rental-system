@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.mapper.VerifyRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.my.domain.entity.VerifyRecord">
+            <id property="id" column="id" />
+            <result property="userId" column="userId" />
+            <result property="verifyType" column="verifyType" />
+            <result property="verifyStatus" column="verifyStatus" />
+            <result property="verifyResult" column="verifyResult" />
+            <result property="rejectReason" column="rejectReason" />
+            <result property="verifyTime" column="verifyTime" />
+            <result property="reviewId" column="reviewId" />
+            <result property="remark" column="remark" />
+            <result property="createTime" column="createTime" />
+            <result property="updateTime" column="updateTime" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,userId,verifyType,verifyStatus,verifyResult,rejectReason,
+        verifyTime,reviewId,remark,createTime,updateTime
+    </sql>
+</mapper>

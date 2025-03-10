@@ -29,13 +29,6 @@
             </li>
             <li class="list-group-item">
               <el-icon>
-                <Avatar />
-              </el-icon>
-              真实姓名
-              <div class="pull-right">{{ form.user.realName || '未设置' }}</div>
-            </li>
-            <li class="list-group-item">
-              <el-icon>
                 <Iphone />
               </el-icon>
               手机号码
@@ -49,13 +42,13 @@
               <div class="pull-right">{{ form.user.email || '未绑定' }}</div>
             </li>
             <!-- 司机特有信息 -->
-            <template v-if="form.user.userRole === USER_ROLE_ENUM.DIRVER">
+            <template v-if="form.user.isDriver === 1">
               <li class="list-group-item">
                 <el-icon>
                   <Ticket />
                 </el-icon>
                 驾驶证号
-                <div class="pull-right">{{ form.user.drivingLicenseNo || '未设置' }}</div>
+                <div class="pull-right">{{ form.user.driverLicenseNo || '未设置' }}</div>
               </li>
               <li class="list-group-item">
                 <el-icon>
@@ -64,21 +57,21 @@
                 驾龄(年)
                 <div class="pull-right">{{ form.user.drivingYears || '0' }}</div>
               </li>
-              <li class="list-group-item">
+              <!-- <li class="list-group-item">
                 <el-icon>
                   <Star />
                 </el-icon>
                 信用评分
                 <div class="pull-right">
                   <el-rate
-                    v-model="creditScore"
+                    v-model=""
                     disabled
                     show-score
                     text-color="#ff9900"
                     score-template="{value}"
                   />
                 </div>
-              </li>
+              </li> -->
             </template>
             <li class="list-group-item">
               <el-icon>
@@ -125,6 +118,9 @@
             <el-tab-pane label="修改密码" name="resetPwd">
               <ResetPassword />
             </el-tab-pane>
+            <el-tab-pane label="实名认证" name="realNameAuth">
+              <RealNameAuth :user="form.user" />
+            </el-tab-pane>
           </el-tabs>
         </el-card>
       </el-col>
@@ -142,7 +138,6 @@ import {
   Timer,
   Iphone,
   Message,
-  Avatar,
   Ticket,
   Van,
   Star,
@@ -152,20 +147,13 @@ import { getUserByIdUsingGet } from '@/api/userController'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import UserInfo from '@/components/user/UserInfo.vue'
 import ResetPassword from '@/components/user/ResetPassword.vue'
-import USER_ROLE_ENUM from '@/enums/UserRoleEnum.ts'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import router from '@/router'
+import RealNameAuth from '@/components/user/RealNameAuth.vue'
 
 const activeTab = ref('userinfo')
 
 const loginUserStore = useLoginUserStore()
-
-// 计算信用评分（满分5分）
-const creditScore = computed(() => {
-  const score = form.user?.creditScore || 0
-  // 假设信用分满分为100，转换为5分制
-  return Math.min(5, Math.max(0, score / 2))
-})
 
 // 获取最新的用户信息
 const getUser = async () => {
@@ -182,6 +170,9 @@ const getUser = async () => {
     if (res?.code === 0 && res?.data) {
       form.user = res.data
     }
+    if (form.user.isDriver === 1) {
+      // 获取司机的信息
+    }
   } catch (error) {
     ElMessage.error(error.message || '获取用户信息失败')
   }
@@ -189,7 +180,7 @@ const getUser = async () => {
 
 // 基本信息表单
 const form = reactive({
-  user: {} as API.LoginUserVO,
+  user: {} as API.UserVO,
 })
 
 // 处理用户信息更新

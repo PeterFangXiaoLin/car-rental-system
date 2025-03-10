@@ -1,5 +1,6 @@
 package com.my.domain.vo;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -11,12 +12,12 @@ import java.util.Date;
 @Data
 public class LoginUserVO implements Serializable {
     /**
-     * 用户 id
+     * id
      */
     private Long id;
 
     /**
-     * 用户账号
+     * 账号
      */
     private String userAccount;
 
@@ -31,19 +32,49 @@ public class LoginUserVO implements Serializable {
     private String userAvatar;
 
     /**
+     * 性别: 0-男 1-女
+     */
+    private Integer gender;
+
+    /**
      * 用户简介
      */
     private String userProfile;
 
     /**
-     * 性别
-     */
-    private Integer gender;
-
-    /**
      * 真实姓名
      */
     private String realName;
+
+    /**
+     * 身份证号码
+     */
+    private String idCardNumber;
+
+    /**
+     * 身份证正面照片URL
+     */
+    private String idCardFrontImg;
+
+    /**
+     * 身份证背面照片URL
+     */
+    private String idCardBackImg;
+
+    /**
+     * 身份证认证状态：0-未实名，1-认证中，2-已认证，3-认证失败
+     */
+    private Integer idCardVerifyStatus;
+
+    /**
+     * 身份证认证时间
+     */
+    private Date idCardVerifyTime;
+
+    /**
+     * 身份证认证拒绝原因
+     */
+    private String idCardRejectReason;
 
     /**
      * 手机号码
@@ -56,14 +87,49 @@ public class LoginUserVO implements Serializable {
     private String email;
 
     /**
+     * 是否有驾照：0-无，1-有
+     */
+    private Integer hasDriverLicense;
+
+    /**
+     * 驾驶证号码
+     */
+    private String driverLicenseNo;
+
+    /**
+     * 驾照类型（A1/A2/B1/B2/C1等）
+     */
+    private String driverLicenseType;
+
+    /**
+     * 驾照发证日期
+     */
+    private Date driverLicenseIssueDate;
+
+    /**
+     * 驾照到期日期
+     */
+    private Date driverLicenseExpireDate;
+
+    /**
      * 驾龄
      */
     private Integer drivingYears;
 
     /**
-     * 信用评分
+     * 驾照正面照片URL
      */
-    private Integer creditScore;
+    private String driverLicenseFrontImg;
+
+    /**
+     * 驾照背面照片URL
+     */
+    private String driverLicenseBackImg;
+
+    /**
+     * 驾照认证状态：0-未认证，1-认证中，2-已认证，3-认证失败
+     */
+    private Integer driverLicenseVerifyStatus;
 
     /**
      * 会员等级: 0-普通用户，1-vip
@@ -71,9 +137,14 @@ public class LoginUserVO implements Serializable {
     private Integer memberLevel;
 
     /**
-     * 用户角色：0-用户，1-司机，2-管理员
+     * 用户角色：1-用户，2-司机，3-管理员
      */
     private Integer userRole;
+
+    /**
+     * 是否为司机：0-否，1-是
+     */
+    private Integer isDriver;
 
     /**
      * 创建时间

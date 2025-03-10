@@ -2,7 +2,7 @@
   <div class="user-info-head" @click="editCropper">
     <el-avatar
       :size="120"
-      :src="loginUserStore.loginUser?.userAvatar || defaultAvatar"
+      :src="loginUserStore.loginUser?.userAvatar"
       class="avatar-img"
     />
     <!-- 头像裁剪弹窗 -->
@@ -91,7 +91,6 @@ import { Upload, ZoomIn, ZoomOut, RefreshLeft, RefreshRight, Check } from '@elem
 import { updateAvatarUsingPost, getLoginUserUsingGet } from '@/api/userController'
 
 const loginUserStore = useLoginUserStore()
-const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 
 const dialogVisible = ref(false)
 const cropperVisible = ref(false)
@@ -110,7 +109,7 @@ interface PreviewData {
 const previews = ref<PreviewData>({})
 
 const cropperOptions = reactive({
-  img: loginUserStore.loginUser?.userAvatar || defaultAvatar,
+  img: loginUserStore.loginUser?.userAvatar,
   filename: 'avatar.png',
 })
 
@@ -127,7 +126,7 @@ const handleDialogOpened = () => {
 // 弹窗关闭回调
 const handleDialogClose = () => {
   cropperVisible.value = false
-  cropperOptions.img = loginUserStore.loginUser?.userAvatar || defaultAvatar
+  cropperOptions.img = loginUserStore.loginUser?.userAvatar
 }
 
 // 实时预览
@@ -186,18 +185,18 @@ const handleUpload = () => {
       const file = new File([blob], cropperOptions.filename, { type: 'image/png' })
 
       // 上传头像
-      const { data: res } = await updateAvatarUsingPost({}, file)
+      const res = await updateAvatarUsingPost({}, file)
 
       if (res && res.code === 0) {
         ElMessage.success('修改成功')
         dialogVisible.value = false
         // 重新获取用户信息
-        const { data: userRes } = await getLoginUserUsingGet()
-        if (userRes && userRes.code === 0 && userRes.data) {
+        const userRes = await getLoginUserUsingGet()
+        if (userRes.code === 0 && userRes.data) {
           loginUserStore.setLoginUser(userRes.data)
         }
       } else {
-        ElMessage.error('修改失败：' + (res && res.message ? res.message : '未知错误'))
+        ElMessage.error('修改失败：' + (res?.message ? res.message : '未知错误'))
       }
     } catch (error) {
       console.error('上传失败：', error)
@@ -208,7 +207,7 @@ const handleUpload = () => {
 
 // 组件挂载时初始化头像
 onMounted(() => {
-  cropperOptions.img = loginUserStore.loginUser?.userAvatar || defaultAvatar
+  cropperOptions.img = loginUserStore.loginUser?.userAvatar
 })
 </script>
 
