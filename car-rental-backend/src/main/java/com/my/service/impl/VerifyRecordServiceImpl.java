@@ -22,6 +22,11 @@ public class VerifyRecordServiceImpl extends ServiceImpl<VerifyRecordMapper, Ver
 
     @Override
     public boolean addVerifyRecord(VerifyRecord verifyRecord, HttpServletRequest request) {
+        // 1. 校验参数是否合法
+        if (verifyRecord == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 2. 插入数据
 
     }
 }

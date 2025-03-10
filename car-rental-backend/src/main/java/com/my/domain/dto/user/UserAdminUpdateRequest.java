@@ -34,7 +34,6 @@ public class UserAdminUpdateRequest implements Serializable {
      */
     private Integer gender;
 
-
     /**
      * 手机号码
      */

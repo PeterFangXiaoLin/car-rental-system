@@ -1,7 +1,7 @@
 package com.my.mapper;
 
-import com.my.domain.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.my.domain.entity.User;
 
 /**
 * @author Administrator

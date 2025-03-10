@@ -1,6 +1,5 @@
 package com.my.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -42,41 +41,6 @@ public class LoginUserVO implements Serializable {
     private String userProfile;
 
     /**
-     * 真实姓名
-     */
-    private String realName;
-
-    /**
-     * 身份证号码
-     */
-    private String idCardNumber;
-
-    /**
-     * 身份证正面照片URL
-     */
-    private String idCardFrontImg;
-
-    /**
-     * 身份证背面照片URL
-     */
-    private String idCardBackImg;
-
-    /**
-     * 身份证认证状态：0-未实名，1-认证中，2-已认证，3-认证失败
-     */
-    private Integer idCardVerifyStatus;
-
-    /**
-     * 身份证认证时间
-     */
-    private Date idCardVerifyTime;
-
-    /**
-     * 身份证认证拒绝原因
-     */
-    private String idCardRejectReason;
-
-    /**
      * 手机号码
      */
     private String phoneNumber;
@@ -87,9 +51,29 @@ public class LoginUserVO implements Serializable {
     private String email;
 
     /**
-     * 是否有驾照：0-无，1-有
+     * 真实姓名
      */
-    private Integer hasDriverLicense;
+    private String realName;
+
+    /**
+     * 身份证号码
+     */
+    private String idCardNumber;
+
+    /**
+     * 实名认证状态：0-未实名，1-认证中，2-已认证，3-认证失败
+     */
+    private Integer verifyStatus;
+
+    /**
+     * 实名认证时间
+     */
+    private Date verifyTime;
+
+    /**
+     * 认证拒绝原因
+     */
+    private String rejectReason;
 
     /**
      * 驾驶证号码
@@ -117,21 +101,6 @@ public class LoginUserVO implements Serializable {
     private Integer drivingYears;
 
     /**
-     * 驾照正面照片URL
-     */
-    private String driverLicenseFrontImg;
-
-    /**
-     * 驾照背面照片URL
-     */
-    private String driverLicenseBackImg;
-
-    /**
-     * 驾照认证状态：0-未认证，1-认证中，2-已认证，3-认证失败
-     */
-    private Integer driverLicenseVerifyStatus;
-
-    /**
      * 会员等级: 0-普通用户，1-vip
      */
     private Integer memberLevel;
@@ -147,8 +116,15 @@ public class LoginUserVO implements Serializable {
     private Integer isDriver;
 
     /**
+     * 状态：0-禁用，1-启用
+     */
+    private Integer status;
+
+    /**
      * 创建时间
      */
     private Date createTime;
+
+    private static final long serialVersionUID = 1L;
 
 }

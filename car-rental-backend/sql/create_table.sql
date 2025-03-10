@@ -43,7 +43,6 @@ CREATE TABLE IF NOT EXISTS `user`
     INDEX `idx_userRole` (`userRole`),
     INDEX `idx_isDriver` (`isDriver`),
     INDEX `idx_verifyStatus` (`verifyStatus`),
-    INDEX `idx_verifyStatus` (`verifyStatus`),
     INDEX `idx_status` (`status`),
     INDEX `idx_memberLevel` (`memberLevel`)
 ) COMMENT '用户' COLLATE = utf8mb4_unicode_ci;

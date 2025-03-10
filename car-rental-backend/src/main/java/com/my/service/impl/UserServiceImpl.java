@@ -18,6 +18,7 @@ import com.my.domain.dto.user.*;
 import com.my.domain.entity.User;
 import com.my.domain.enums.UserGenderEnum;
 import com.my.domain.enums.UserRoleEnum;
+import com.my.domain.enums.VerifyStatusEnum;
 import com.my.domain.vo.LoginUserVO;
 import com.my.domain.vo.UserVO;
 import com.my.exception.BusinessException;
@@ -28,6 +29,7 @@ import com.qcloud.cos.model.ObjectMetadata;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -100,17 +102,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             }
         }
 
-        if (StrUtil.isNotBlank(phoneNumber)) {
-            if (!PhoneUtil.isMobile(phoneNumber)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "手机号格式错误");
-            }
-        }
-
-        if (StrUtil.isNotBlank(email)) {
-            if (!Validator.isEmail(email)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误");
-            }
-        }
+//        if (StrUtil.isNotBlank(phoneNumber)) {
+//            if (!PhoneUtil.isMobile(phoneNumber)) {
+//                throw new BusinessException(ErrorCode.PARAMS_ERROR, "手机号格式错误");
+//            }
+//        }
+//
+//        if (StrUtil.isNotBlank(email)) {
+//            if (!Validator.isEmail(email)) {
+//                throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误");
+//            }
+//        }
     }
 
     @Override
@@ -534,7 +536,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Long id = userQueryRequest.getId();
         String userAccount = userQueryRequest.getUserAccount();
         String userName = userQueryRequest.getUserName();
-        String realName = userQueryRequest.getRealName();
         String phoneNumber = userQueryRequest.getPhoneNumber();
         String email = userQueryRequest.getEmail();
         Integer memberLevel = userQueryRequest.getMemberLevel();
@@ -545,7 +546,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq(id != null, "id", id);
         queryWrapper.like(StrUtil.isNotBlank(userAccount), "userAccount", userAccount);
         queryWrapper.like(StrUtil.isNotBlank(userName), "userName", userName);
-        queryWrapper.like(StrUtil.isNotBlank(realName), "realName", realName);
         queryWrapper.like(StrUtil.isNotBlank(phoneNumber), "phoneNumber", phoneNumber);
         queryWrapper.like(StrUtil.isNotBlank(email), "email", email);
         queryWrapper.eq(memberLevel != null, "memberLevel", memberLevel);
@@ -595,6 +595,47 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
         }
         return user;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean authUser(UserAuthRequest userAuthRequest, HttpServletRequest request) {
+        if (userAuthRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        LoginUserVO loginUser = this.getLoginUser(request);
+
+        String realName = userAuthRequest.getRealName();
+        String idCardNumber = userAuthRequest.getIdCardNumber();
+        String driverLicenseNo = userAuthRequest.getDriverLicenseNo();
+        String driverLicenseType = userAuthRequest.getDriverLicenseType();
+        Date driverLicenseIssueDate = userAuthRequest.getDriverLicenseIssueDate();
+        Date driverLicenseExpireDate = userAuthRequest.getDriverLicenseExpireDate();
+        Integer drivingYears = userAuthRequest.getDrivingYears();
+
+        if (StrUtil.hasBlank(realName, idCardNumber, driverLicenseNo, driverLicenseType)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        if (drivingYears < 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "驾驶年限不能小于0");
+        }
+        if (driverLicenseIssueDate == null || driverLicenseExpireDate == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        User user = BeanUtil.toBean(userAuthRequest, User.class);
+        user.setId(loginUser.getId());
+        user.setVerifyStatus(VerifyStatusEnum.VERIFYING.getCode());
+        user.setVerifyTime(new Date());
+
+        boolean result = this.updateById(user);
+        if (!result) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "认证失败");
+        }
+
+        // 管理员增加认证记录
+
+        return true;
     }
 }
 

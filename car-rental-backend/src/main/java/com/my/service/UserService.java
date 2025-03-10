@@ -181,4 +181,13 @@ public interface UserService extends IService<User> {
      * @return
      */
     User getUser(Long id);
+
+    /**
+     * 实名认证申请
+     *
+     * @param userAuthRequest
+     * @param request
+     * @return
+     */
+    boolean authUser(UserAuthRequest userAuthRequest, HttpServletRequest request);
 }

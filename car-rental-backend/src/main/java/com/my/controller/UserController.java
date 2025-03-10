@@ -107,4 +107,10 @@ public class UserController {
     public BaseResponse<User> getUser(@RequestParam("id") Long id) {
         return success(userService.getUser(id));
     }
+
+    @PostMapping("/auth")
+    @ApiOperation(value = "实名认证")
+    public BaseResponse<Boolean> authUser(@RequestBody UserAuthRequest userAuthRequest, HttpServletRequest request) {
+        return success(userService.authUser(userAuthRequest, request));
+    }
 }
