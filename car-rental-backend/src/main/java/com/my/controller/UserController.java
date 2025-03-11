@@ -113,4 +113,11 @@ public class UserController {
     public BaseResponse<Boolean> authUser(@RequestBody UserAuthRequest userAuthRequest, HttpServletRequest request) {
         return success(userService.authUser(userAuthRequest, request));
     }
+
+    @PostMapping("/review")
+    @ApiOperation(value = "审核实名认证信息")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> reviewUser(@RequestBody UserReviewRequest userReviewRequest, HttpServletRequest request) {
+        return success(userService.reviewUser(userReviewRequest, request));
+    }
 }

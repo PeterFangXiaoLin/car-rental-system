@@ -37,8 +37,4 @@ public class UserAuthRequest implements Serializable {
      */
     private Date driverLicenseExpireDate;
 
-    /**
-     * 驾龄
-     */
-    private Integer drivingYears;
 }

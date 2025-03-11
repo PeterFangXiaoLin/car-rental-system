@@ -1,6 +1,5 @@
 package com.my.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -18,7 +17,7 @@ public class VerifyRecord implements Serializable {
     /**
      * 记录ID
      */
-    @TableId(type = IdType.AUTO)
+    @TableId
     private Long id;
 
     /**
@@ -27,9 +26,9 @@ public class VerifyRecord implements Serializable {
     private Long userId;
 
     /**
-     * 认证类型：1-身份证，2-驾驶证
+     * 账号
      */
-    private Integer verifyType;
+    private String userAccount;
 
     /**
      * 认证状态：0-未认证，1-认证中，2-已认证，3-认证失败
@@ -37,7 +36,42 @@ public class VerifyRecord implements Serializable {
     private Integer verifyStatus;
 
     /**
-     * 认证结果：1-通过，2-拒绝
+     * 真实姓名
+     */
+    private String realName;
+
+    /**
+     * 身份证号码
+     */
+    private String idCardNumber;
+
+    /**
+     * 驾驶证号码
+     */
+    private String driverLicenseNo;
+
+    /**
+     * 驾照类型（A1/A2/B1/B2/C1等）
+     */
+    private String driverLicenseType;
+
+    /**
+     * 驾照发证日期
+     */
+    private Date driverLicenseIssueDate;
+
+    /**
+     * 驾照到期日期
+     */
+    private Date driverLicenseExpireDate;
+
+    /**
+     * 驾龄
+     */
+    private Integer drivingYears;
+
+    /**
+     * 认证结果：0-待审核，1-通过，2-拒绝
      */
     private Integer verifyResult;
 
@@ -57,9 +91,9 @@ public class VerifyRecord implements Serializable {
     private Long reviewId;
 
     /**
-     * 备注
+     * 审核时间
      */
-    private String remark;
+    private Date reviewTime;
 
     /**
      * 创建时间

@@ -12,8 +12,8 @@ export const useLoginUserStore = defineStore('loginUser', () => {
    */
   async function fetchLoginUser() {
     const res = await getLoginUserUsingGet()
-    if (res?.code === 0 && res.data) {
-      setLoginUser(res.data)
+    if (res.data?.code === 0 && res.data.data) {
+      setLoginUser(res.data.data)
     }
   }
 

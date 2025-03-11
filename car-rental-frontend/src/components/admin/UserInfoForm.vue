@@ -92,8 +92,8 @@ const open = async (type: number, userId?: string) => {
   visible.value = true
   if (type === 0) return
   const res = await getUserByIdUsingGet({ id: userId })
-  if (res.code === 0 && res.data) {
-    formData.value = res.data
+  if (res.data?.code === 0 && res.data.data) {
+    formData.value = res.data.data
   }
   // 编辑
   if (type === 1) {

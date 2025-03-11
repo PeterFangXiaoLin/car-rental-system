@@ -155,7 +155,7 @@ const handleCommand = async (command: string) => {
     case 'logout':
       try {
         const res = await userLogoutUsingPost()
-        if (res?.code === 0) {
+        if (res.data?.code === 0) {
           ElMessage.success('退出登录成功')
           // 清除用户信息
           loginUserStore.setLoginUser({ userName: '未登录' })

@@ -5,44 +5,43 @@
 <mapper namespace="com.my.mapper.UserMapper">
 
     <resultMap id="BaseResultMap" type="com.my.domain.entity.User">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="userAccount" column="userAccount" jdbcType="VARCHAR"/>
-            <result property="userPassword" column="userPassword" jdbcType="VARCHAR"/>
-            <result property="userName" column="userName" jdbcType="VARCHAR"/>
-            <result property="userAvatar" column="userAvatar" jdbcType="VARCHAR"/>
-            <result property="gender" column="gender" jdbcType="TINYINT"/>
-            <result property="userProfile" column="userProfile" jdbcType="VARCHAR"/>
-            <result property="phoneNumber" column="phoneNumber" jdbcType="VARCHAR"/>
-            <result property="email" column="email" jdbcType="VARCHAR"/>
-            <result property="realName" column="realName" jdbcType="VARCHAR"/>
-            <result property="idCardNumber" column="idCardNumber" jdbcType="VARCHAR"/>
-            <result property="verifyStatus" column="verifyStatus" jdbcType="TINYINT"/>
-            <result property="verifyTime" column="verifyTime" jdbcType="TIMESTAMP"/>
-            <result property="rejectReason" column="rejectReason" jdbcType="VARCHAR"/>
-            <result property="driverLicenseNo" column="driverLicenseNo" jdbcType="VARCHAR"/>
-            <result property="driverLicenseType" column="driverLicenseType" jdbcType="VARCHAR"/>
-            <result property="driverLicenseIssueDate" column="driverLicenseIssueDate" jdbcType="DATE"/>
-            <result property="driverLicenseExpireDate" column="driverLicenseExpireDate" jdbcType="DATE"/>
-            <result property="drivingYears" column="drivingYears" jdbcType="INTEGER"/>
-            <result property="memberLevel" column="memberLevel" jdbcType="TINYINT"/>
-            <result property="userRole" column="userRole" jdbcType="TINYINT"/>
-            <result property="isDriver" column="isDriver" jdbcType="TINYINT"/>
-            <result property="status" column="status" jdbcType="TINYINT"/>
-            <result property="editTime" column="editTime" jdbcType="TIMESTAMP"/>
-            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
-            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+        <id property="id" column="id" />
+        <result property="userAccount" column="userAccount" />
+        <result property="userPassword" column="userPassword" />
+        <result property="userName" column="userName" />
+        <result property="userAvatar" column="userAvatar" />
+        <result property="gender" column="gender" />
+        <result property="userProfile" column="userProfile" />
+        <result property="phoneNumber" column="phoneNumber" />
+        <result property="email" column="email" />
+        <result property="realName" column="realName" />
+        <result property="idCardNumber" column="idCardNumber" />
+        <result property="verifyStatus" column="verifyStatus" />
+        <result property="driverLicenseNo" column="driverLicenseNo" />
+        <result property="driverLicenseType" column="driverLicenseType" />
+        <result property="driverLicenseIssueDate" column="driverLicenseIssueDate" />
+        <result property="driverLicenseExpireDate" column="driverLicenseExpireDate" />
+        <result property="verifyResult" column="verifyResult" />
+        <result property="rejectReason" column="rejectReason" />
+        <result property="verifyTime" column="verifyTime" />
+        <result property="reviewId" column="reviewId" />
+        <result property="reviewTime" column="reviewTime" />
+        <result property="memberLevel" column="memberLevel" />
+        <result property="userRole" column="userRole" />
+        <result property="isDriver" column="isDriver" />
+        <result property="status" column="status" />
+        <result property="editTime" column="editTime" />
+        <result property="createTime" column="createTime" />
+        <result property="updateTime" column="updateTime" />
+        <result property="isDelete" column="isDelete" />
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,userAccount,userPassword,
-        userName,userAvatar,gender,
-        userProfile,phoneNumber,email,
-        realName,idCardNumber,verifyStatus,
-        verifyTime,rejectReason,driverLicenseNo,
-        driverLicenseType,driverLicenseIssueDate,driverLicenseExpireDate,
-        drivingYears,memberLevel,userRole,
-        isDriver,`status`,editTime,
+        id,userAccount,userPassword,userName,userAvatar,gender,
+        userProfile,phoneNumber,email,realName,idCardNumber,
+        verifyStatus,driverLicenseNo,driverLicenseType,driverLicenseIssueDate,driverLicenseExpireDate,
+        verifyResult,rejectReason,verifyTime,reviewId,reviewTime,
+        memberLevel,userRole,isDriver,status,editTime,
         createTime,updateTime,isDelete
     </sql>
 </mapper>

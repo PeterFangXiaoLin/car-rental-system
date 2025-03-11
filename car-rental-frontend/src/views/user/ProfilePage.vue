@@ -167,8 +167,8 @@ const getUser = async () => {
     const res = await getUserByIdUsingGet({
       id: loginUser.id,
     })
-    if (res?.code === 0 && res?.data) {
-      form.user = res.data
+    if (res.data?.code === 0 && res.data?.data) {
+      form.user = res.data.data
     }
     if (form.user.isDriver === 1) {
       // 获取司机的信息

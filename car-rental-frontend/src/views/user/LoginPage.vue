@@ -99,13 +99,13 @@ const handleLogin = async () => {
       try {
         const res = await userLoginUsingPost(loginForm.value)
 
-        if (res?.code === 0 && res?.data) {
+        if (res.data?.code === 0 && res.data?.data) {
           await loginUserStore.fetchLoginUser()
           ElMessage.success('登录成功')
           const redirect = route.query.redirect as string
           router.replace(redirect || '/')
         } else {
-          ElMessage.error(res?.message || '登录失败')
+          ElMessage.error(res.data?.message || '登录失败')
         }
       } catch (error) {
         console.error('登录错误:', error)

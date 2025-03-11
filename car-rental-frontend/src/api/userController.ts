@@ -59,6 +59,21 @@ export async function adminUpdateUserUsingPost(
   })
 }
 
+/** 实名认证 POST /api/user/auth */
+export async function authUserUsingPost(
+  body: API.UserAuthRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/user/auth', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** 根据id获取用户（管理员） GET /api/user/get */
 export async function getUserUsingGet(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
@@ -126,6 +141,21 @@ export async function userRegisterUsingPost(
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResponseLong_>('/api/user/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** 审核实名认证信息 POST /api/user/review */
+export async function reviewUserUsingPost(
+  body: API.UserReviewRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/user/review', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

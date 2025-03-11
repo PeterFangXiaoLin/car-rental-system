@@ -5,21 +5,30 @@
 <mapper namespace="com.my.mapper.VerifyRecordMapper">
 
     <resultMap id="BaseResultMap" type="com.my.domain.entity.VerifyRecord">
-            <id property="id" column="id" />
-            <result property="userId" column="userId" />
-            <result property="verifyType" column="verifyType" />
-            <result property="verifyStatus" column="verifyStatus" />
-            <result property="verifyResult" column="verifyResult" />
-            <result property="rejectReason" column="rejectReason" />
-            <result property="verifyTime" column="verifyTime" />
-            <result property="reviewId" column="reviewId" />
-            <result property="remark" column="remark" />
-            <result property="createTime" column="createTime" />
-            <result property="updateTime" column="updateTime" />
+        <id property="id" column="id" />
+        <result property="userId" column="userId" />
+        <result property="userAccount" column="userAccount" />
+        <result property="verifyStatus" column="verifyStatus" />
+        <result property="realName" column="realName" />
+        <result property="idCardNumber" column="idCardNumber" />
+        <result property="driverLicenseNo" column="driverLicenseNo" />
+        <result property="driverLicenseType" column="driverLicenseType" />
+        <result property="driverLicenseIssueDate" column="driverLicenseIssueDate" />
+        <result property="driverLicenseExpireDate" column="driverLicenseExpireDate" />
+        <result property="drivingYears" column="drivingYears" />
+        <result property="verifyResult" column="verifyResult" />
+        <result property="rejectReason" column="rejectReason" />
+        <result property="verifyTime" column="verifyTime" />
+        <result property="reviewId" column="reviewId" />
+        <result property="reviewTime" column="reviewTime" />
+        <result property="createTime" column="createTime" />
+        <result property="updateTime" column="updateTime" />
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,userId,verifyType,verifyStatus,verifyResult,rejectReason,
-        verifyTime,reviewId,remark,createTime,updateTime
+        id,userId,userAccount,verifyStatus,realName,idCardNumber,
+        driverLicenseNo,driverLicenseType,driverLicenseIssueDate,driverLicenseExpireDate,drivingYears,
+        verifyResult,rejectReason,verifyTime,reviewId,reviewTime,
+        createTime,updateTime
     </sql>
 </mapper>

@@ -31,16 +31,16 @@ public enum VerifyStatusEnum {
     /**
      * 状态码
      */
-    private final Integer code;
+    private final int value;
 
     /**
      * 状态描述
      */
-    private final String description;
+    private final String name;
 
-    VerifyStatusEnum(Integer code, String description) {
-        this.code = code;
-        this.description = description;
+    VerifyStatusEnum(int value, String name) {
+        this.value = value;
+        this.name = name;
     }
 
     /**
@@ -54,7 +54,7 @@ public enum VerifyStatusEnum {
             return null;
         }
         for (VerifyStatusEnum status : VerifyStatusEnum.values()) {
-            if (status.getCode().equals(code)) {
+            if (status.getValue() == code) {
                 return status;
             }
         }

@@ -83,7 +83,7 @@ const handleUpdatePwd = async () => {
           checkPassword: pwdForm.newPassword,
         })
 
-        if (res?.code === 0 && res?.data) {
+        if (res.data?.code === 0 && res.data?.data) {
           ElMessage.success('密码修改成功')
           resetPwdForm()
           // 自动退出登录
@@ -92,7 +92,7 @@ const handleUpdatePwd = async () => {
           })
           await router.push('/auth/login')
         } else {
-          ElMessage.error(res?.message || '密码修改失败')
+          ElMessage.error(res.data?.message || '密码修改失败')
         }
       } catch (error) {
         ElMessage.error('密码修改失败' + error)

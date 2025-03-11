@@ -68,33 +68,28 @@ declare namespace API {
 
   type LoginUserVO = {
     createTime?: string
-    driverLicenseBackImg?: string
     driverLicenseExpireDate?: string
-    driverLicenseFrontImg?: string
     driverLicenseIssueDate?: string
     driverLicenseNo?: string
     driverLicenseType?: string
-    driverLicenseVerifyStatus?: number
     drivingYears?: number
     email?: string
     gender?: number
-    hasDriverLicense?: number
     id?: number
-    idCardBackImg?: string
-    idCardFrontImg?: string
     idCardNumber?: string
-    idCardRejectReason?: string
-    idCardVerifyStatus?: number
-    idCardVerifyTime?: string
     isDriver?: number
     memberLevel?: number
     phoneNumber?: string
     realName?: string
+    rejectReason?: string
+    status?: number
     userAccount?: string
     userAvatar?: string
     userName?: string
     userProfile?: string
     userRole?: number
+    verifyStatus?: number
+    verifyTime?: string
   }
 
   type OrderItem = {
@@ -122,30 +117,23 @@ declare namespace API {
 
   type User = {
     createTime?: string
-    driverLicenseBackImg?: string
     driverLicenseExpireDate?: string
-    driverLicenseFrontImg?: string
     driverLicenseIssueDate?: string
     driverLicenseNo?: string
     driverLicenseType?: string
-    driverLicenseVerifyStatus?: number
-    drivingYears?: number
     editTime?: string
     email?: string
     gender?: number
-    hasDriverLicense?: number
     id?: number
-    idCardBackImg?: string
-    idCardFrontImg?: string
     idCardNumber?: string
-    idCardRejectReason?: string
-    idCardVerifyStatus?: number
-    idCardVerifyTime?: string
     isDelete?: number
     isDriver?: number
     memberLevel?: number
     phoneNumber?: string
     realName?: string
+    rejectReason?: string
+    reviewId?: number
+    reviewTime?: string
     status?: number
     updateTime?: string
     userAccount?: string
@@ -154,6 +142,9 @@ declare namespace API {
     userPassword?: string
     userProfile?: string
     userRole?: number
+    verifyResult?: number
+    verifyStatus?: number
+    verifyTime?: string
   }
 
   type UserAddRequest = {
@@ -181,6 +172,15 @@ declare namespace API {
     userRole?: number
   }
 
+  type UserAuthRequest = {
+    driverLicenseExpireDate?: string
+    driverLicenseIssueDate?: string
+    driverLicenseNo?: string
+    driverLicenseType?: string
+    idCardNumber?: string
+    realName?: string
+  }
+
   type UserLoginRequest = {
     userAccount?: string
     userPassword?: string
@@ -194,7 +194,6 @@ declare namespace API {
     memberLevel?: number
     pageSize?: number
     phoneNumber?: string
-    realName?: string
     sortField?: string
     sortOrder?: string
     userAccount?: string
@@ -208,6 +207,12 @@ declare namespace API {
     checkPassword?: string
     userAccount?: string
     userPassword?: string
+  }
+
+  type UserReviewRequest = {
+    id?: number
+    rejectReason?: string
+    reviewStatus?: number
   }
 
   type UserUpdatePasswordRequest = {
@@ -226,34 +231,28 @@ declare namespace API {
 
   type UserVO = {
     createTime?: string
-    driverLicenseBackImg?: string
     driverLicenseExpireDate?: string
-    driverLicenseFrontImg?: string
     driverLicenseIssueDate?: string
     driverLicenseNo?: string
     driverLicenseType?: string
-    driverLicenseVerifyStatus?: number
     drivingYears?: number
     editTime?: string
     email?: string
     gender?: number
-    hasDriverLicense?: number
     id?: number
-    idCardBackImg?: string
-    idCardFrontImg?: string
     idCardNumber?: string
-    idCardRejectReason?: string
-    idCardVerifyStatus?: number
-    idCardVerifyTime?: string
     isDriver?: number
     memberLevel?: number
     phoneNumber?: string
     realName?: string
+    rejectReason?: string
     status?: number
     userAccount?: string
     userAvatar?: string
     userName?: string
     userProfile?: string
     userRole?: number
+    verifyStatus?: number
+    verifyTime?: string
   }
 }

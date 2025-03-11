@@ -187,16 +187,16 @@ const handleUpload = () => {
       // 上传头像
       const res = await updateAvatarUsingPost({}, file)
 
-      if (res && res.code === 0) {
+      if (res.data?.code === 0) {
         ElMessage.success('修改成功')
         dialogVisible.value = false
         // 重新获取用户信息
         const userRes = await getLoginUserUsingGet()
-        if (userRes.code === 0 && userRes.data) {
-          loginUserStore.setLoginUser(userRes.data)
+        if (userRes.data?.code === 0 && userRes.data.data) {
+          loginUserStore.setLoginUser(userRes.data.data)
         }
       } else {
-        ElMessage.error('修改失败：' + (res?.message ? res.message : '未知错误'))
+        ElMessage.error('修改失败：' + (res.data?.message ? res.data.message : '未知错误'))
       }
     } catch (error) {
       console.error('上传失败：', error)

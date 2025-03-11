@@ -190,4 +190,13 @@ public interface UserService extends IService<User> {
      * @return
      */
     boolean authUser(UserAuthRequest userAuthRequest, HttpServletRequest request);
+
+    /**
+     * 管理员审核用户实名申请
+     *
+     * @param userReviewRequest
+     * @param request
+     * @return
+     */
+    boolean reviewUser(UserReviewRequest userReviewRequest, HttpServletRequest request);
 }

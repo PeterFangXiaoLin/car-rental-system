@@ -1,9 +1,6 @@
 package com.my.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -78,16 +75,6 @@ public class User implements Serializable {
     private Integer verifyStatus;
 
     /**
-     * 实名认证时间
-     */
-    private Date verifyTime;
-
-    /**
-     * 认证拒绝原因
-     */
-    private String rejectReason;
-
-    /**
      * 驾驶证号码
      */
     private String driverLicenseNo;
@@ -108,9 +95,29 @@ public class User implements Serializable {
     private Date driverLicenseExpireDate;
 
     /**
-     * 驾龄
+     * 认证结果：0-待审核，1-通过，2-拒绝
      */
-    private Integer drivingYears;
+    private Integer verifyResult;
+
+    /**
+     * 拒绝原因
+     */
+    private String rejectReason;
+
+    /**
+     * 认证时间
+     */
+    private Date verifyTime;
+
+    /**
+     * 审核人ID
+     */
+    private Long reviewId;
+
+    /**
+     * 审核时间
+     */
+    private Date reviewTime;
 
     /**
      * 会员等级: 0-普通用户，1-vip

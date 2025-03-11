@@ -33,7 +33,7 @@ myAxios.interceptors.response.use(
         window.location.href = `user/login?redirect=${window.location.href}`
       }
     }
-    return data
+    return response
   },
   function (error) {
     // 超出 2xx 范围的状态码都会触发该函数。

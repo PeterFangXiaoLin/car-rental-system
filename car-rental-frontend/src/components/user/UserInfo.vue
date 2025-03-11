@@ -94,16 +94,16 @@ const handleSubmit = async () => {
     if (valid) {
       try {
         const res = await updateUserUsingPost(form.value)
-        if (res?.code === 0 && res?.data) {
+        if (res.data?.code === 0 && res.data?.data) {
           ElMessage.success('修改成功')
           // 更新用户信息
-          loginUserStore.setLoginUser(res.data)
+          loginUserStore.setLoginUser(res.data.data)
 
           // 通知父组件更新用户信息
-          emit('update:user', res.data)
-          emit('update', res.data)
+          emit('update:user', res.data.data)
+          emit('update', res.data.data)
         } else {
-          ElMessage.error(res?.message || '修改失败')
+          ElMessage.error(res.data?.message || '修改失败')
         }
       } catch (error) {
         console.error('修改用户信息失败:', error)

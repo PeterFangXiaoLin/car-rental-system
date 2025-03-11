@@ -148,9 +148,9 @@ const fetchData = async () => {
   loading.value = true
   try {
     const res = await pageUserVoUsingPost(searchParams)
-    if (res?.code === 0 && res.data) {
-      dataList.value = res.data.records ?? []
-      total.value = Number(res.data.total) || 0
+    if (res.data?.code === 0 && res.data.data) {
+      dataList.value = res.data.data.records ?? []
+      total.value = Number(res.data.data.total) || 0
     } else {
       ElMessage.error(res.data.message || '获取数据失败')
     }

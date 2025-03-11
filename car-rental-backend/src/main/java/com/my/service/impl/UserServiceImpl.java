@@ -16,6 +16,7 @@ import com.my.common.ErrorCode;
 import com.my.constant.CommonConstant;
 import com.my.domain.dto.user.*;
 import com.my.domain.entity.User;
+import com.my.domain.enums.VerifyResultEnum;
 import com.my.domain.enums.UserGenderEnum;
 import com.my.domain.enums.UserRoleEnum;
 import com.my.domain.enums.VerifyStatusEnum;
@@ -29,7 +30,6 @@ import com.qcloud.cos.model.ObjectMetadata;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -598,7 +598,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public boolean authUser(UserAuthRequest userAuthRequest, HttpServletRequest request) {
         if (userAuthRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -611,30 +610,72 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String driverLicenseType = userAuthRequest.getDriverLicenseType();
         Date driverLicenseIssueDate = userAuthRequest.getDriverLicenseIssueDate();
         Date driverLicenseExpireDate = userAuthRequest.getDriverLicenseExpireDate();
-        Integer drivingYears = userAuthRequest.getDrivingYears();
 
         if (StrUtil.hasBlank(realName, idCardNumber, driverLicenseNo, driverLicenseType)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        if (drivingYears < 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "驾驶年限不能小于0");
-        }
         if (driverLicenseIssueDate == null || driverLicenseExpireDate == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        if (driverLicenseIssueDate.after(driverLicenseExpireDate)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "驾驶证有效期不能小于驾驶证发证日期");
         }
 
         User user = BeanUtil.toBean(userAuthRequest, User.class);
         user.setId(loginUser.getId());
-        user.setVerifyStatus(VerifyStatusEnum.VERIFYING.getCode());
+        user.setVerifyStatus(VerifyStatusEnum.VERIFYING.getValue());
         user.setVerifyTime(new Date());
+        user.setVerifyResult(VerifyResultEnum.REVIEWING.getValue());
 
         boolean result = this.updateById(user);
         if (!result) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "认证失败");
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "系统异常");
         }
 
-        // 管理员增加认证记录
+        return true;
+    }
 
+    @Override
+    public boolean reviewUser(UserReviewRequest userReviewRequest, HttpServletRequest request) {
+        if (userReviewRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Long userId = userReviewRequest.getId();
+        User user = this.getById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        }
+        Integer reviewStatus = userReviewRequest.getReviewStatus();
+        VerifyResultEnum verifyResultEnum = VerifyResultEnum.getEnumByValue(reviewStatus);
+        if (verifyResultEnum == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        // 校验状态
+        Integer verifyResult = user.getVerifyResult();
+        if (verifyResult == verifyResultEnum.getValue()) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请勿重复审核");
+        }
+        // 修改状态
+        User updateUser = new User();
+        updateUser.setId(userId);
+        // 通过
+        if (verifyResultEnum == VerifyResultEnum.PASS) {
+            updateUser.setVerifyStatus(VerifyStatusEnum.VERIFIED.getValue());
+            updateUser.setVerifyResult(VerifyResultEnum.PASS.getValue());
+        } else if (verifyResultEnum == VerifyResultEnum.REJECT) {
+            // 拒绝
+            updateUser.setVerifyStatus(VerifyStatusEnum.VERIFY_FAILED.getValue());
+            updateUser.setVerifyResult(VerifyResultEnum.REJECT.getValue());
+            updateUser.setRejectReason(userReviewRequest.getRejectReason());
+        }
+        updateUser.setReviewId(this.getLoginUser(request).getId());
+        updateUser.setReviewTime(new Date());
+
+        boolean result = this.updateById(updateUser);
+        if (!result) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "审核失败");
+        }
         return true;
     }
 }

@@ -95,7 +95,7 @@ const router = useRouter()
 const checkLoginStatus = async () => {
   try {
     const res = await getLoginUserUsingGet()
-    if (res?.code === 0 && res?.data) {
+    if (res.data?.code === 0 && res.data?.data) {
       // 用户已登录，重定向到首页
       router.replace('/')
     }
@@ -162,9 +162,9 @@ const registerFormRef = ref<FormInstance>()
 const getCaptcha = async () => {
   try {
     const res = await getCaptchaUsingGet()
-    if (res?.code === 0 && res?.data) {
-      captchaImg.value = res.data.image
-      registerForm.value.captchaKey = res.data.captchaKey
+    if (res.data?.code === 0 && res.data?.data) {
+      captchaImg.value = res.data.data.image
+      registerForm.value.captchaKey = res.data.data.captchaKey
     }
   } catch (error) {
     console.error('获取验证码失败:', error)
@@ -178,9 +178,9 @@ const refreshCaptcha = async () => {
       return
     }
     const res = await refreshCaptchaUsingGet({ captchaKey: registerForm.value.captchaKey })
-    if (res?.code === 0 && res?.data) {
-      captchaImg.value = res.data.image
-      registerForm.value.captchaKey = res.data.captchaKey
+    if (res.data?.code === 0 && res.data?.data) {
+      captchaImg.value = res.data.data.image
+      registerForm.value.captchaKey = res.data.data.captchaKey
     }
   } catch (error) {
     console.error('刷新验证码失败:', error)
@@ -198,12 +198,13 @@ const handleRegister = async () => {
       try {
         const res = await userRegisterUsingPost(registerForm.value)
 
-        if (res?.code === 0 && res?.data) {
+        if (res.data?.code === 0 && res.data.data) {
           ElMessage.success('注册成功')
           router.push('/auth/login')
+        } else {
+          ElMessage.error(res.data.message || '注册失败，请稍后重试')
         }
       } catch (error) {
-        console.error('注册错误:', error)
         if (error instanceof Error) {
           ElMessage.error(error.message || '注册失败，请稍后重试')
         } else {
