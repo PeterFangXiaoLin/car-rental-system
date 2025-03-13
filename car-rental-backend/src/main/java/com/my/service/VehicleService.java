@@ -1,7 +1,10 @@
 package com.my.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.my.common.DeleteRequest;
 import com.my.domain.dto.vehicle.VehicleAddRequest;
+import com.my.domain.dto.vehicle.VehicleQueryRequest;
 import com.my.domain.dto.vehicle.VehicleUpdateRequest;
 import com.my.domain.entity.Vehicle;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -53,4 +56,20 @@ public interface VehicleService extends IService<Vehicle> {
      * @return
      */
     VehicleVO getVehicleVO(Vehicle vehicle);
+
+    /**
+     * 分页获取车辆列表
+     *
+     * @param vehicleQueryRequest
+     * @return
+     */
+    Page<VehicleVO> listVehicleByPage(VehicleQueryRequest vehicleQueryRequest);
+
+    /**
+     * 获取查询条件
+     *
+     * @param vehicleQueryRequest
+     * @return
+     */
+    QueryWrapper<Vehicle> getQueryWrapper(VehicleQueryRequest vehicleQueryRequest);
 }

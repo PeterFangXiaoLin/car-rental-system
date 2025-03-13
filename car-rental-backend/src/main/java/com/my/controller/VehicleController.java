@@ -1,10 +1,12 @@
 package com.my.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.my.annotation.AuthCheck;
 import com.my.common.BaseResponse;
 import com.my.common.DeleteRequest;
 import com.my.constant.UserConstant;
 import com.my.domain.dto.vehicle.VehicleAddRequest;
+import com.my.domain.dto.vehicle.VehicleQueryRequest;
 import com.my.domain.dto.vehicle.VehicleUpdateRequest;
 import com.my.domain.vo.VehicleVO;
 import com.my.service.VehicleService;
@@ -47,5 +49,11 @@ public class VehicleController {
     @GetMapping("/get")
     public BaseResponse<VehicleVO> getVehicleById(@RequestParam("id") Long id) {
         return success(vehicleService.getVehicleById(id));
+    }
+
+    @ApiOperation(value = "分页获取车辆列表")
+    @PostMapping("/page")
+    public BaseResponse<Page<VehicleVO>> listVehicleByPage(@RequestBody VehicleQueryRequest vehicleQueryRequest) {
+        return success(vehicleService.listVehicleByPage(vehicleQueryRequest));
     }
 }

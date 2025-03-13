@@ -1,11 +1,16 @@
 package com.my.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.common.DeleteRequest;
 import com.my.common.ErrorCode;
+import com.my.constant.CommonConstant;
 import com.my.domain.dto.vehicle.VehicleAddRequest;
+import com.my.domain.dto.vehicle.VehicleQueryRequest;
 import com.my.domain.dto.vehicle.VehicleUpdateRequest;
 import com.my.domain.entity.Vehicle;
 import com.my.domain.entity.VehicleBrand;
@@ -26,6 +31,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
 * @author Administrator
@@ -194,6 +200,68 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         vehicleVO.setModelName(Optional.of(vehicleModel.getModelName()).orElse(StrUtil.EMPTY));
         vehicleVO.setVehicleTypeName(Optional.of(vehicleTypeDict.getTypeName()).orElse(StrUtil.EMPTY));
         return vehicleVO;
+    }
+
+    @Override
+    public Page<VehicleVO> listVehicleByPage(VehicleQueryRequest vehicleQueryRequest) {
+        if (vehicleQueryRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        long current = vehicleQueryRequest.getCurrent();
+        long pageSize = vehicleQueryRequest.getPageSize();
+        if (current <= 0 || pageSize <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "分页参数不合法");
+        }
+
+        QueryWrapper<Vehicle> queryWrapper = this.getQueryWrapper(vehicleQueryRequest);
+        Page<Vehicle> vehiclePage = vehicleMapper.selectPage(new Page<>(current, pageSize), queryWrapper);
+        Page<VehicleVO> vehicleVOPage = new Page<>(current, pageSize, vehiclePage.getTotal());
+        if (CollUtil.isNotEmpty(vehiclePage.getRecords())) {
+            vehicleVOPage.setRecords(vehiclePage.getRecords().stream()
+                    .map(this::getVehicleVO)
+                    .collect(Collectors.toList()));
+        }
+        return vehicleVOPage;
+    }
+
+    @Override
+    public QueryWrapper<Vehicle> getQueryWrapper(VehicleQueryRequest vehicleQueryRequest) {
+        QueryWrapper<Vehicle> queryWrapper = new QueryWrapper<>();
+        if (vehicleQueryRequest == null) {
+            return queryWrapper;
+        }
+
+        Long id = vehicleQueryRequest.getId();
+        String vehicleNo = vehicleQueryRequest.getVehicleNo();
+        Long brandId = vehicleQueryRequest.getBrandId();
+        Long modelId = vehicleQueryRequest.getModelId();
+        Long vehicleTypeId = vehicleQueryRequest.getVehicleTypeId();
+        String color = vehicleQueryRequest.getColor();
+        BigDecimal minDailyPrice = vehicleQueryRequest.getMinDailyPrice();
+        BigDecimal maxDailyPrice = vehicleQueryRequest.getMaxDailyPrice();
+        BigDecimal minDeposit = vehicleQueryRequest.getMinDeposit();
+        BigDecimal maxDeposit = vehicleQueryRequest.getMaxDeposit();
+        Integer status = vehicleQueryRequest.getStatus();
+        String description = vehicleQueryRequest.getDescription();
+        String sortField = vehicleQueryRequest.getSortField();
+        String sortOrder = vehicleQueryRequest.getSortOrder();
+
+        queryWrapper.eq(id != null, "id", id);
+        queryWrapper.like(StrUtil.isNotBlank(vehicleNo), "vehicleNo", vehicleNo);
+        queryWrapper.eq(brandId != null, "brandId", brandId);
+        queryWrapper.eq(modelId != null, "modelId", modelId);
+        queryWrapper.eq(vehicleTypeId != null, "vehicleTypeId", vehicleTypeId);
+        queryWrapper.like(StrUtil.isNotBlank(color), "color", color);
+        queryWrapper.ge(minDailyPrice!= null, "dailyPrice", minDailyPrice);
+        queryWrapper.le(maxDailyPrice!= null, "dailyPrice", maxDailyPrice);
+        queryWrapper.ge(minDeposit!= null, "deposit", minDeposit);
+        queryWrapper.le(maxDeposit!= null, "deposit", maxDeposit);
+        queryWrapper.eq(status!= null, "status", status);
+        queryWrapper.like(StrUtil.isNotBlank(description), "description", description);
+        queryWrapper.orderBy(StrUtil.isNotBlank(sortField), sortOrder.equalsIgnoreCase(CommonConstant.SORT_ORDER_ASC), sortField);
+
+        return queryWrapper;
     }
 }
 
