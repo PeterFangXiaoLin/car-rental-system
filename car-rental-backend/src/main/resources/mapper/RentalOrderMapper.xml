@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.mapper.RentalOrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.my.domain.entity.RentalOrder">
+            <id property="id" column="id" />
+            <result property="orderNo" column="orderNo" />
+            <result property="userId" column="userId" />
+            <result property="vehicleId" column="vehicleId" />
+            <result property="startTime" column="startTime" />
+            <result property="endTime" column="endTime" />
+            <result property="actualStartTime" column="actualStartTime" />
+            <result property="actualReturnTime" column="actualReturnTime" />
+            <result property="dailyPrice" column="dailyPrice" />
+            <result property="totalDays" column="totalDays" />
+            <result property="totalAmount" column="totalAmount" />
+            <result property="deposit" column="deposit" />
+            <result property="damageAmount" column="damageAmount" />
+            <result property="extraFee" column="extraFee" />
+            <result property="extraFeeDesc" column="extraFeeDesc" />
+            <result property="finalAmount" column="finalAmount" />
+            <result property="needDriver" column="needDriver" />
+            <result property="driverId" column="driverId" />
+            <result property="driverPrice" column="driverPrice" />
+            <result property="driverTotalAmount" column="driverTotalAmount" />
+            <result property="status" column="status" />
+            <result property="paymentStatus" column="paymentStatus" />
+            <result property="paymentTime" column="paymentTime" />
+            <result property="paymentMethod" column="paymentMethod" />
+            <result property="transactionId" column="transactionId" />
+            <result property="refundAmount" column="refundAmount" />
+            <result property="refundTime" column="refundTime" />
+            <result property="refundTransactionId" column="refundTransactionId" />
+            <result property="pickupLocation" column="pickupLocation" />
+            <result property="returnLocation" column="returnLocation" />
+            <result property="pickupOperatorId" column="pickupOperatorId" />
+            <result property="returnOperatorId" column="returnOperatorId" />
+            <result property="cancelReason" column="cancelReason" />
+            <result property="cancelTime" column="cancelTime" />
+            <result property="expireTime" column="expireTime" />
+            <result property="userRating" column="userRating" />
+            <result property="userComment" column="userComment" />
+            <result property="commentTime" column="commentTime" />
+            <result property="mileageStart" column="mileageStart" />
+            <result property="mileageEnd" column="mileageEnd" />
+            <result property="fuelLevelStart" column="fuelLevelStart" />
+            <result property="fuelLevelEnd" column="fuelLevelEnd" />
+            <result property="remark" column="remark" />
+            <result property="createTime" column="createTime" />
+            <result property="updateTime" column="updateTime" />
+            <result property="isDelete" column="isDelete" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,orderNo,userId,vehicleId,startTime,endTime,
+        actualStartTime,actualReturnTime,dailyPrice,totalDays,totalAmount,
+        deposit,damageAmount,extraFee,extraFeeDesc,finalAmount,
+        needDriver,driverId,driverPrice,driverTotalAmount,status,
+        paymentStatus,paymentTime,paymentMethod,transactionId,refundAmount,
+        refundTime,refundTransactionId,pickupLocation,returnLocation,pickupOperatorId,
+        returnOperatorId,cancelReason,cancelTime,expireTime,userRating,
+        userComment,commentTime,mileageStart,mileageEnd,fuelLevelStart,
+        fuelLevelEnd,remark,createTime,updateTime,isDelete
+    </sql>
+</mapper>

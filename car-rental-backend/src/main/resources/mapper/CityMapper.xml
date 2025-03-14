@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.mapper.CityMapper">
+
+    <resultMap id="BaseResultMap" type="com.my.domain.entity.City">
+            <id property="id" column="id" />
+            <result property="cityName" column="cityName" />
+            <result property="provinceName" column="provinceName" />
+            <result property="adcode" column="adcode" />
+            <result property="citycode" column="citycode" />
+            <result property="level" column="level" />
+            <result property="longitude" column="longitude" />
+            <result property="latitude" column="latitude" />
+            <result property="createTime" column="createTime" />
+            <result property="updateTime" column="updateTime" />
+            <result property="isDelete" column="isDelete" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,cityName,provinceName,adcode,citycode,level,
+        longitude,latitude,createTime,updateTime,isDelete
+    </sql>
+</mapper>
