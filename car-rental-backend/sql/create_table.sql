@@ -334,7 +334,6 @@ CREATE TABLE IF NOT EXISTS `city`
     `provinceName` varchar(50)    NOT NULL COMMENT '省份名称',
     `adcode`       varchar(20)    NOT NULL COMMENT '行政区划编码',
     `citycode`     varchar(20)    NOT NULL COMMENT '城市编码',
-    `level`        varchar(20)    NOT NULL COMMENT '行政级别（province/city/district）',
     `longitude`    decimal(10, 6) NOT NULL COMMENT '中心点经度',
     `latitude`     decimal(10, 6) NOT NULL COMMENT '中心点纬度',
     `createTime`   datetime       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

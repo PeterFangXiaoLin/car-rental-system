@@ -6,10 +6,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 城市表
@@ -50,18 +51,15 @@ public class City implements Serializable {
     private String citycode;
 
     /**
-     * 行政级别（province/city/district）
-     */
-    private String level;
-
-    /**
      * 中心点经度
      */
+    @ExcelProperty(value = "经度")
     private BigDecimal longitude;
 
     /**
      * 中心点纬度
      */
+    @ExcelProperty(value = "纬度")
     private BigDecimal latitude;
 
     /**
