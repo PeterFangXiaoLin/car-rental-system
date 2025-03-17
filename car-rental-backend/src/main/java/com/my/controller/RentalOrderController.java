@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 
+import static com.my.common.ResultUtils.success;
+
 @RestController
 @RequestMapping("/rentalOrder")
 public class RentalOrderController{
@@ -17,6 +19,6 @@ public class RentalOrderController{
     @ApiOperation(value = "创建订单")
     @PostMapping("/create")
     public BaseResponse<Long> createRentalOrder(@RequestBody RentalOrderCreateRequest rentalOrderCreateRequest, HttpServletRequest request) {
-
+        return success(null);
     }
 }
