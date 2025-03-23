@@ -9,7 +9,7 @@
       </div>
       <!-- 使用面包屑替代标题 -->
       <el-breadcrumb separator="/">
-        <el-breadcrumb-item v-for="(item, index) in breadcrumbList" :key="index" :to="item.path">
+        <el-breadcrumb-item v-for="(item, index) in breadcrumbList" :key="index">
           {{ item.title }}
         </el-breadcrumb-item>
       </el-breadcrumb>
@@ -86,7 +86,7 @@ const userInitials = computed(() => {
 })
 
 // 面包屑数据
-const breadcrumbList = ref<Array<{ title: string; path: string }>>([{ title: '首页', path: '/' }])
+const breadcrumbList = ref<Array<{ title: string }>>([{ title: '首页' }])
 
 // 根据路径获取面包屑标题
 const getBreadcrumbTitle = (path: string): string => {
@@ -103,6 +103,8 @@ const getBreadcrumbTitle = (path: string): string => {
     '/car/category': '车辆分类',
     '/car/status': '车辆状态',
     '/order': '订单管理',
+    '/admin': '管理',
+    '/admin/userManage': '用户管理',
     '/system': '系统设置',
   }
 
@@ -111,15 +113,20 @@ const getBreadcrumbTitle = (path: string): string => {
 
 // 更新面包屑
 const updateBreadcrumb = () => {
-  breadcrumbList.value = [{ title: '首页', path: '/' }]
+  breadcrumbList.value = []
 
   const pathSnippets = route.path.split('/').filter((i) => i)
+  let currentPath = ''
 
+  // 始终添加首页作为第一个面包屑项
+  breadcrumbList.value.push({ title: '首页' })
+
+  // 添加后续路径对应的面包屑项
   pathSnippets.forEach((_, index) => {
-    const url = `/${pathSnippets.slice(0, index + 1).join('/')}`
-    const title = getBreadcrumbTitle(url)
-    if (title) {
-      breadcrumbList.value.push({ title, path: url })
+    currentPath = `/${pathSnippets.slice(0, index + 1).join('/')}`
+    const title = getBreadcrumbTitle(currentPath)
+    if (title && title !== '首页') {
+      breadcrumbList.value.push({ title })
     }
   })
 }

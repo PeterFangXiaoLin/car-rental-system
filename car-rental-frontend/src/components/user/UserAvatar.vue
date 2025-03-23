@@ -1,10 +1,6 @@
 <template>
   <div class="user-info-head" @click="editCropper">
-    <el-avatar
-      :size="120"
-      :src="loginUserStore.loginUser?.userAvatar"
-      class="avatar-img"
-    />
+    <el-avatar :size="120" :src="loginUserStore.loginUser?.userAvatar" class="avatar-img" />
     <!-- 头像裁剪弹窗 -->
     <el-dialog
       v-model="dialogVisible"

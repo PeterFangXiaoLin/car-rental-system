@@ -16,6 +16,36 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseListCityVO_ = {
+    code?: number
+    data?: CityVO[]
+    message?: string
+  }
+
+  type BaseResponseListString_ = {
+    code?: number
+    data?: string[]
+    message?: string
+  }
+
+  type BaseResponseListVehicleBrandVO_ = {
+    code?: number
+    data?: VehicleBrandVO[]
+    message?: string
+  }
+
+  type BaseResponseListVehicleModelVO_ = {
+    code?: number
+    data?: VehicleModelVO[]
+    message?: string
+  }
+
+  type BaseResponseListVehicleTypeDictVO_ = {
+    code?: number
+    data?: VehicleTypeDictVO[]
+    message?: string
+  }
+
   type BaseResponseLoginUserVO_ = {
     code?: number
     data?: LoginUserVO
@@ -28,9 +58,33 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponsePageStoreVO_ = {
+    code?: number
+    data?: PageStoreVO_
+    message?: string
+  }
+
   type BaseResponsePageUserVO_ = {
     code?: number
     data?: PageUserVO_
+    message?: string
+  }
+
+  type BaseResponsePageVehicleBrandVO_ = {
+    code?: number
+    data?: PageVehicleBrandVO_
+    message?: string
+  }
+
+  type BaseResponsePageVehicleVO_ = {
+    code?: number
+    data?: PageVehicleVO_
+    message?: string
+  }
+
+  type BaseResponseStoreVO_ = {
+    code?: number
+    data?: StoreVO
     message?: string
   }
 
@@ -52,8 +106,54 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseVehicleBrandVO_ = {
+    code?: number
+    data?: VehicleBrandVO
+    message?: string
+  }
+
+  type BaseResponseVehicleVO_ = {
+    code?: number
+    data?: VehicleVO
+    message?: string
+  }
+
+  type CityAddRequest = {
+    adcode?: string
+    cityName?: string
+    citycode?: string
+    latitude?: number
+    longitude?: number
+    provinceName?: string
+  }
+
+  type CityUpdateRequest = {
+    adcode?: string
+    cityName?: string
+    citycode?: string
+    id?: number
+    latitude?: number
+    longitude?: number
+    provinceName?: string
+  }
+
+  type CityVO = {
+    adcode?: string
+    cityName?: string
+    citycode?: string
+    latitude?: number
+    level?: string
+    longitude?: number
+    provinceName?: string
+  }
+
   type DeleteRequest = {
     id?: number
+  }
+
+  type getStoreUsingGETParams = {
+    /** id */
+    id: number
   }
 
   type getUserByIdUsingGETParams = {
@@ -62,6 +162,16 @@ declare namespace API {
   }
 
   type getUserUsingGETParams = {
+    /** id */
+    id: number
+  }
+
+  type getVehicleBrandByIdUsingGETParams = {
+    /** id */
+    id: number
+  }
+
+  type getVehicleByIdUsingGETParams = {
     /** id */
     id: number
   }
@@ -97,6 +207,19 @@ declare namespace API {
     column?: string
   }
 
+  type PageStoreVO_ = {
+    countId?: string
+    current?: number
+    maxLimit?: number
+    optimizeCountSql?: boolean
+    orders?: OrderItem[]
+    pages?: number
+    records?: StoreVO[]
+    searchCount?: boolean
+    size?: number
+    total?: number
+  }
+
   type PageUserVO_ = {
     countId?: string
     current?: number
@@ -110,9 +233,113 @@ declare namespace API {
     total?: number
   }
 
+  type PageVehicleBrandVO_ = {
+    countId?: string
+    current?: number
+    maxLimit?: number
+    optimizeCountSql?: boolean
+    orders?: OrderItem[]
+    pages?: number
+    records?: VehicleBrandVO[]
+    searchCount?: boolean
+    size?: number
+    total?: number
+  }
+
+  type PageVehicleVO_ = {
+    countId?: string
+    current?: number
+    maxLimit?: number
+    optimizeCountSql?: boolean
+    orders?: OrderItem[]
+    pages?: number
+    records?: VehicleVO[]
+    searchCount?: boolean
+    size?: number
+    total?: number
+  }
+
   type refreshCaptchaUsingGETParams = {
     /** captchaKey */
     captchaKey: string
+  }
+
+  type RentalOrderCreateRequest = true
+
+  type StoreCreateRequest = {
+    adcode?: string
+    address?: string
+    city?: string
+    citycode?: string
+    closeTime?: string
+    contactPhone?: string
+    description?: string
+    district?: string
+    images?: string
+    latitude?: number
+    longitude?: number
+    openTime?: string
+    province?: string
+    status?: number
+    storeName?: string
+  }
+
+  type StoreQueryRequest = {
+    adcode?: string
+    address?: string
+    city?: string
+    citycode?: string
+    closeTime?: string
+    contactPhone?: string
+    current?: number
+    description?: string
+    district?: string
+    id?: number
+    openTime?: string
+    pageSize?: number
+    province?: string
+    sortField?: string
+    sortOrder?: string
+    status?: number
+    storeName?: string
+  }
+
+  type StoreUpdateRequest = {
+    adcode?: string
+    address?: string
+    city?: string
+    citycode?: string
+    closeTime?: string
+    contactPhone?: string
+    description?: string
+    district?: string
+    id?: number
+    images?: string
+    latitude?: number
+    longitude?: number
+    openTime?: string
+    province?: string
+    status?: number
+    storeName?: string
+  }
+
+  type StoreVO = {
+    adcode?: string
+    address?: string
+    city?: string
+    citycode?: string
+    closeTime?: string
+    contactPhone?: string
+    description?: string
+    district?: string
+    id?: number
+    images?: string
+    latitude?: number
+    longitude?: number
+    openTime?: string
+    province?: string
+    status?: number
+    storeName?: string
   }
 
   type User = {
@@ -254,5 +481,141 @@ declare namespace API {
     userRole?: number
     verifyStatus?: number
     verifyTime?: string
+  }
+
+  type VehicleAddRequest = {
+    brandId?: number
+    color?: string
+    dailyPrice?: number
+    deposit?: number
+    description?: string
+    imageUrl?: string
+    mileage?: number
+    modelId?: number
+    productionYear?: number
+    status?: number
+    vehicleNo?: string
+    vehicleTypeId?: number
+  }
+
+  type VehicleBrandAddRequest = {
+    brandLogo?: string
+    brandName?: string
+    description?: string
+  }
+
+  type VehicleBrandQueryRequest = {
+    current?: number
+    pageSize?: number
+    searchText?: string
+    sortField?: string
+    sortOrder?: string
+  }
+
+  type VehicleBrandUpdateRequest = {
+    brandLogo?: string
+    brandName?: string
+    description?: string
+    id?: number
+  }
+
+  type VehicleBrandVO = {
+    brandLogo?: string
+    brandName?: string
+    createTime?: string
+    description?: string
+    id?: number
+  }
+
+  type VehicleModelAddRequest = {
+    brandId?: number
+    modelName?: string
+  }
+
+  type VehicleModelQueryRequest = {
+    brandId?: number
+  }
+
+  type VehicleModelUpdateRequest = {
+    brandId?: number
+    id?: number
+    modelName?: string
+  }
+
+  type VehicleModelVO = {
+    brandId?: number
+    createTime?: string
+    id?: number
+    modelName?: string
+  }
+
+  type VehicleQueryRequest = {
+    brandId?: number
+    color?: string
+    current?: number
+    description?: string
+    id?: number
+    maxDailyPrice?: number
+    maxDeposit?: number
+    minDailyPrice?: number
+    minDeposit?: number
+    modelId?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
+    status?: number
+    vehicleNo?: string
+    vehicleTypeId?: number
+  }
+
+  type VehicleTypeDictAddRequest = {
+    typeName?: string
+  }
+
+  type VehicleTypeDictUpdateRequest = {
+    id?: number
+    typeName?: string
+  }
+
+  type VehicleTypeDictVO = {
+    createTime?: string
+    id?: number
+    typeName?: string
+  }
+
+  type VehicleUpdateRequest = {
+    brandId?: number
+    color?: string
+    dailyPrice?: number
+    deposit?: number
+    description?: string
+    id?: number
+    imageUrl?: string
+    mileage?: number
+    modelId?: number
+    productionYear?: number
+    status?: number
+    vehicleNo?: string
+    vehicleTypeId?: number
+  }
+
+  type VehicleVO = {
+    brandId?: number
+    brandName?: string
+    color?: string
+    createTime?: string
+    dailyPrice?: number
+    deposit?: number
+    description?: string
+    id?: number
+    imageUrl?: string
+    mileage?: number
+    modelId?: number
+    modelName?: string
+    productionYear?: number
+    status?: number
+    vehicleNo?: string
+    vehicleTypeId?: number
+    vehicleTypeName?: string
   }
 }

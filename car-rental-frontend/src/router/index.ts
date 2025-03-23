@@ -83,7 +83,15 @@ export const routes = [
           access: ACCESS_ENUM.ADMIN,
         },
       },
-    ]
+      {
+        path: 'storeManage',
+        name: '店铺管理',
+        component: () => import('@/views/admin/StoreManagePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+    ],
   },
   {
     path: '/401',

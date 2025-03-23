@@ -401,7 +401,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         try {
             // 上传文件到 OSS，得到访问地址（这里假设你使用的是阿里云 OSS）
             String filePath = String.format("avatar/%s/%s.%s", loginUser.getId(),
-                    UUID.randomUUID().toString(), fileSuffix);
+                    UUID.randomUUID(), fileSuffix);
 
             ObjectMetadata objectMetadata = new ObjectMetadata();
             objectMetadata.setContentLength(fileSize);

@@ -21,54 +21,90 @@
         active-text-color="#ffd04b"
         router
       >
-        <el-menu-item index="/">
-          <el-icon><house /></el-icon>
-          <template #title>首页</template>
-        </el-menu-item>
-        
-        <el-sub-menu index="1">
-          <template #title>
-            <el-icon><location /></el-icon>
-            <span>车辆管理</span>
-          </template>
-          <el-menu-item index="1-1">车辆列表</el-menu-item>
-          <el-menu-item index="1-2">车辆分类</el-menu-item>
-          <el-menu-item index="1-3">车辆状态</el-menu-item>
-        </el-sub-menu>
-        
-        <el-menu-item index="2">
-          <el-icon><icon-menu /></el-icon>
-          <template #title>订单管理</template>
-        </el-menu-item>
-        
-        <el-menu-item index="3">
-          <el-icon><document /></el-icon>
-          <template #title>用户管理</template>
-        </el-menu-item>
-        
-        <el-menu-item index="4">
-          <el-icon><setting /></el-icon>
-          <template #title>系统设置</template>
-        </el-menu-item>
+        <!-- 动态生成菜单项 -->
+        <template v-for="item in menuItems" :key="item.index">
+          <!-- 带子菜单的项 -->
+          <el-sub-menu v-if="item.children && item.children.length > 0" :index="item.index">
+            <template #title>
+              <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
+              <span>{{ item.title }}</span>
+            </template>
+            <el-menu-item v-for="child in item.children" :key="child.index" :index="child.index">
+              {{ child.title }}
+            </el-menu-item>
+          </el-sub-menu>
+
+          <!-- 没有子菜单的项 -->
+          <el-menu-item v-else :index="item.index">
+            <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
+            <template #title>{{ item.title }}</template>
+          </el-menu-item>
+        </template>
       </el-menu>
     </el-scrollbar>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Location, Document, Menu as IconMenu, Setting, Van, House } from '@element-plus/icons-vue'
+import { useRoute } from 'vue-router'
 
 // 定义props
 defineProps({
   isCollapse: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
+
+const route = useRoute()
 
 // 当前激活的菜单项
 const activeIndex = ref('/')
+
+// 监听路由变化，更新当前激活的菜单项
+watch(
+  () => route.path,
+  (newPath) => {
+    activeIndex.value = newPath
+  },
+  { immediate: true },
+)
+
+// 手动定义菜单项
+const menuItems = [
+  {
+    index: '/',
+    title: '首页',
+    icon: House,
+  },
+  {
+    index: '/car',
+    title: '车辆管理',
+    icon: Location,
+    children: [
+      { index: '/car/list', title: '车辆列表' },
+      { index: '/car/category', title: '车辆分类' },
+      { index: '/car/status', title: '车辆状态' },
+    ],
+  },
+  {
+    index: '/order',
+    title: '订单管理',
+    icon: IconMenu,
+  },
+  {
+    index: '/admin/userManage',
+    title: '用户管理',
+    icon: Document,
+  },
+  {
+    index: '/system',
+    title: '系统设置',
+    icon: Setting,
+  },
+]
 </script>
 
 <style scoped>
@@ -123,4 +159,4 @@ const activeIndex = ref('/')
   overflow: hidden;
   text-overflow: ellipsis;
 }
-</style> 
+</style>
