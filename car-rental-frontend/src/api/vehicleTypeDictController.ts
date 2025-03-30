@@ -32,10 +32,17 @@ export async function deleteVehicleTypeDictUsingPost(
   })
 }
 
-/** 获取车辆类型列表 POST /api/vehicleTypeDict/list */
-export async function listVehicleTypeDictUsingPost(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListVehicleTypeDictVO_>('/api/vehicleTypeDict/list', {
+/** 获取车辆类型列表 POST /api/vehicleTypeDict/page */
+export async function pageVehicleTypeDictUsingPost(
+  body: API.VehicleTypeDictQueryRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponsePageVehicleTypeDictVO_>('/api/vehicleTypeDict/page', {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
     ...(options || {}),
   })
 }

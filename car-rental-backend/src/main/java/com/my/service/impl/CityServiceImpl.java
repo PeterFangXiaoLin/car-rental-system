@@ -129,14 +129,13 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City>
             }
         }
 
-        String cityName = city.getCityName();
-        String provinceName = city.getProvinceName();
+        String name = city.getName();
         String adcode = city.getAdcode();
         String citycode = city.getCitycode();
         BigDecimal longitude = city.getLongitude();
         BigDecimal latitude = city.getLatitude();
 
-        if (StrUtil.hasBlank(cityName, provinceName, adcode, citycode)) {
+        if (StrUtil.hasBlank(name, adcode, citycode)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 

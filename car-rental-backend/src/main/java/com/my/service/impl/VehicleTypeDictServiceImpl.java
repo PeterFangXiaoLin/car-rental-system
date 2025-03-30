@@ -2,10 +2,13 @@ package com.my.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.common.DeleteRequest;
 import com.my.common.ErrorCode;
 import com.my.domain.dto.vehicletypedict.VehicleTypeDictAddRequest;
+import com.my.domain.dto.vehicletypedict.VehicleTypeDictQueryRequest;
 import com.my.domain.dto.vehicletypedict.VehicleTypeDictUpdateRequest;
 import com.my.domain.entity.VehicleTypeDict;
 import com.my.domain.vo.VehicleTypeDictVO;
@@ -92,9 +95,23 @@ public class VehicleTypeDictServiceImpl extends ServiceImpl<VehicleTypeDictMappe
     }
 
     @Override
-    public List<VehicleTypeDictVO> listVehicleTypeDict() {
-        List<VehicleTypeDict> vehicleTypeDictList = vehicleTypeDictMapper.selectList(null);
-        return vehicleTypeDictList.stream().map(this::getVehicleTypeDictVO).collect(Collectors.toList());
+    public Page<VehicleTypeDictVO> pageVehicleTypeDict(VehicleTypeDictQueryRequest vehicleTypeDictQueryRequest) {
+        QueryWrapper<VehicleTypeDict> queryWrapper = new QueryWrapper<>();
+        String typeName = vehicleTypeDictQueryRequest.getTypeName();
+        queryWrapper.like(StrUtil.isNotBlank(vehicleTypeDictQueryRequest.getTypeName()), "typeName", typeName);
+
+        int pageSize = vehicleTypeDictQueryRequest.getPageSize();
+        int current = vehicleTypeDictQueryRequest.getCurrent();
+        if (pageSize <= 0 || current <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        Page<VehicleTypeDict> vehicleTypeDictPage = vehicleTypeDictMapper.selectPage(new Page<>(vehicleTypeDictQueryRequest.getCurrent(), vehicleTypeDictQueryRequest.getPageSize()), queryWrapper);
+        List<VehicleTypeDict> vehicleTypeDictList = vehicleTypeDictPage.getRecords();
+        List<VehicleTypeDictVO> vehicleTypeDictVOList = vehicleTypeDictList.stream().map(this::getVehicleTypeDictVO).collect(Collectors.toList());
+        Page<VehicleTypeDictVO> vehicleTypeDictVOPage = new Page<>(current, pageSize, vehicleTypeDictPage.getTotal());
+        vehicleTypeDictVOPage.setRecords(vehicleTypeDictVOList);
+        return vehicleTypeDictVOPage;
     }
 
     @Override

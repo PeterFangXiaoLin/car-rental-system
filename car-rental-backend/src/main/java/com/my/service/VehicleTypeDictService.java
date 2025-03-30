@@ -1,14 +1,13 @@
 package com.my.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.my.common.DeleteRequest;
 import com.my.domain.dto.vehicletypedict.VehicleTypeDictAddRequest;
+import com.my.domain.dto.vehicletypedict.VehicleTypeDictQueryRequest;
 import com.my.domain.dto.vehicletypedict.VehicleTypeDictUpdateRequest;
 import com.my.domain.entity.VehicleTypeDict;
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.my.domain.vo.VehicleModelVO;
 import com.my.domain.vo.VehicleTypeDictVO;
-
-import java.util.List;
 
 /**
 * @author Administrator
@@ -40,10 +39,12 @@ public interface VehicleTypeDictService extends IService<VehicleTypeDict> {
     boolean deleteVehicleTypeDict(DeleteRequest deleteRequest);
 
     /**
-     * 获取车型列表
-     * @return
+     * 分页查询车型
+     *
+     * @param vehicleTypeDictQueryRequest 查询条件
+     * @return 分页查询结果
      */
-    List<VehicleTypeDictVO> listVehicleTypeDict();
+    Page<VehicleTypeDictVO> pageVehicleTypeDict(VehicleTypeDictQueryRequest vehicleTypeDictQueryRequest);
 
     /**
      * 获取车型vo

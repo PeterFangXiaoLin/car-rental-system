@@ -16,12 +16,7 @@ public class CityUpdateRequest implements Serializable {
     /**
      * 城市名称
      */
-    private String cityName;
-
-    /**
-     * 省份名称
-     */
-    private String provinceName;
+    private String name;
 
     /**
      * 行政区划编码

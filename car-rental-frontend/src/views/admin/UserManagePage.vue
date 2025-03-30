@@ -6,7 +6,6 @@
         <el-form
           :model="searchParams"
           class="-mb-15px"
-          :inline="true"
           label-width="68px"
           size="large"
         >

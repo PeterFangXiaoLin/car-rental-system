@@ -327,11 +327,12 @@ CREATE TABLE IF NOT EXISTS `verify_record`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='认证记录表';
 
+drop table if exists `city`;
+
 CREATE TABLE IF NOT EXISTS `city`
 (
     `id`           bigint         NOT NULL AUTO_INCREMENT COMMENT '城市ID',
-    `cityName`     varchar(50)    NOT NULL COMMENT '城市名称',
-    `provinceName` varchar(50)    NOT NULL COMMENT '省份名称',
+    `name`     varchar(50)    NOT NULL COMMENT '城市名称',
     `adcode`       varchar(20)    NOT NULL COMMENT '行政区划编码',
     `citycode`     varchar(20)    NOT NULL COMMENT '城市编码',
     `longitude`    decimal(10, 6) NOT NULL COMMENT '中心点经度',
@@ -341,8 +342,7 @@ CREATE TABLE IF NOT EXISTS `city`
     `isDelete`     tinyint        NOT NULL DEFAULT '0' COMMENT '是否删除',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_adcode` (`adcode`),
-    KEY `idx_cityName` (`cityName`),
-    KEY `idx_provinceName` (`provinceName`)
+    KEY `idx_cityName` (`name`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='城市表';
 

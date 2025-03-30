@@ -40,12 +40,6 @@ declare namespace API {
     message?: string
   }
 
-  type BaseResponseListVehicleTypeDictVO_ = {
-    code?: number
-    data?: VehicleTypeDictVO[]
-    message?: string
-  }
-
   type BaseResponseLoginUserVO_ = {
     code?: number
     data?: LoginUserVO
@@ -73,6 +67,12 @@ declare namespace API {
   type BaseResponsePageVehicleBrandVO_ = {
     code?: number
     data?: PageVehicleBrandVO_
+    message?: string
+  }
+
+  type BaseResponsePageVehicleTypeDictVO_ = {
+    code?: number
+    data?: PageVehicleTypeDictVO_
     message?: string
   }
 
@@ -120,31 +120,29 @@ declare namespace API {
 
   type CityAddRequest = {
     adcode?: string
-    cityName?: string
     citycode?: string
     latitude?: number
     longitude?: number
-    provinceName?: string
+    name?: string
   }
 
   type CityUpdateRequest = {
     adcode?: string
-    cityName?: string
     citycode?: string
     id?: number
     latitude?: number
     longitude?: number
-    provinceName?: string
+    name?: string
   }
 
   type CityVO = {
     adcode?: string
-    cityName?: string
     citycode?: string
+    id?: number
     latitude?: number
     level?: string
     longitude?: number
-    provinceName?: string
+    name?: string
   }
 
   type DeleteRequest = {
@@ -241,6 +239,19 @@ declare namespace API {
     orders?: OrderItem[]
     pages?: number
     records?: VehicleBrandVO[]
+    searchCount?: boolean
+    size?: number
+    total?: number
+  }
+
+  type PageVehicleTypeDictVO_ = {
+    countId?: string
+    current?: number
+    maxLimit?: number
+    optimizeCountSql?: boolean
+    orders?: OrderItem[]
+    pages?: number
+    records?: VehicleTypeDictVO[]
     searchCount?: boolean
     size?: number
     total?: number
@@ -569,6 +580,14 @@ declare namespace API {
   }
 
   type VehicleTypeDictAddRequest = {
+    typeName?: string
+  }
+
+  type VehicleTypeDictQueryRequest = {
+    current?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
     typeName?: string
   }
 

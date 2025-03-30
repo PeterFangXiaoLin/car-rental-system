@@ -1,10 +1,12 @@
 package com.my.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.my.annotation.AuthCheck;
 import com.my.common.BaseResponse;
 import com.my.common.DeleteRequest;
 import com.my.constant.UserConstant;
 import com.my.domain.dto.vehicletypedict.VehicleTypeDictAddRequest;
+import com.my.domain.dto.vehicletypedict.VehicleTypeDictQueryRequest;
 import com.my.domain.dto.vehicletypedict.VehicleTypeDictUpdateRequest;
 import com.my.domain.vo.VehicleTypeDictVO;
 import com.my.service.VehicleTypeDictService;
@@ -15,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-
-import java.util.List;
 
 import static com.my.common.ResultUtils.success;
 
@@ -55,8 +55,8 @@ public class VehicleTypeDictController {
     }
 
     @ApiOperation(value = "获取车辆类型列表")
-    @PostMapping("/list")
-    public BaseResponse<List<VehicleTypeDictVO>> listVehicleTypeDict() {
-        return success(vehicleTypeDictService.listVehicleTypeDict());
+    @PostMapping("/page")
+    public BaseResponse<Page<VehicleTypeDictVO>> pageVehicleTypeDict(@RequestBody VehicleTypeDictQueryRequest vehicleTypeDictQueryRequest) {
+        return success(vehicleTypeDictService.pageVehicleTypeDict(vehicleTypeDictQueryRequest));
     }
 }

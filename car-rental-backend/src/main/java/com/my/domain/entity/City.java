@@ -2,7 +2,6 @@ package com.my.domain.entity;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -23,20 +22,14 @@ public class City implements Serializable {
     /**
      * 城市ID
      */
-    @TableId(type = IdType.AUTO)
+    @TableId
     private Long id;
 
     /**
      * 城市名称
      */
     @ExcelProperty(value = "城市名称")
-    private String cityName;
-
-    /**
-     * 省份名称
-     */
-    @ExcelProperty(value = "省份名称")
-    private String provinceName;
+    private String name;
 
     /**
      * 行政区划编码

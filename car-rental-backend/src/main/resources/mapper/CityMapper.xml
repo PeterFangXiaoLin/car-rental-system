@@ -6,8 +6,7 @@
 
     <resultMap id="BaseResultMap" type="com.my.domain.entity.City">
             <id property="id" column="id" />
-            <result property="cityName" column="cityName" />
-            <result property="provinceName" column="provinceName" />
+            <result property="name" column="name" />
             <result property="adcode" column="adcode" />
             <result property="citycode" column="citycode" />
             <result property="longitude" column="longitude" />
@@ -18,7 +17,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,cityName,provinceName,adcode,citycode,
+        id,`name`,adcode,citycode,
         longitude,latitude,createTime,updateTime,isDelete
     </sql>
 </mapper>

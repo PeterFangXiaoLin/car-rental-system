@@ -9,14 +9,14 @@ import java.math.BigDecimal;
 public class CityVO implements Serializable {
     private static final long serialVersionUID = 3963801960185974387L;
     /**
-     * 城市名称
+     * 城市ID
      */
-    private String cityName;
+    private Long id;
 
     /**
-     * 省份名称
+     * 城市名称
      */
-    private String provinceName;
+    private String name;
 
     /**
      * 行政区划编码
