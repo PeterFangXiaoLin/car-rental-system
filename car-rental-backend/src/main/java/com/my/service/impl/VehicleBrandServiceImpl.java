@@ -120,7 +120,6 @@ public class VehicleBrandServiceImpl extends ServiceImpl<VehicleBrandMapper, Veh
 
         QueryWrapper<VehicleBrand> queryWrapper = new QueryWrapper<>();
         queryWrapper.like(StrUtil.isNotBlank(searchText), "brandName", searchText);
-        queryWrapper.like(StrUtil.isNotBlank(searchText), "brandDescription", searchText);
         queryWrapper.orderBy(StrUtil.isNotBlank(sortField), sortOrder.equalsIgnoreCase(CommonConstant.SORT_ORDER_ASC), sortField);
         Page<VehicleBrand> vehicleBrandPage = vehicleBrandMapper.selectPage(new Page<>(current, pageSize), queryWrapper);
         List<VehicleBrandVO> vehicleBrandVOList = vehicleBrandPage.getRecords().stream().map(this::getVehicleBrandVO).collect(Collectors.toList());

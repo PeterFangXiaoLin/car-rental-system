@@ -8,7 +8,7 @@
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="brandName" column="brandName" jdbcType="VARCHAR"/>
             <result property="brandLogo" column="brandLogo" jdbcType="VARCHAR"/>
-            <result property="description" column="description" jdbcType="VARCHAR"/>
+            <result property="firstLetter" column="firstLetter" jdbcType="VARCHAR"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
             <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
@@ -16,7 +16,7 @@
 
     <sql id="Base_Column_List">
         id,brandName,brandLogo,
-        description,createTime,updateTime,
+        firstLetter,createTime,updateTime,
         isDelete
     </sql>
 </mapper>

@@ -109,12 +109,15 @@ CREATE TABLE IF NOT EXISTS `vehicle`
     KEY `idx_status` (`status`)
 ) COMMENT ='车辆表' collate = utf8mb4_unicode_ci;
 
+
+drop table if exists `vehicle_brand`;
+
 CREATE TABLE IF NOT EXISTS `vehicle_brand`
 (
     `id`          bigint       NOT NULL AUTO_INCREMENT COMMENT '品牌ID',
     `brandName`   varchar(100) NOT NULL COMMENT '品牌名称',
     `brandLogo`   varchar(255)          DEFAULT NULL COMMENT '品牌logo',
-    `description` varchar(500)          DEFAULT NULL COMMENT '品牌描述',
+    `firstLetter` varchar(5)          DEFAULT NULL COMMENT '首字母',
     `createTime`  datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updateTime`  datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `isDelete`    tinyint      NOT NULL DEFAULT '0' COMMENT '是否删除',

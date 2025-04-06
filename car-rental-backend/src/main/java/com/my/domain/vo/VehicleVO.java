@@ -1,6 +1,5 @@
 package com.my.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -12,7 +11,6 @@ public class VehicleVO implements Serializable {
     /**
      * 车辆ID
      */
-    @TableId
     private Long id;
 
     /**

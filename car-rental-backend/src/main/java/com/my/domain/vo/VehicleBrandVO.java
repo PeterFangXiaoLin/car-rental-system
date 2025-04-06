@@ -26,9 +26,9 @@ public class VehicleBrandVO implements Serializable {
     private String brandLogo;
 
     /**
-     * 品牌描述
+     * 首字母
      */
-    private String description;
+    private String firstLetter;
 
     /**
      * 创建时间

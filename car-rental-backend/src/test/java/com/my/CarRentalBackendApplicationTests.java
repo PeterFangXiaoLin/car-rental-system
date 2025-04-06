@@ -1,32 +1,59 @@
 package com.my;
 
 import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.my.domain.entity.VehicleBrand;
+import com.my.service.VehicleBrandService;
+import com.my.utils.spider.Brand;
+import com.my.utils.spider.BrandResult;
 import com.qcloud.cos.COSClient;
-import com.qcloud.cos.model.Bucket;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @SpringBootTest
+@Slf4j
 class CarRentalBackendApplicationTests {
 
     @Resource
     private COSClient cosClient;
 
+    @Resource
+    private VehicleBrandService vehicleBrandService;
+
     @Test
     void contextLoads() {
-        List<Bucket> buckets = cosClient.listBuckets();
-        for (Bucket bucket : buckets) {
-            System.out.println(bucket.getName());
-            System.out.println(bucket.getLocation());
+        String res = HttpUtil.get("https://car-web-api.autohome.com.cn/car/brand/getbrand?sorttype=1");
+        JSONObject jsonObject = JSONUtil.parseObj(res);
+        BrandResult bean = JSONUtil.toBean(jsonObject, BrandResult.class);
+
+        List<Brand> brandlist = bean.getResult().getBrandlist();
+        List<VehicleBrand> list = new ArrayList<>();
+        for (int i = 0; i < brandlist.size(); i++) {
+            Brand brand = brandlist.get(i);
+            VehicleBrand vehicleBrand = new VehicleBrand();
+            vehicleBrand.setBrandName(brand.getName());
+            vehicleBrand.setBrandLogo(brand.getLogo());
+            vehicleBrand.setFirstLetter(brand.getFirstletter());
+            list.add(vehicleBrand);
+
+            // 每100个或最后一批执行插入
+            if ((i + 1) % 100 == 0 || i == brandlist.size() - 1) {
+                vehicleBrandService.saveBatch(list);
+                list.clear();  // 清空列表准备下一批
+            }
         }
+        log.info("插入成功");
     }
 
     @Test
@@ -53,6 +80,18 @@ class CarRentalBackendApplicationTests {
                 System.out.println("  区/县: " + subDistrict.path("name").asText());
                 System.out.println("  中心坐标: " + subDistrict.path("center").asText());
             }
+        }
+    }
+
+    @Test
+    void test1() {
+        String res = HttpUtil.get("https://car-web-api.autohome.com.cn/car/brand/getbrand?sorttype=1");
+        JSONObject jsonObject = JSONUtil.parseObj(res);
+        BrandResult bean = JSONUtil.toBean(jsonObject, BrandResult.class);
+
+        List<Brand> brandlist = bean.getResult().getBrandlist();
+        for (Brand brand : brandlist) {
+            
         }
     }
 }
