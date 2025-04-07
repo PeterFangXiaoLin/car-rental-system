@@ -83,18 +83,19 @@ CREATE TABLE IF NOT EXISTS `driver`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='司机表';
 
+drop table if exists `vehicle`;
+
 CREATE TABLE IF NOT EXISTS `vehicle`
 (
     `id`             bigint         NOT NULL AUTO_INCREMENT COMMENT '车辆ID',
+    `name`           varchar(100)   NOT NULL COMMENT '车辆名称',
     `vehicleNo`      varchar(50)    NULL COMMENT '车牌号',
     `brandId`        bigint         NOT NULL COMMENT '品牌ID',
     `modelId`        bigint         NOT NULL COMMENT '型号ID',
     `vehicleTypeId`  bigint                  DEFAULT NULL COMMENT '车型ID',
-    `color`          varchar(50)    NULL COMMENT '颜色',
     `productionYear` int            NOT NULL COMMENT '生产年份',
     `dailyPrice`     decimal(10, 2) NOT NULL COMMENT '日租金',
     `deposit`        decimal(10, 2) NOT NULL COMMENT '押金',
-    `mileage`        int                     DEFAULT '0' COMMENT '行驶里程',
     `status`         int            NOT NULL DEFAULT '0' COMMENT '状态：0-可用，1-已租出，2-维修中，3-报废',
     `imageUrl`       varchar(1024)           DEFAULT NULL COMMENT '车辆图片URL',
     `description`    text COMMENT '车辆描述',
@@ -127,11 +128,14 @@ CREATE TABLE IF NOT EXISTS `vehicle_brand`
   DEFAULT CHARSET = utf8mb4 COMMENT ='车辆品牌表'
   collate = utf8mb4_unicode_ci;
 
+drop table if exists `vehicle_model`;
+
 CREATE TABLE IF NOT EXISTS `vehicle_model`
 (
     `id`         bigint       NOT NULL AUTO_INCREMENT COMMENT '型号ID',
     `brandId`    bigint       NOT NULL COMMENT '品牌ID',
     `modelName`  varchar(100) NOT NULL COMMENT '型号名称',
+    `modelLogo`  varchar(255)          DEFAULT NULL COMMENT '型号logo',
     `createTime` datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updateTime` datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `isDelete`   tinyint      NOT NULL DEFAULT '0' COMMENT '是否删除',
@@ -153,6 +157,13 @@ CREATE TABLE IF NOT EXISTS `vehicle_type_dict`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='车型字典表'
   collate = utf8mb4_unicode_ci;
+
+insert into `vehicle_type_dict` (`id`, `typeName`)
+values (1, '轿车'),
+       (2, 'SUV'),
+       (3, 'MPV'),
+       (4, '跑车'),
+       (5, '皮卡');
 
 CREATE TABLE IF NOT EXISTS `rental_order`
 (

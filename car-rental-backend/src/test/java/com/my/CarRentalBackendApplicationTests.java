@@ -6,10 +6,17 @@ import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.my.domain.entity.Vehicle;
 import com.my.domain.entity.VehicleBrand;
+import com.my.domain.entity.VehicleModel;
+import com.my.domain.entity.VehicleTypeDict;
 import com.my.service.VehicleBrandService;
+import com.my.service.VehicleModelService;
+import com.my.service.VehicleTypeDictService;
 import com.my.utils.spider.Brand;
+import com.my.utils.spider.BrandInfoResult;
 import com.my.utils.spider.BrandResult;
+import com.my.utils.spider.Result;
 import com.qcloud.cos.COSClient;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -30,6 +37,12 @@ class CarRentalBackendApplicationTests {
 
     @Resource
     private VehicleBrandService vehicleBrandService;
+
+    @Resource
+    private VehicleModelService vehicleModelService;
+
+    @Resource
+    private VehicleTypeDictService vehicleTypeDictService;
 
     @Test
     void contextLoads() {
@@ -89,9 +102,49 @@ class CarRentalBackendApplicationTests {
         JSONObject jsonObject = JSONUtil.parseObj(res);
         BrandResult bean = JSONUtil.toBean(jsonObject, BrandResult.class);
 
+        String url = "https://car.app.autohome.com.cn/carMiddle/getSeriesListByBrandId?brandId=%s&appId=pc";
+
         List<Brand> brandlist = bean.getResult().getBrandlist();
         for (Brand brand : brandlist) {
-            
+            String name = brand.getName();
+            String logo = brand.getLogo();
+            String firstletter = brand.getFirstletter();
+            VehicleBrand vehicleBrand = new VehicleBrand();
+            vehicleBrand.setBrandName(name);
+            vehicleBrand.setBrandLogo(logo);
+            vehicleBrand.setFirstLetter(firstletter);
+            vehicleBrandService.save(vehicleBrand);
+
+            Long brandId = vehicleBrand.getId();
+
+            Long id = brand.getId();
+            String brandUrl = String.format(url, id);
+            String res1 = HttpUtil.get(brandUrl);
+            JSONObject jsonObject1 = JSONUtil.parseObj(res1);
+            BrandInfoResult result = (BrandInfoResult)jsonObject1.get("result");
+
+            List<BrandInfoResult.Item> list = result.getList().getList();
+            for (BrandInfoResult.Item item : list) {
+                String modelName = item.getName();
+                String imgUrl = item.getImgUrl();
+
+                // 新增车型
+                VehicleModel vehicleModel = new VehicleModel();
+                vehicleModel.setModelName(modelName);
+                vehicleModel.setModelLogo(imgUrl);
+                vehicleModel.setBrandId(brandId);
+                vehicleModelService.save(vehicleModel);
+
+                Long seriesId = item.getSeriesId();
+                // 新增车辆
+                String carUrl = "https://car.app.autohome.com.cn/carMiddle/getSpecListBySeriesId?seriesId=%s&appId=pc&cityId=440100";
+                String carUrl1 = String.format(carUrl, seriesId);
+                String res2 = HttpUtil.get(carUrl1);
+                JSONObject jsonObject2 = JSONUtil.parseObj(res2);
+                Result result1 = (Result)jsonObject2.get("result");
+    
+            }
+
         }
     }
 }

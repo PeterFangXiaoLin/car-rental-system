@@ -17,6 +17,11 @@ public class VehicleQueryRequest extends PageRequest implements Serializable {
     private Long id;
 
     /**
+     * 车辆名称
+     */
+    private String name;
+
+    /**
      * 车牌号
      */
     private String vehicleNo;
@@ -35,11 +40,6 @@ public class VehicleQueryRequest extends PageRequest implements Serializable {
      * 车型ID
      */
     private Long vehicleTypeId;
-
-    /**
-     * 颜色
-     */
-    private String color;
 
     /**
      * 最小日租金

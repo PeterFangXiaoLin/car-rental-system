@@ -30,6 +30,11 @@ public class VehicleModel implements Serializable {
     private String modelName;
 
     /**
+     * 型号logo
+     */
+    private String modelLogo;
+
+    /**
      * 创建时间
      */
     private Date createTime;

@@ -5,15 +5,17 @@
 <mapper namespace="com.my.mapper.VehicleModelMapper">
 
     <resultMap id="BaseResultMap" type="com.my.domain.entity.VehicleModel">
-            <id property="id" column="id" />
-            <result property="brandId" column="brandId" />
-            <result property="modelName" column="modelName" />
-            <result property="createTime" column="createTime" />
-            <result property="updateTime" column="updateTime" />
-            <result property="isDelete" column="isDelete" />
+        <id property="id" column="id" />
+        <result property="brandId" column="brandId" />
+        <result property="modelName" column="modelName" />
+        <result property="modelLogo" column="modelLogo" />
+        <result property="createTime" column="createTime" />
+        <result property="updateTime" column="updateTime" />
+        <result property="isDelete" column="isDelete" />
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,brandId,modelName,createTime,updateTime,isDelete
+        id,brandId,modelName,modelLogo,createTime,updateTime,
+        isDelete
     </sql>
 </mapper>

@@ -18,6 +18,11 @@ public class VehicleUpdateRequest implements Serializable {
     private Long id;
 
     /**
+     * 车辆名称
+     */
+    private String name;
+
+    /**
      * 车牌号
      */
     private String vehicleNo;
@@ -38,11 +43,6 @@ public class VehicleUpdateRequest implements Serializable {
     private Long vehicleTypeId;
 
     /**
-     * 颜色
-     */
-    private String color;
-
-    /**
      * 生产年份
      */
     private Integer productionYear;
@@ -56,11 +56,6 @@ public class VehicleUpdateRequest implements Serializable {
      * 押金
      */
     private BigDecimal deposit;
-
-    /**
-     * 行驶里程
-     */
-    private Integer mileage;
 
     /**
      * 状态：0-可用，1-已租出，2-维修中，3-报废

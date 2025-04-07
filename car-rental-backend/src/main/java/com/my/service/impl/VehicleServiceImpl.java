@@ -233,11 +233,11 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         }
 
         Long id = vehicleQueryRequest.getId();
+        String name = vehicleQueryRequest.getName();
         String vehicleNo = vehicleQueryRequest.getVehicleNo();
         Long brandId = vehicleQueryRequest.getBrandId();
         Long modelId = vehicleQueryRequest.getModelId();
         Long vehicleTypeId = vehicleQueryRequest.getVehicleTypeId();
-        String color = vehicleQueryRequest.getColor();
         BigDecimal minDailyPrice = vehicleQueryRequest.getMinDailyPrice();
         BigDecimal maxDailyPrice = vehicleQueryRequest.getMaxDailyPrice();
         BigDecimal minDeposit = vehicleQueryRequest.getMinDeposit();
@@ -248,11 +248,11 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         String sortOrder = vehicleQueryRequest.getSortOrder();
 
         queryWrapper.eq(id != null, "id", id);
+        queryWrapper.like(StrUtil.isNotBlank(name), "name", name);
         queryWrapper.like(StrUtil.isNotBlank(vehicleNo), "vehicleNo", vehicleNo);
         queryWrapper.eq(brandId != null, "brandId", brandId);
         queryWrapper.eq(modelId != null, "modelId", modelId);
         queryWrapper.eq(vehicleTypeId != null, "vehicleTypeId", vehicleTypeId);
-        queryWrapper.like(StrUtil.isNotBlank(color), "color", color);
         queryWrapper.ge(minDailyPrice!= null, "dailyPrice", minDailyPrice);
         queryWrapper.le(maxDailyPrice!= null, "dailyPrice", maxDailyPrice);
         queryWrapper.ge(minDeposit!= null, "deposit", minDeposit);

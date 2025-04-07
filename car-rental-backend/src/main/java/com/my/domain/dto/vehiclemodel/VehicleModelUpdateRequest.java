@@ -13,4 +13,6 @@ public class VehicleModelUpdateRequest implements Serializable {
     private String modelName;
 
     private Long brandId;
+
+    private String modelLogo;
 }
