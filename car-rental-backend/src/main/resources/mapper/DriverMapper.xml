@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.mapper.DriverMapper">
+
+    <resultMap id="BaseResultMap" type="com.my.domain.entity.Driver">
+            <id property="id" column="id" />
+            <result property="driverName" column="driverName" />
+            <result property="driverAvatar" column="driverAvatar" />
+            <result property="gender" column="gender" />
+            <result property="age" column="age" />
+            <result property="phoneNumber" column="phoneNumber" />
+            <result property="driverLicenseNo" column="driverLicenseNo" />
+            <result property="driverLicenseType" column="driverLicenseType" />
+            <result property="driverLicenseImg" column="driverLicenseImg" />
+            <result property="driverLicenseIssueDate" column="driverLicenseIssueDate" />
+            <result property="driverLicenseExpireDate" column="driverLicenseExpireDate" />
+            <result property="drivingYears" column="drivingYears" />
+            <result property="dailyPrice" column="dailyPrice" />
+            <result property="workStatus" column="workStatus" />
+            <result property="rating" column="rating" />
+            <result property="status" column="status" />
+            <result property="createTime" column="createTime" />
+            <result property="updateTime" column="updateTime" />
+            <result property="isDelete" column="isDelete" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,driverName,driverAvatar,gender,
+        age,phoneNumber,driverLicenseNo,driverLicenseType,driverLicenseImg,
+        driverLicenseIssueDate,driverLicenseExpireDate,drivingYears,dailyPrice,workStatus,
+        rating,status,createTime,updateTime,isDelete
+    </sql>
+</mapper>

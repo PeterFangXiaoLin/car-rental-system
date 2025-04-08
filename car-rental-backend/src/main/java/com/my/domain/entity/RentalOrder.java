@@ -1,9 +1,7 @@
 package com.my.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -19,7 +17,7 @@ public class RentalOrder implements Serializable {
     /**
      * 订单ID
      */
-    @TableId(type = IdType.AUTO)
+    @TableId
     private Long id;
 
     /**
@@ -193,31 +191,6 @@ public class RentalOrder implements Serializable {
     private Date expireTime;
 
     /**
-     * 用户评分(1-5分)
-     */
-    private Integer userRating;
-
-    /**
-     * 用户评价
-     */
-    private String userComment;
-
-    /**
-     * 评价时间
-     */
-    private Date commentTime;
-
-    /**
-     * 起始里程数
-     */
-    private Integer mileageStart;
-
-    /**
-     * 结束里程数
-     */
-    private Integer mileageEnd;
-
-    /**
      * 起始油量
      */
     private String fuelLevelStart;
@@ -245,6 +218,7 @@ public class RentalOrder implements Serializable {
     /**
      * 是否删除
      */
+    @TableLogic
     private Integer isDelete;
 
     @TableField(exist = false)

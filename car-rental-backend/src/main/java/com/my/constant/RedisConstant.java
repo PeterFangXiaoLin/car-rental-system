@@ -6,4 +6,6 @@ package com.my.constant;
  */
 public interface RedisConstant {
     String CAPTCHA_PREFIX = "captcha:";
+
+    String DRIVER_ADD_PREFIX = "driver:add:";
 }

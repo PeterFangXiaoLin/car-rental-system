@@ -165,6 +165,8 @@ values (1, '轿车'),
        (4, '跑车'),
        (5, '皮卡');
 
+drop table if exists `rental_order`;
+
 CREATE TABLE IF NOT EXISTS `rental_order`
 (
     `id`                   bigint         NOT NULL AUTO_INCREMENT COMMENT '订单ID',
@@ -202,11 +204,6 @@ CREATE TABLE IF NOT EXISTS `rental_order`
     `cancelReason`         varchar(255)            DEFAULT NULL COMMENT '取消原因',
     `cancelTime`           datetime                DEFAULT NULL COMMENT '取消时间',
     `expireTime`           datetime                DEFAULT NULL COMMENT '订单支付过期时间',
-    `userRating`           tinyint                 DEFAULT NULL COMMENT '用户评分(1-5分)',
-    `userComment`          varchar(500)            DEFAULT NULL COMMENT '用户评价',
-    `commentTime`          datetime                DEFAULT NULL COMMENT '评价时间',
-    `mileageStart`         int                     DEFAULT NULL COMMENT '起始里程数',
-    `mileageEnd`           int                     DEFAULT NULL COMMENT '结束里程数',
     `fuelLevelStart`       varchar(20)             DEFAULT NULL COMMENT '起始油量',
     `fuelLevelEnd`         varchar(20)             DEFAULT NULL COMMENT '结束油量',
     `remark`               varchar(500)            DEFAULT NULL COMMENT '备注',
@@ -393,17 +390,11 @@ CREATE TABLE IF NOT EXISTS `store`
 CREATE TABLE IF NOT EXISTS `driver`
 (
     `id`                      bigint       NOT NULL AUTO_INCREMENT COMMENT '司机ID',
-    `driverAccount`           varchar(256) NOT NULL COMMENT '司机账号',
-    `driverPassword`          varchar(512) NOT NULL COMMENT '司机密码',
     `driverName`              varchar(100) NOT NULL COMMENT '司机姓名',
     `driverAvatar`            varchar(255)          DEFAULT NULL COMMENT '头像URL',
     `gender`                  tinyint               DEFAULT '0' COMMENT '性别：0-男，1-女',
     `age`                     int                   DEFAULT NULL COMMENT '年龄',
     `phoneNumber`             varchar(20)  NOT NULL COMMENT '联系电话',
-    `email`                   varchar(100)          DEFAULT NULL COMMENT '电子邮箱',
-    `idCardNumber`            varchar(50)  NOT NULL COMMENT '身份证号码',
-    `idCardFrontImg`          varchar(255)          DEFAULT NULL COMMENT '身份证正面照片URL',
-    `idCardBackImg`           varchar(255)          DEFAULT NULL COMMENT '身份证背面照片URL',
     `driverLicenseNo`         varchar(50)  NOT NULL COMMENT '驾驶证号码',
     `driverLicenseType`       varchar(20)  NOT NULL COMMENT '驾照类型（A1/A2/B1/B2/C1等）',
     `driverLicenseImg`        varchar(255)          DEFAULT NULL COMMENT '驾驶证照片URL',
@@ -413,34 +404,17 @@ CREATE TABLE IF NOT EXISTS `driver`
     `dailyPrice`              decimal(10, 2)        DEFAULT '0.00' COMMENT '日薪',
     `workStatus`              tinyint      NOT NULL DEFAULT '0' COMMENT '工作状态：0-休息中，1-可接单，2-已接单',
     `rating`                  decimal(2, 1)         DEFAULT '5.0' COMMENT '评分（1-5分）',
-    `ratingCount`             int                   DEFAULT '0' COMMENT '评价次数',
-    `totalOrders`             int                   DEFAULT '0' COMMENT '总订单数',
-    `totalIncome`             decimal(10, 2)        DEFAULT '0.00' COMMENT '总收入',
-    `description`             varchar(500)          DEFAULT NULL COMMENT '个人简介',
-    `emergencyContact`        varchar(50)           DEFAULT NULL COMMENT '紧急联系人',
-    `emergencyPhone`          varchar(20)           DEFAULT NULL COMMENT '紧急联系电话',
-    `bankName`                varchar(100)          DEFAULT NULL COMMENT '开户行',
-    `bankAccount`             varchar(50)           DEFAULT NULL COMMENT '银行账号',
-    `serviceArea`             varchar(255)          DEFAULT NULL COMMENT '服务区域',
-    `driverRole`              tinyint      NOT NULL DEFAULT '0' COMMENT '司机角色：0-普通司机，1-金牌司机',
     `status`                  tinyint      NOT NULL DEFAULT '1' COMMENT '状态：0-禁用，1-启用',
-    `lastLoginTime`           datetime              DEFAULT NULL COMMENT '最后登录时间',
-    `lastLoginIp`             varchar(50)           DEFAULT NULL COMMENT '最后登录IP',
-    `createBy`                bigint                DEFAULT NULL COMMENT '创建人ID（管理员）',
     `createTime`              datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updateTime`              datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `isDelete`                tinyint      NOT NULL DEFAULT '0' COMMENT '是否删除',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_driverAccount` (`driverAccount`),
     UNIQUE KEY `uk_driverLicenseNo` (`driverLicenseNo`),
-    UNIQUE KEY `uk_idCardNumber` (`idCardNumber`),
     UNIQUE KEY `uk_phoneNumber` (`phoneNumber`),
     KEY `idx_driverName` (`driverName`),
     KEY `idx_workStatus` (`workStatus`),
     KEY `idx_rating` (`rating`),
-    KEY `idx_status` (`status`),
-    KEY `idx_driverRole` (`driverRole`),
-    KEY `idx_createBy` (`createBy`)
+    KEY `idx_status` (`status`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='司机表';
 

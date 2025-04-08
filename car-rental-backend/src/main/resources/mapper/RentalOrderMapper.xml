@@ -40,11 +40,6 @@
             <result property="cancelReason" column="cancelReason" />
             <result property="cancelTime" column="cancelTime" />
             <result property="expireTime" column="expireTime" />
-            <result property="userRating" column="userRating" />
-            <result property="userComment" column="userComment" />
-            <result property="commentTime" column="commentTime" />
-            <result property="mileageStart" column="mileageStart" />
-            <result property="mileageEnd" column="mileageEnd" />
             <result property="fuelLevelStart" column="fuelLevelStart" />
             <result property="fuelLevelEnd" column="fuelLevelEnd" />
             <result property="remark" column="remark" />
@@ -60,8 +55,7 @@
         needDriver,driverId,driverPrice,driverTotalAmount,status,
         paymentStatus,paymentTime,paymentMethod,transactionId,refundAmount,
         refundTime,refundTransactionId,pickupLocation,returnLocation,pickupOperatorId,
-        returnOperatorId,cancelReason,cancelTime,expireTime,userRating,
-        userComment,commentTime,mileageStart,mileageEnd,fuelLevelStart,
+        returnOperatorId,cancelReason,cancelTime,expireTime,fuelLevelStart,
         fuelLevelEnd,remark,createTime,updateTime,isDelete
     </sql>
 </mapper>
