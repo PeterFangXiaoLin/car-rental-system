@@ -2,12 +2,15 @@ package com.my.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.common.DeleteRequest;
 import com.my.common.ErrorCode;
 import com.my.common.PageRequest;
 import com.my.constant.UserConstant;
 import com.my.domain.dto.driver.DriverAddRequest;
+import com.my.domain.dto.driver.DriverQueryRequest;
 import com.my.domain.dto.driver.DriverUpdateRequest;
 import com.my.domain.entity.Driver;
 import com.my.domain.vo.DriverVO;
@@ -22,7 +25,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
+import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.my.constant.RedisConstant.DRIVER_ADD_PREFIX;
 
@@ -133,6 +138,56 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "司机不存在");
         }
         return BeanUtil.toBean(driver, DriverVO.class);
+    }
+
+    @Override
+    public Page<DriverVO> listDriverVOByPage(DriverQueryRequest driverQueryRequest) {
+        ThrowUtils.throwIf(driverQueryRequest == null, ErrorCode.PARAMS_ERROR);
+        long current = driverQueryRequest.getCurrent();
+        long size = driverQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 50, ErrorCode.PARAMS_ERROR);
+        Page<Driver> driverPage = driverMapper.selectPage(new Page<>(current, size),
+                this.getQueryWrapper(driverQueryRequest));
+        // 转换为 DriverVO
+        Page<DriverVO> driverVOPage = new Page<>(current, size, driverPage.getTotal());
+        driverVOPage.setRecords(driverPage.getRecords().stream()
+                .map(driver -> BeanUtil.toBean(driver, DriverVO.class))
+                .collect(Collectors.toList()));
+        return driverVOPage;
+    }
+
+    @Override
+    public QueryWrapper<Driver> getQueryWrapper(DriverQueryRequest driverQueryRequest) {
+        QueryWrapper<Driver> queryWrapper = new QueryWrapper<>();
+        if (driverQueryRequest == null) {
+            return queryWrapper;
+        }
+        String driverName = driverQueryRequest.getDriverName();
+        if (StrUtil.isNotBlank(driverName)) {
+            queryWrapper.like("driverName", driverName);
+        }
+        Integer gender = driverQueryRequest.getGender();
+        if (gender != null) {
+            queryWrapper.eq("gender", gender);
+        }
+        String driverLicenseType = driverQueryRequest.getDriverLicenseType();
+        if (StrUtil.isNotBlank(driverLicenseType)) {
+            queryWrapper.like("driverLicenseType", driverLicenseType);
+        }
+        BigDecimal minPrice = driverQueryRequest.getMinPrice();
+        if (minPrice != null) {
+            queryWrapper.ge("dailyPrice", minPrice);
+        }
+        BigDecimal maxPrice = driverQueryRequest.getMaxPrice();
+        if (maxPrice != null) {
+            queryWrapper.le("dailyPrice", maxPrice);
+        }
+        Integer workStatus = driverQueryRequest.getWorkStatus();
+        if (workStatus != null) {
+            queryWrapper.eq("workStatus", workStatus);
+        }
+        return queryWrapper;
     }
 
     private void validateDriver(Driver driver, boolean add) {

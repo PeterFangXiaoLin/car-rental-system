@@ -8,4 +8,6 @@ public interface RedisConstant {
     String CAPTCHA_PREFIX = "captcha:";
 
     String DRIVER_ADD_PREFIX = "driver:add:";
+
+    String VEHICLE_LOCK_PREFIX = "vehicle:lock:";
 }

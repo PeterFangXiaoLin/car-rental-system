@@ -4,12 +4,16 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.common.ErrorCode;
 import com.my.domain.dto.rentalorder.RentalOrderCreateRequest;
+import com.my.domain.entity.Driver;
 import com.my.domain.entity.RentalOrder;
 import com.my.domain.entity.Vehicle;
+import com.my.domain.enums.OrderStatusEnum;
+import com.my.domain.enums.PaymentStatusEnum;
 import com.my.domain.enums.VehicleStatusEnum;
 import com.my.domain.vo.LoginUserVO;
 import com.my.exception.BusinessException;
 import com.my.exception.ThrowUtils;
+import com.my.service.DriverService;
 import com.my.service.RentalOrderService;
 import com.my.mapper.RentalOrderMapper;
 import com.my.service.UserService;
@@ -19,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import static com.my.constant.RedisConstant.VEHICLE_LOCK_PREFIX;
 
 /**
 * @author Administrator
@@ -38,6 +44,9 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
     @Resource
     private VehicleService vehicleService;
 
+    @Resource
+    private DriverService driverService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createRentalOrder(RentalOrderCreateRequest rentalOrderCreateRequest, HttpServletRequest request) {
@@ -51,21 +60,27 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
 
         // 更新车辆状态为已租出
         // 可能存在同时更新同一辆车的情况，需要加锁或使用分布式锁来保证并发安全
-        Vehicle vehicle = vehicleService.getById(rentalOrder.getVehicleId());
-        vehicle.setStatus(VehicleStatusEnum.RENTED.getValue());
-        boolean updateResult = vehicleService.updateById(vehicle);
-        if (!updateResult) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆状态更新失败");
-        }
-        // 设置订单状态为待支付
-        rentalOrder.setStatus();
+        Long vehicleId = rentalOrder.getVehicleId();
+        String lockKey = VEHICLE_LOCK_PREFIX + vehicleId;
+        synchronized (lockKey.intern()) {
+            Vehicle vehicle = vehicleService.getById(vehicleId);
+            vehicle.setStatus(VehicleStatusEnum.RENTED.getValue());
+            boolean updateResult = vehicleService.updateById(vehicle);
+            if (!updateResult) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆状态更新失败");
+            }
+            // 设置订单状态为待支付
+            rentalOrder.setStatus(OrderStatusEnum.UNPAID.getValue());
+            // 设置支付状态为未支付
+            rentalOrder.setPaymentStatus(PaymentStatusEnum.UNPAID.getValue());
 
-        // 保存订单
-        boolean saveResult = this.save(rentalOrder);
-        if (!saveResult) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单创建失败");
+            // 保存订单
+            boolean saveResult = this.save(rentalOrder);
+            if (!saveResult) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单创建失败");
+            }
+            return rentalOrder.getId();
         }
-        return rentalOrder.getId();
     }
 
 
@@ -83,7 +98,10 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
         // 如果选了司机，则校验司机是否存在
         if (rentalOrder.getNeedDriver() == 1) {
             Long driverId = rentalOrder.getDriverId();
-
+            Driver driver = driverService.getById(driverId);
+            if (driver == null) {
+                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "司机不存在");
+            }
         }
     }
 }

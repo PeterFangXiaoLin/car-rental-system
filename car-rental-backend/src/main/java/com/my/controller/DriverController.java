@@ -1,5 +1,6 @@
 package com.my.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.my.annotation.AuthCheck;
 import com.my.common.BaseResponse;
 import com.my.common.DeleteRequest;
@@ -52,7 +53,7 @@ public class DriverController {
 
     @PostMapping("/list/page")
     @ApiOperation("分页获取司机列表")
-    public BaseResponse<DriverVO> listDriverVOByPage(@RequestBody DriverQueryRequest driverQueryRequest) {
+    public BaseResponse<Page<DriverVO>> listDriverVOByPage(@RequestBody DriverQueryRequest driverQueryRequest) {
         return success(driverService.listDriverVOByPage(driverQueryRequest));
     }
 }
