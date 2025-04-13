@@ -5,31 +5,34 @@
 <mapper namespace="com.my.mapper.DriverMapper">
 
     <resultMap id="BaseResultMap" type="com.my.domain.entity.Driver">
-            <id property="id" column="id" />
-            <result property="driverName" column="driverName" />
-            <result property="driverAvatar" column="driverAvatar" />
-            <result property="gender" column="gender" />
-            <result property="age" column="age" />
-            <result property="phoneNumber" column="phoneNumber" />
-            <result property="driverLicenseNo" column="driverLicenseNo" />
-            <result property="driverLicenseType" column="driverLicenseType" />
-            <result property="driverLicenseImg" column="driverLicenseImg" />
-            <result property="driverLicenseIssueDate" column="driverLicenseIssueDate" />
-            <result property="driverLicenseExpireDate" column="driverLicenseExpireDate" />
-            <result property="drivingYears" column="drivingYears" />
-            <result property="dailyPrice" column="dailyPrice" />
-            <result property="workStatus" column="workStatus" />
-            <result property="rating" column="rating" />
-            <result property="status" column="status" />
-            <result property="createTime" column="createTime" />
-            <result property="updateTime" column="updateTime" />
-            <result property="isDelete" column="isDelete" />
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="driverName" column="driverName" jdbcType="VARCHAR"/>
+            <result property="driverAvatar" column="driverAvatar" jdbcType="VARCHAR"/>
+            <result property="gender" column="gender" jdbcType="TINYINT"/>
+            <result property="age" column="age" jdbcType="INTEGER"/>
+            <result property="phoneNumber" column="phoneNumber" jdbcType="VARCHAR"/>
+            <result property="driverLicenseNo" column="driverLicenseNo" jdbcType="VARCHAR"/>
+            <result property="driverLicenseType" column="driverLicenseType" jdbcType="VARCHAR"/>
+            <result property="driverLicenseImg" column="driverLicenseImg" jdbcType="VARCHAR"/>
+            <result property="driverLicenseIssueDate" column="driverLicenseIssueDate" jdbcType="DATE"/>
+            <result property="driverLicenseExpireDate" column="driverLicenseExpireDate" jdbcType="DATE"/>
+            <result property="drivingYears" column="drivingYears" jdbcType="INTEGER"/>
+            <result property="dailyPrice" column="dailyPrice" jdbcType="DECIMAL"/>
+            <result property="workStatus" column="workStatus" jdbcType="TINYINT"/>
+            <result property="rating" column="rating" jdbcType="DECIMAL"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,driverName,driverAvatar,gender,
-        age,phoneNumber,driverLicenseNo,driverLicenseType,driverLicenseImg,
-        driverLicenseIssueDate,driverLicenseExpireDate,drivingYears,dailyPrice,workStatus,
-        rating,status,createTime,updateTime,isDelete
+        id,driverName,driverAvatar,
+        gender,age,phoneNumber,
+        driverLicenseNo,driverLicenseType,driverLicenseImg,
+        driverLicenseIssueDate,driverLicenseExpireDate,drivingYears,
+        dailyPrice,workStatus,rating,
+        status,createTime,updateTime,
+        isDelete
     </sql>
 </mapper>

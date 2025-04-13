@@ -140,6 +140,11 @@ public class VehicleBrandServiceImpl extends ServiceImpl<VehicleBrandMapper, Veh
         return this.getVehicleBrandVO(vehicleBrand);
     }
 
+    @Override
+    public List<VehicleBrandVO> listVehicleBrandByLetter(String letter) {
+        return this.query().eq("firstLetter", letter).list().stream().map(this::getVehicleBrandVO).collect(Collectors.toList());
+    }
+
     private void validate(VehicleBrand vehicleBrand, boolean add) {
         if (vehicleBrand == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);

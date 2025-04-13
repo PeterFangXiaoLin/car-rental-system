@@ -48,9 +48,9 @@ public class UserQueryRequest extends PageRequest implements Serializable {
     private Integer memberLevel;
 
     /**
-     * 用户角色：0-用户，1-司机，2-管理员
+     * 用户角色: user-普通用户, admin-管理员
      */
-    private Integer userRole;
+    private String userRole;
 
     private static final long serialVersionUID = 1L;
 } 

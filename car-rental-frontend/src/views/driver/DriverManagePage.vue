@@ -1,18 +1,84 @@
 <template>
-  <div class="user-manage-container">
+  <div>
     <!-- 搜索表单 -->
     <el-card shadow="never" class="mb-15px">
       <div>
         <el-form :model="searchParams" class="-mb-15px" label-width="68px" size="large">
           <el-row>
-            <el-col :span="4">
-              <el-form-item label="账号">
-                <el-input v-model="searchParams.userAccount" placeholder="输入账号" clearable />
+            <el-col :span="6">
+              <el-form-item label="司机姓名">
+                <el-input
+                  v-model="searchParams.driverName"
+                  placeholder="请输入司机姓名"
+                  clearable
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item label="性别">
+                <el-select
+                  v-model="searchParams.gender"
+                  placeholder="请选择性别"
+                  clearable
+                  size="large"
+                >
+                  <el-option label="男" :value="0" />
+                  <el-option label="女" :value="1" />
+                </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="4">
-              <el-form-item label="用户名">
-                <el-input v-model="searchParams.userName" placeholder="输入用户名" clearable />
+              <el-form-item label="驾照类型">
+                <el-select
+                  v-model="searchParams.driverLicenseType"
+                  placeholder="请选择驾照类型"
+                  clearable
+                  size="large"
+                >
+                  <el-option label="A1" value="A1" />
+                  <el-option label="A2" value="A2" />
+                  <el-option label="B1" value="B1" />
+                  <el-option label="B2" value="B2" />
+                  <el-option label="C1" value="C1" />
+                  <el-option label="C2" value="C2" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item label="最小日薪">
+                <el-input-number
+                  v-model="searchParams.minPrice"
+                  :min="0"
+                  :precision="2"
+                  :step="100"
+                  placeholder="最小日薪"
+                  size="large"
+                  class="w-full"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item label="最大日薪">
+                <el-input-number
+                  v-model="searchParams.maxPrice"
+                  :min="0"
+                  :precision="2"
+                  :step="100"
+                  placeholder="最大日薪"
+                  size="large"
+                  class="w-full"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="6">
+              <el-form-item label="工作状态">
+                <el-select v-model="searchParams.workStatus" placeholder="请选择工作状态" clearable>
+                  <el-option label="休息中" :value="0" />
+                  <el-option label="可接单" :value="1" />
+                  <el-option label="已接单" :value="2" />
+                </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="5">
@@ -27,7 +93,7 @@
     </el-card>
 
     <el-card shadow="never" class="mb-15px">
-      <!-- 用户表格 -->
+      <!-- 司机表格 -->
       <el-table
         :data="dataList"
         style="width: 100%"
@@ -35,13 +101,12 @@
         :header-cell-style="{ 'background-color': '#ecf8fe', color: '#4986EA' }"
       >
         <el-table-column label="序号" type="index" width="60" align="center" />
-        <el-table-column prop="userAccount" label="账号" width="120" align="center" />
-        <el-table-column prop="userName" label="用户名" width="120" align="center" />
+        <el-table-column prop="driverName" label="司机姓名" width="120" align="center" />
         <el-table-column label="头像" width="120" align="center">
           <template #default="{ row }">
             <el-image
-              :src="row.userAvatar"
-              :preview-src-list="[row.userAvatar]"
+              :src="row.driverAvatar"
+              :preview-src-list="[row.driverAvata]"
               fit="cover"
               style="width: 80px; height: 80px"
               :preview-teleported="true"
@@ -49,19 +114,30 @@
             />
           </template>
         </el-table-column>
-        <el-table-column prop="userProfile" label="简介" align="center" />
-        <el-table-column label="用户角色" width="100" align="center">
+        <el-table-column label="性别" width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.userRole === UserRoleEnum.ADMIN ? 'success' : 'info'">
-              {{ row.userRole === USER_ROLE_ENUM.ADMIN ? '管理员' : '普通用户' }}
+            <el-tag :type="row.gender === GenderEnum.MALE ? 'success' : 'primary'">
+              {{ row.gender === GenderEnum.MALE ? '男' : '女' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" width="180" align="center">
+        <el-table-column label="年龄" width="100" align="center" prop="age" />
+        <el-table-column label="联系电话" width="120" align="center" prop="phoneNumber" />
+        <el-table-column label="驾驶证号码" width="120" align="center" prop="driverLicenseNo" />
+        <el-table-column label="驾驶证类型" width="120" align="center" prop="driverLicenseType" />
+        <el-table-column label="驾驶证照片" width="120" align="center">
           <template #default="{ row }">
-            {{ dayjs(row.createTime).format('YYYY-MM-DD HH:mm:ss') }}
+            <el-image
+              :src="row.driverLicenseImg"
+              :preview-src-list="[row.driverLicenseImg]"
+              fit="cover"
+              style="width: 80px; height: 80px"
+              :preview-teleported="true"
+              :initial-index="0"
+            />
           </template>
         </el-table-column>
+        <el-table-column label=""
         <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="{ row }">
             <el-button link type="primary" @click="selectOpen(1, row.id)">
@@ -114,6 +190,7 @@ import { Delete, Plus, Search, Edit, View } from '@element-plus/icons-vue'
 import UserInfoForm from '@/components/admin/UserInfoForm.vue'
 import USER_ROLE_ENUM from '../../enums/UserRoleEnum.ts'
 import UserRoleEnum from '../../enums/UserRoleEnum.ts'
+import GenderEnum from '@/enums/GenderEnum.ts'
 
 const loading = ref(false)
 const dataList = ref<API.UserVO[]>([])
@@ -122,13 +199,11 @@ const total = ref(0)
 const formRef = ref()
 
 // 搜索参数
-const searchParams = reactive({
+const searchParams = reactive<API.DriverQueryRequest>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',
   sortOrder: 'ascend',
-  userAccount: '',
-  userName: '',
 })
 
 // 获取用户列表数据
@@ -179,7 +254,7 @@ const handleDelete = async (id: string) => {
     await ElMessageBox.confirm('确定要删除该用户吗？', '提示', {
       type: 'warning',
     })
-    const res = await adminDeleteUserUsingPost({ id })
+    const res = await adminDeleteUserUsingPost({ id: Number(id) })
     if (res.data.code === 0) {
       ElMessage.success('删除成功')
       await fetchData()

@@ -66,4 +66,6 @@ public interface VehicleBrandService extends IService<VehicleBrand> {
      * @return
      */
     VehicleBrandVO getVehicleBrandById(Long id);
+
+    List<VehicleBrandVO> listVehicleBrandByLetter(String letter);
 }

@@ -1,32 +1,28 @@
 package com.my;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.my.domain.entity.Vehicle;
-import com.my.domain.entity.VehicleBrand;
-import com.my.domain.entity.VehicleModel;
-import com.my.domain.entity.VehicleTypeDict;
-import com.my.service.VehicleBrandService;
-import com.my.service.VehicleModelService;
-import com.my.service.VehicleTypeDictService;
-import com.my.utils.spider.Brand;
-import com.my.utils.spider.BrandInfoResult;
-import com.my.utils.spider.BrandResult;
-import com.my.utils.spider.Result;
+import com.my.domain.entity.*;
+import com.my.domain.enums.VehicleStatusEnum;
+import com.my.service.*;
+import com.my.utils.RandomUtils;
 import com.qcloud.cos.COSClient;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.*;
 
 @SpringBootTest
 @Slf4j
@@ -34,6 +30,9 @@ class CarRentalBackendApplicationTests {
 
     @Resource
     private COSClient cosClient;
+
+    @Resource
+    private VehicleService vehicleService;
 
     @Resource
     private VehicleBrandService vehicleBrandService;
@@ -44,30 +43,8 @@ class CarRentalBackendApplicationTests {
     @Resource
     private VehicleTypeDictService vehicleTypeDictService;
 
-    @Test
-    void contextLoads() {
-        String res = HttpUtil.get("https://car-web-api.autohome.com.cn/car/brand/getbrand?sorttype=1");
-        JSONObject jsonObject = JSONUtil.parseObj(res);
-        BrandResult bean = JSONUtil.toBean(jsonObject, BrandResult.class);
-
-        List<Brand> brandlist = bean.getResult().getBrandlist();
-        List<VehicleBrand> list = new ArrayList<>();
-        for (int i = 0; i < brandlist.size(); i++) {
-            Brand brand = brandlist.get(i);
-            VehicleBrand vehicleBrand = new VehicleBrand();
-            vehicleBrand.setBrandName(brand.getName());
-            vehicleBrand.setBrandLogo(brand.getLogo());
-            vehicleBrand.setFirstLetter(brand.getFirstletter());
-            list.add(vehicleBrand);
-
-            // 每100个或最后一批执行插入
-            if ((i + 1) % 100 == 0 || i == brandlist.size() - 1) {
-                vehicleBrandService.saveBatch(list);
-                list.clear();  // 清空列表准备下一批
-            }
-        }
-        log.info("插入成功");
-    }
+    @Resource
+    private EnergyTypeDictService energyTypeDictService;
 
     @Test
     void test() throws JsonProcessingException {
@@ -97,54 +74,291 @@ class CarRentalBackendApplicationTests {
     }
 
     @Test
-    void test1() {
-        String res = HttpUtil.get("https://car-web-api.autohome.com.cn/car/brand/getbrand?sorttype=1");
+    void test2() throws IOException {
+        String url = "https://www.dongchedi.com/auto/library/x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-2-x-x";
+        Document document = Jsoup.connect(url).get();
+        Elements element = document.getElementsByClass("brand_brands__1VgjE");
+        element.select("li").forEach(li -> {
+            String brandName = li.select(".brand_name__1-UUM").text();
+            String brandLogo = li.select(".brand_image__2yj7_ > img").attr("src");
+            String[] split = li.select(".brand_link__3F8eK").attr("href").split("-");
+            String brandId = split[split.length - 3];
+            System.out.println(brandName);
+            System.out.println(brandLogo);
+            System.out.println(brandId);
+            System.out.println("----------");
+
+        });
+
+    }
+
+    @Test
+    void test4() throws IOException {
+        String url = "https://www.dongchedi.com/motor/pc/car/brand/select_series_v2?aid=1839&app_name=auto_web_pc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("brand", 2);
+        params.put("city_name", "广州");
+        params.put("sort_new", "hot_desc");
+        params.put("page", 1);
+        params.put("limit", 150);
+        String res = HttpUtil.post(url, params);
         JSONObject jsonObject = JSONUtil.parseObj(res);
-        BrandResult bean = JSONUtil.toBean(jsonObject, BrandResult.class);
 
-        String url = "https://car.app.autohome.com.cn/carMiddle/getSeriesListByBrandId?brandId=%s&appId=pc";
+        // 解析JSON获取series列表
+        JSONObject data = jsonObject.getJSONObject("data");
+        List<JSONObject> seriesList = data.getJSONArray("series").toList(JSONObject.class);
 
-        List<Brand> brandlist = bean.getResult().getBrandlist();
-        for (Brand brand : brandlist) {
-            String name = brand.getName();
-            String logo = brand.getLogo();
-            String firstletter = brand.getFirstletter();
-            VehicleBrand vehicleBrand = new VehicleBrand();
-            vehicleBrand.setBrandName(name);
-            vehicleBrand.setBrandLogo(logo);
-            vehicleBrand.setFirstLetter(firstletter);
-            vehicleBrandService.save(vehicleBrand);
+        // 遍历处理每个series
+        for (JSONObject series : seriesList) {
+            String brandName = series.getStr("brand_name");
+            String seriesName = series.getStr("outter_name");
+            String coverUrl = series.getStr("cover_url");
+            List<Integer> carIds = series.getJSONArray("car_ids").toList(Integer.class);
 
-            Long brandId = vehicleBrand.getId();
+            System.out.println("品牌: " + brandName);
+            System.out.println("车系: " + seriesName);
+            System.out.println("封面图: " + coverUrl);
+            System.out.println("包含车型ID: " + carIds);
+            System.out.println("----------------------");
 
-            Long id = brand.getId();
-            String brandUrl = String.format(url, id);
-            String res1 = HttpUtil.get(brandUrl);
-            JSONObject jsonObject1 = JSONUtil.parseObj(res1);
-            BrandInfoResult result = (BrandInfoResult)jsonObject1.get("result");
+            String carDetailUrl = "https://www.dongchedi.com/auto/params-carIds-%s";
+            for (int carId : carIds) {
+                String carUrl = String.format(carDetailUrl, carId);
+                Document document = Jsoup.connect(carUrl).get();
+                // 拿到座位数、能源类型，还有车型
+                Elements div = document.select(".configuration_main__2NCwO");
+                String carModel = div.select(".cell_normal__37nRi").text();
+                String energyType = div.select(".cell_normal__37nRi").text();
+            }
+        }
+    }
 
-            List<BrandInfoResult.Item> list = result.getList().getList();
-            for (BrandInfoResult.Item item : list) {
-                String modelName = item.getName();
-                String imgUrl = item.getImgUrl();
-
-                // 新增车型
-                VehicleModel vehicleModel = new VehicleModel();
-                vehicleModel.setModelName(modelName);
-                vehicleModel.setModelLogo(imgUrl);
-                vehicleModel.setBrandId(brandId);
-                vehicleModelService.save(vehicleModel);
-
-                Long seriesId = item.getSeriesId();
-                // 新增车辆
-                String carUrl = "https://car.app.autohome.com.cn/carMiddle/getSpecListBySeriesId?seriesId=%s&appId=pc&cityId=440100";
-                String carUrl1 = String.format(carUrl, seriesId);
-                String res2 = HttpUtil.get(carUrl1);
-                JSONObject jsonObject2 = JSONUtil.parseObj(res2);
-                Result result1 = (Result)jsonObject2.get("result");
-    
+    @Test
+    void test3() {
+        List<Integer> brandIdList = Arrays.asList(2, 3, 35, 1, 10012, 5, 40, 59, 165, 73, 84, 19, 15, 199, 238, 420, 18, 36, 515, 63, 348, 300, 112, 195, 67, 883);
+        String baseUrl = "https://www.dongchedi.com/auto/library/x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-%s-x-x";
+        for (int brandId : brandIdList) {
+            String url = String.format(baseUrl, brandId);
+            Document document = null;
+            try {
+                document = Jsoup.connect(url).get();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
 
         }
+    }
+
+    // 获取车辆信息
+    @Test
+    void test5() throws IOException {
+        String url = "https://www.dongchedi.com/auto/params-carIds-110727";
+        Document document = Jsoup.connect(url).get();
+        // 拿到座位数、能源类型，还有车型
+        Elements div = document.select(".configuration_main__2NCwO");
+
+        // 获取级别信息
+        String level = div.select("div[data-row-anchor=jb] div").get(1).text();
+
+        // 获取能源类型
+        String energyType = div.select("div[data-row-anchor=fuel_form] div").get(1).text();
+
+        String seat = div.select("div[data-row-anchor=seat_count] div").get(1).text();
+
+        String carName = document.select("a.cell_car__28WzZ.line-2").text();
+
+        System.out.println("级别: " + level);
+        System.out.println("能源类型: " + energyType);
+        System.out.println("座位数: " + seat);
+        System.out.println("车辆名称: " + carName);
+    }
+
+    // 获取车辆的图片
+    @Test
+    void test6() throws IOException {
+        String url = "https://www.dongchedi.com/auto/series/2/model-110727";
+        Document document = Jsoup.connect(url).get();
+        String src = document.select("div.tw-rounded-2.tw-filter.tw-blur-20 img").attr("src");
+        System.out.println(src);
+    }
+
+    @Test
+    void testSpider() throws IOException {
+        List<Integer> brandIdList = Arrays.asList(2, 3, 35, 1, 10012, 5, 40, 59, 165, 73, 84, 19, 15, 199, 238, 420, 18, 36, 515, 63, 348, 300, 112, 195, 67, 883);
+        String baseUrl = "https://www.dongchedi.com/auto/library/x-x-x-x-x-x-x-x-x-x-x-x-x-x-x-%s-x-x";
+        for (int i = 10; i < brandIdList.size(); i++) {
+            int brandId = brandIdList.get(i);
+            String url = String.format(baseUrl, brandId);
+            Document document = Jsoup.connect(url).get();
+            Elements element = document.getElementsByClass("brand_brands__1VgjE");
+            int finalI = i;
+            element.select("li").forEach(li -> {
+                String brandName = li.select(".brand_name__1-UUM").text();
+                String brandLogo = li.select(".brand_image__2yj7_ > img").attr("src");
+                String[] split = li.select(".brand_link__3F8eK").attr("href").split("-");
+                String brand_id = split[split.length - 3];
+
+                // 新增品牌
+                VehicleBrand vehicleBrand = new VehicleBrand();
+                vehicleBrand.setBrandName(brandName);
+                vehicleBrand.setBrandLogo("https:" + brandLogo);
+                vehicleBrand.setFirstLetter((char)(finalI + 'A') + "");
+                vehicleBrandService.save(vehicleBrand);
+
+                String getCarByBrand = "https://www.dongchedi.com/motor/pc/car/brand/select_series_v2?aid=1839&app_name=auto_web_pc";
+                Map<String, Object> params = new HashMap<>();
+                params.put("brand", brand_id);
+                params.put("city_name", "广州");
+                params.put("sort_new", "hot_desc");
+                params.put("page", 1);
+                params.put("limit", 10);
+                String res = HttpUtil.post(getCarByBrand, params);
+                JSONObject jsonObject = JSONUtil.parseObj(res);
+
+                // 解析JSON获取series列表
+                JSONObject data = jsonObject.getJSONObject("data");
+                List<JSONObject> seriesList = data.getJSONArray("series").toList(JSONObject.class);
+
+                // 遍历处理每个series
+                for (JSONObject series : seriesList) {
+                    String seriesName = series.getStr("outter_name");
+                    String coverUrl = series.getStr("cover_url");
+                    String concernId = series.getStr("concern_id");
+                    List<Integer> carIds = series.getJSONArray("car_ids").toList(Integer.class);
+
+
+                    // 新增车系
+                    VehicleModel vehicleModel = new VehicleModel();
+                    vehicleModel.setBrandId(vehicleBrand.getId());
+                    vehicleModel.setModelName(seriesName);
+                    vehicleModel.setModelLogo(coverUrl);
+                    vehicleModelService.save(vehicleModel);
+
+                    String carDetailUrl = "https://www.dongchedi.com/auto/params-carIds-%s";
+                    String carPictureUrl = "https://www.dongchedi.com/auto/series/%s/model-%s";
+                    int count = 0;
+                    for (int carId : carIds) {
+                        if (count == 3) {
+                            break;
+                        }
+                        String carUrl = String.format(carDetailUrl, carId);
+                        Document document1 = null;
+                        try {
+                            document1 = Jsoup.connect(carUrl).get();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        // 拿到座位数、能源类型，还有车型
+                        Elements div = document1.select(".configuration_main__2NCwO");
+
+                        // 获取级别信息
+                        String level = div.select("div[data-row-anchor=jb] div").get(1).text();
+
+                        // 获取能源类型
+                        String energyType = div.select("div[data-row-anchor=fuel_form] div").get(1).text();
+
+                        String seat = div.select("div[data-row-anchor=seat_count] div").get(1).text();
+
+                        String carName = document1.select("a.cell_car__28WzZ.line-2").text();
+
+                        // 获取车辆图片
+                        String carPicture = String.format(carPictureUrl, concernId, carId);
+                        Document document2 = null;
+                        try {
+                            document2 = Jsoup.connect(carPicture).get();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        String src = document2.select("div.tw-rounded-2.tw-filter.tw-blur-20 img").attr("src");
+
+                        // 获取车辆年份
+                        String carDetail = "https://www.dongchedi.com/motor/pc/car/series/car_dealer_price";
+                        Map<String, Object> params1 = new HashMap<>();
+                        params1.put("aid", 1839);
+                        params1.put("app_name", "auto_web_pc");
+                        params1.put("car_ids", carId);
+                        params1.put("city_name", "广州");
+                        String carDetailRes = HttpUtil.get(carDetail, params1);
+                        JSONObject jsonObject1 = JSONUtil.parseObj(carDetailRes);
+                        JSONObject data1 = jsonObject1.getJSONObject("data").getJSONObject(String.valueOf(carId));
+                        String year = data1.getStr("year");
+
+                        // 新增车辆
+                        Vehicle vehicle = new Vehicle();
+                        vehicle.setName(carName);
+                        vehicle.setVehicleNo(RandomUtils.randomLicensePlate());
+                        vehicle.setBrandId(vehicleBrand.getId());
+                        vehicle.setModelId(vehicleModel.getId());
+                        vehicle.setImageUrl("https:" + src);
+                        if (StrUtil.isBlank(year)) {
+                            vehicle.setProductionYear(2025);
+                        } else {
+                            vehicle.setProductionYear(Integer.parseInt(year));
+                        }
+                        try {
+                            vehicle.setSeatCount(Integer.parseInt(seat));
+                        } catch (NumberFormatException e) {
+                            vehicle.setSeatCount(4);  // 转换失败时使用默认值
+                        }
+                        vehicle.setStatus(VehicleStatusEnum.AVAILABLE.getValue());
+                        int price = new Random().nextInt(222) + 77;
+                        vehicle.setDailyPrice(new BigDecimal(String.valueOf(price)));
+
+
+                        List<VehicleTypeDict> vehicleTypeDictList = vehicleTypeDictService.list();
+                        boolean flag = false;
+                        for (VehicleTypeDict vehicleTypeDict : vehicleTypeDictList) {
+                            if (vehicleTypeDict.getTypeName().equals(level)) {
+                                vehicle.setVehicleTypeId(vehicleTypeDict.getId());
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (!flag) {
+                            VehicleTypeDict vehicleTypeDict = new VehicleTypeDict();
+                            vehicleTypeDict.setTypeName(level);
+                            vehicleTypeDictService.save(vehicleTypeDict);
+                            vehicle.setVehicleTypeId(vehicleTypeDict.getId());
+                        }
+
+                        List<EnergyTypeDict> energyTypeDictList = energyTypeDictService.list();
+                        boolean flag1 = false;
+                        for (EnergyTypeDict energyTypeDict : energyTypeDictList) {
+                            if (energyTypeDict.getTypeName().equals(energyType)) {
+                                vehicle.setEnergyTypeId(energyTypeDict.getId());
+                                flag1 = true;
+                                break;
+                            }
+                        }
+                        if (!flag1) {
+                            EnergyTypeDict energyTypeDict = new EnergyTypeDict();
+                            energyTypeDict.setTypeName(energyType);
+                            energyTypeDictService.save(energyTypeDict);
+                            vehicle.setEnergyTypeId(energyTypeDict.getId());
+                        }
+                        vehicleService.save(vehicle);
+                        log.info("添加车辆成功");
+                        count++;
+                    }
+                }
+            });
+        }
+    }
+
+    @Test
+    void test7() {
+        List<VehicleBrand> list = vehicleBrandService.list();
+        for (VehicleBrand vehicleBrand : list) {
+            String brandLogo = vehicleBrand.getBrandLogo();
+            brandLogo = brandLogo.replace("https:////", "https://");
+            vehicleBrand.setBrandLogo(brandLogo);
+        }
+        vehicleBrandService.updateBatchById(list);
+    }
+
+    @Test
+    void test8() {
+        List<Vehicle> vehicleList = vehicleService.query().eq("energyTypeId", 1910988426543300610L).list();
+        vehicleService.removeBatchByIds(vehicleList);
     }
 }

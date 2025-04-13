@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 import static com.my.common.ResultUtils.success;
 
@@ -58,5 +59,11 @@ public class VehicleTypeDictController {
     @PostMapping("/page")
     public BaseResponse<Page<VehicleTypeDictVO>> pageVehicleTypeDict(@RequestBody VehicleTypeDictQueryRequest vehicleTypeDictQueryRequest) {
         return success(vehicleTypeDictService.pageVehicleTypeDict(vehicleTypeDictQueryRequest));
+    }
+
+    @PostMapping("/list")
+    @ApiOperation(value = "获取车辆类型列表")
+    public BaseResponse<List<VehicleTypeDictVO>> listVehicleTypeDict() {
+        return success(vehicleTypeDictService.listVehicleTypeDict());
     }
 }

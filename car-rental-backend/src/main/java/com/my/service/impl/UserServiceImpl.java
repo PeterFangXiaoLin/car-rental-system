@@ -16,10 +16,7 @@ import com.my.common.ErrorCode;
 import com.my.constant.CommonConstant;
 import com.my.domain.dto.user.*;
 import com.my.domain.entity.User;
-import com.my.domain.enums.VerifyResultEnum;
 import com.my.domain.enums.UserGenderEnum;
-import com.my.domain.enums.UserRoleEnum;
-import com.my.domain.enums.VerifyStatusEnum;
 import com.my.domain.vo.LoginUserVO;
 import com.my.domain.vo.UserVO;
 import com.my.exception.BusinessException;
@@ -37,7 +34,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -256,7 +252,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public boolean isAdmin(User user) {
-        return user != null && UserRoleEnum.ADMIN.getValue() == user.getUserRole();
+        return user != null && ADMIN_ROLE.equals(user.getUserRole());
     }
 
     @Override
@@ -363,7 +359,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 4. 创建更新对象
         User user = BeanUtil.toBean(userUpdateRequest, User.class);
         user.setId(userId);
-        user.setEditTime(new Date());
 
         // 5. 更新数据库
         boolean result = this.updateById(user);
@@ -539,7 +534,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String phoneNumber = userQueryRequest.getPhoneNumber();
         String email = userQueryRequest.getEmail();
         Integer memberLevel = userQueryRequest.getMemberLevel();
-        Integer userRole = userQueryRequest.getUserRole();
+        String userRole = userQueryRequest.getUserRole();
         String sortField = userQueryRequest.getSortField();
         String sortOrder = userQueryRequest.getSortOrder();
 
@@ -549,7 +544,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.like(StrUtil.isNotBlank(phoneNumber), "phoneNumber", phoneNumber);
         queryWrapper.like(StrUtil.isNotBlank(email), "email", email);
         queryWrapper.eq(memberLevel != null, "memberLevel", memberLevel);
-        queryWrapper.eq(userRole != null, "userRole", userRole);
+        queryWrapper.eq(StrUtil.isNotBlank(userRole), "userRole", userRole);
         queryWrapper.orderBy(StrUtil.isNotBlank(sortField), sortOrder.equalsIgnoreCase(CommonConstant.SORT_ORDER_ASC), sortField);
 
         return queryWrapper;
@@ -597,87 +592,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return user;
     }
 
-    @Override
-    public boolean authUser(UserAuthRequest userAuthRequest, HttpServletRequest request) {
-        if (userAuthRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        LoginUserVO loginUser = this.getLoginUser(request);
-
-        String realName = userAuthRequest.getRealName();
-        String idCardNumber = userAuthRequest.getIdCardNumber();
-        String driverLicenseNo = userAuthRequest.getDriverLicenseNo();
-        String driverLicenseType = userAuthRequest.getDriverLicenseType();
-        Date driverLicenseIssueDate = userAuthRequest.getDriverLicenseIssueDate();
-        Date driverLicenseExpireDate = userAuthRequest.getDriverLicenseExpireDate();
-
-        if (StrUtil.hasBlank(realName, idCardNumber, driverLicenseNo, driverLicenseType)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        if (driverLicenseIssueDate == null || driverLicenseExpireDate == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        if (driverLicenseIssueDate.after(driverLicenseExpireDate)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "驾驶证有效期不能小于驾驶证发证日期");
-        }
-
-        User user = BeanUtil.toBean(userAuthRequest, User.class);
-        user.setId(loginUser.getId());
-        user.setVerifyStatus(VerifyStatusEnum.VERIFYING.getValue());
-        user.setVerifyTime(new Date());
-        user.setVerifyResult(VerifyResultEnum.REVIEWING.getValue());
-
-        boolean result = this.updateById(user);
-        if (!result) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "系统异常");
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean reviewUser(UserReviewRequest userReviewRequest, HttpServletRequest request) {
-        if (userReviewRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        Long userId = userReviewRequest.getId();
-        User user = this.getById(userId);
-        if (user == null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
-        }
-        Integer reviewStatus = userReviewRequest.getReviewStatus();
-        VerifyResultEnum verifyResultEnum = VerifyResultEnum.getEnumByValue(reviewStatus);
-        if (verifyResultEnum == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-
-        // 校验状态
-        Integer verifyResult = user.getVerifyResult();
-        if (verifyResult == verifyResultEnum.getValue()) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请勿重复审核");
-        }
-        // 修改状态
-        User updateUser = new User();
-        updateUser.setId(userId);
-        // 通过
-        if (verifyResultEnum == VerifyResultEnum.PASS) {
-            updateUser.setVerifyStatus(VerifyStatusEnum.VERIFIED.getValue());
-            updateUser.setVerifyResult(VerifyResultEnum.PASS.getValue());
-        } else if (verifyResultEnum == VerifyResultEnum.REJECT) {
-            // 拒绝
-            updateUser.setVerifyStatus(VerifyStatusEnum.VERIFY_FAILED.getValue());
-            updateUser.setVerifyResult(VerifyResultEnum.REJECT.getValue());
-            updateUser.setRejectReason(userReviewRequest.getRejectReason());
-        }
-        updateUser.setReviewId(this.getLoginUser(request).getId());
-        updateUser.setReviewTime(new Date());
-
-        boolean result = this.updateById(updateUser);
-        if (!result) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "审核失败");
-        }
-        return true;
-    }
 }
 
 

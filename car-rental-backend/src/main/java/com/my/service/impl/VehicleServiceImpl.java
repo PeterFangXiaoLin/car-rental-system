@@ -12,24 +12,16 @@ import com.my.constant.CommonConstant;
 import com.my.domain.dto.vehicle.VehicleAddRequest;
 import com.my.domain.dto.vehicle.VehicleQueryRequest;
 import com.my.domain.dto.vehicle.VehicleUpdateRequest;
-import com.my.domain.entity.Vehicle;
-import com.my.domain.entity.VehicleBrand;
-import com.my.domain.entity.VehicleModel;
-import com.my.domain.entity.VehicleTypeDict;
+import com.my.domain.entity.*;
 import com.my.domain.enums.VehicleStatusEnum;
-import com.my.domain.enums.VerifyResultEnum;
 import com.my.domain.vo.VehicleVO;
 import com.my.exception.BusinessException;
-import com.my.service.VehicleBrandService;
-import com.my.service.VehicleModelService;
-import com.my.service.VehicleService;
 import com.my.mapper.VehicleMapper;
-import com.my.service.VehicleTypeDictService;
+import com.my.service.*;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -54,6 +46,9 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
     @Resource
     private VehicleTypeDictService vehicleTypeDictService;
 
+    @Resource
+    private EnergyTypeDictService energyTypeDictService;
+
     private void validate(Vehicle vehicle, boolean add) {
         if (vehicle == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -65,7 +60,6 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         Long modelId = vehicle.getModelId();
         Long vehicleTypeId = vehicle.getVehicleTypeId();
         BigDecimal dailyPrice = vehicle.getDailyPrice();
-        BigDecimal deposit = vehicle.getDeposit();
         Integer status = vehicle.getStatus();
 
         if (!add) {
@@ -109,9 +103,6 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
 
         if (dailyPrice == null || dailyPrice.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "日租金不能为空");
-        }
-        if (deposit == null || deposit.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "押金不能为空");
         }
         if (status == null || VehicleStatusEnum.getEnumByValue(status) == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "状态非法");
@@ -196,9 +187,11 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         VehicleBrand vehicleBrand = vehicleBrandService.getById(vehicle.getBrandId());
         VehicleModel vehicleModel = vehicleModelService.getById(vehicle.getModelId());
         VehicleTypeDict vehicleTypeDict = vehicleTypeDictService.getById(vehicle.getVehicleTypeId());
-        vehicleVO.setBrandName(Optional.of(vehicleBrand.getBrandName()).orElse(StrUtil.EMPTY));
-        vehicleVO.setModelName(Optional.of(vehicleModel.getModelName()).orElse(StrUtil.EMPTY));
-        vehicleVO.setVehicleTypeName(Optional.of(vehicleTypeDict.getTypeName()).orElse(StrUtil.EMPTY));
+        EnergyTypeDict energyTypeDict = energyTypeDictService.getById(vehicle.getEnergyTypeId());
+        vehicleVO.setBrandName(Optional.ofNullable(vehicleBrand.getBrandName()).orElse(StrUtil.EMPTY));
+        vehicleVO.setModelName(Optional.ofNullable(vehicleModel.getModelName()).orElse(StrUtil.EMPTY));
+        vehicleVO.setVehicleTypeName(Optional.ofNullable(vehicleTypeDict.getTypeName()).orElse(StrUtil.EMPTY));
+        vehicleVO.setEnergyTypeName(Optional.ofNullable(energyTypeDict.getTypeName()).orElse(StrUtil.EMPTY));
         return vehicleVO;
     }
 
@@ -240,12 +233,16 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         Long vehicleTypeId = vehicleQueryRequest.getVehicleTypeId();
         BigDecimal minDailyPrice = vehicleQueryRequest.getMinDailyPrice();
         BigDecimal maxDailyPrice = vehicleQueryRequest.getMaxDailyPrice();
-        BigDecimal minDeposit = vehicleQueryRequest.getMinDeposit();
-        BigDecimal maxDeposit = vehicleQueryRequest.getMaxDeposit();
         Integer status = vehicleQueryRequest.getStatus();
         String description = vehicleQueryRequest.getDescription();
         String sortField = vehicleQueryRequest.getSortField();
         String sortOrder = vehicleQueryRequest.getSortOrder();
+        String searchText = vehicleQueryRequest.getSearchText();
+        if (StrUtil.isNotBlank(searchText)) {
+            queryWrapper.and(qw -> qw.like("name", searchText).or().like("description", searchText));
+        }
+        Long energyTypeId = vehicleQueryRequest.getEnergyTypeId();
+        Integer seatCount = vehicleQueryRequest.getSeatCount();
 
         queryWrapper.eq(id != null, "id", id);
         queryWrapper.like(StrUtil.isNotBlank(name), "name", name);
@@ -253,10 +250,10 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         queryWrapper.eq(brandId != null, "brandId", brandId);
         queryWrapper.eq(modelId != null, "modelId", modelId);
         queryWrapper.eq(vehicleTypeId != null, "vehicleTypeId", vehicleTypeId);
+        queryWrapper.eq(energyTypeId != null, "energyTypeId", energyTypeId);
+        queryWrapper.eq(seatCount!= null, "seatCount", seatCount);
         queryWrapper.ge(minDailyPrice!= null, "dailyPrice", minDailyPrice);
         queryWrapper.le(maxDailyPrice!= null, "dailyPrice", maxDailyPrice);
-        queryWrapper.ge(minDeposit!= null, "deposit", minDeposit);
-        queryWrapper.le(maxDeposit!= null, "deposit", maxDeposit);
         queryWrapper.eq(status!= null, "status", status);
         queryWrapper.like(StrUtil.isNotBlank(description), "description", description);
         queryWrapper.orderBy(StrUtil.isNotBlank(sortField), sortOrder.equalsIgnoreCase(CommonConstant.SORT_ORDER_ASC), sortField);

@@ -1,6 +1,7 @@
 package com.my.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -13,11 +14,12 @@ import com.my.domain.dto.vehicletypedict.VehicleTypeDictUpdateRequest;
 import com.my.domain.entity.VehicleTypeDict;
 import com.my.domain.vo.VehicleTypeDictVO;
 import com.my.exception.BusinessException;
-import com.my.service.VehicleTypeDictService;
 import com.my.mapper.VehicleTypeDictMapper;
+import com.my.service.VehicleTypeDictService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -120,6 +122,15 @@ public class VehicleTypeDictServiceImpl extends ServiceImpl<VehicleTypeDictMappe
             return null;
         }
         return BeanUtil.toBean(vehicleTypeDict, VehicleTypeDictVO.class);
+    }
+
+    @Override
+    public List<VehicleTypeDictVO> listVehicleTypeDict() {
+        List<VehicleTypeDict> vehicleTypeDictList = this.list();
+        if (CollUtil.isEmpty(vehicleTypeDictList)) {
+            return new ArrayList<>();
+        }
+        return vehicleTypeDictList.stream().map(this::getVehicleTypeDictVO).collect(Collectors.toList());
     }
 
 

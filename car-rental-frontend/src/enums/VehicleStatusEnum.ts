@@ -1,0 +1,8 @@
+const VEHICLE_STATUS_ENUM = {
+  AVAILABLE: 0,
+  RENTED: 1,
+  MAINTENANCE: 2,
+  SCRAPPED: 3,
+}
+
+export default VEHICLE_STATUS_ENUM

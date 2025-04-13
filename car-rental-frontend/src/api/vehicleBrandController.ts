@@ -55,6 +55,21 @@ export async function listVehicleBrandUsingPost(options?: { [key: string]: any }
   })
 }
 
+/** 根据首字母获得车辆品牌 GET /api/vehicle/brand/list/letter */
+export async function listVehicleBrandByLetterUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.listVehicleBrandByLetterUsingGETParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseListVehicleBrandVO_>('/api/vehicle/brand/list/letter', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  })
+}
+
 /** 查询车辆品牌 POST /api/vehicle/brand/list/page */
 export async function listVehicleBrandByPageUsingPost(
   body: API.VehicleBrandQueryRequest,

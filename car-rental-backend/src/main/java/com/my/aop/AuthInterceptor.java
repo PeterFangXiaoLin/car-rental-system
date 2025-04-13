@@ -44,7 +44,7 @@ public class AuthInterceptor {
         LoginUserVO loginUser = userService.getLoginUser(request);
         // 2. 获取 mustRole 属性
         String mustRole = authCheck.mustRole();
-        UserRoleEnum mustRoleEnum = UserRoleEnum.getEnumByName(mustRole);
+        UserRoleEnum mustRoleEnum = UserRoleEnum.getEnumByValue(mustRole);
         // 不需要权限，放行
         if (ObjUtil.isNull(mustRoleEnum)) {
             return joinPoint.proceed();

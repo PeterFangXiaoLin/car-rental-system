@@ -37,6 +37,11 @@ public class VehicleAddRequest implements Serializable {
     private Long vehicleTypeId;
 
     /**
+     * 能源类型ID
+     */
+    private Long energyTypeId;
+
+    /**
      * 生产年份
      */
     private Integer productionYear;
@@ -50,6 +55,11 @@ public class VehicleAddRequest implements Serializable {
      * 押金
      */
     private BigDecimal deposit;
+
+    /**
+     * 座位数
+     */
+    private Integer seatCount;
 
     /**
      * 状态：0-可用，1-已租出，2-维修中，3-报废

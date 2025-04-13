@@ -43,6 +43,24 @@ export const routes = [
           access: ACCESS_ENUM.NOT_LOGIN,
         },
       },
+      {
+        path: 'vehicle/:id',
+        name: '车辆详情',
+        props: true,
+        component: () => import('@/views/vehicle/VehicleDetailPage.vue'),
+        meta: {
+          hideInMenu: true,
+        },
+      },
+      {
+        path: 'order/create',
+        name: '确认订单',
+        component: () => import('@/views/order/OrderSubmitPage.vue'),
+        meta: {
+          access: ACCESS_ENUM.USER,
+          hideInMenu: true,
+        },
+      },
     ],
   },
   {

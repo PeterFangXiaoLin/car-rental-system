@@ -63,4 +63,10 @@ public class VehicleBrandController {
     public BaseResponse<VehicleBrandVO> getVehicleBrandById(@RequestParam("id") Long id) {
         return success(vehicleBrandService.getVehicleBrandById(id));
     }
+
+    @ApiOperation(value = "根据首字母获得车辆品牌")
+    @GetMapping("/list/letter")
+    public BaseResponse<List<VehicleBrandVO>> listVehicleBrandByLetter(@RequestParam("letter") String letter) {
+        return success(vehicleBrandService.listVehicleBrandByLetter(letter));
+    }
 }

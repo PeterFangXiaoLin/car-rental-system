@@ -17,6 +17,11 @@ public class VehicleQueryRequest extends PageRequest implements Serializable {
     private Long id;
 
     /**
+     * 搜索内容
+     */
+    private String searchText;
+
+    /**
      * 车辆名称
      */
     private String name;
@@ -42,6 +47,11 @@ public class VehicleQueryRequest extends PageRequest implements Serializable {
     private Long vehicleTypeId;
 
     /**
+     * 能源类型ID
+     */
+    private Long energyTypeId;
+
+    /**
      * 最小日租金
      */
     private BigDecimal minDailyPrice;
@@ -52,14 +62,9 @@ public class VehicleQueryRequest extends PageRequest implements Serializable {
     private BigDecimal maxDailyPrice;
 
     /**
-     * 最小押金
+     * 座位数
      */
-    private BigDecimal minDeposit;
-
-    /**
-     * 最大押金
-     */
-    private BigDecimal maxDeposit;
+    private Integer seatCount;
 
     /**
      * 状态：0-可用，1-已租出，2-维修中，3-报废

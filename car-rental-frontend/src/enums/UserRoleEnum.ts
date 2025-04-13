@@ -1,8 +1,7 @@
 const USER_ROLE_ENUM = {
-  NOT_LOGIN: 0,
-  USER: 1,
-  DIRVER: 2,
-  ADMIN: 3,
+  NOT_LOGIN: 'notLogin',
+  USER: 'user',
+  ADMIN: 'admin',
 }
 
 export default USER_ROLE_ENUM

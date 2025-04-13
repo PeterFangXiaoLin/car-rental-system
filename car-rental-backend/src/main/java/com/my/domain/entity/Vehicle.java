@@ -1,11 +1,14 @@
 package com.my.domain.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 车辆表
@@ -46,6 +49,11 @@ public class Vehicle implements Serializable {
     private Long vehicleTypeId;
 
     /**
+     * 能源类型ID
+     */
+    private Long energyTypeId;
+
+    /**
      * 生产年份
      */
     private Integer productionYear;
@@ -56,9 +64,9 @@ public class Vehicle implements Serializable {
     private BigDecimal dailyPrice;
 
     /**
-     * 押金
+     * 座位数
      */
-    private BigDecimal deposit;
+    private Integer seatCount;
 
     /**
      * 状态：0-可用，1-已租出，2-维修中，3-报废

@@ -51,79 +51,24 @@ public class LoginUserVO implements Serializable {
     private String email;
 
     /**
-     * 真实姓名
-     */
-    private String realName;
-
-    /**
-     * 身份证号码
-     */
-    private String idCardNumber;
-
-    /**
-     * 实名认证状态：0-未实名，1-认证中，2-已认证，3-认证失败
-     */
-    private Integer verifyStatus;
-
-    /**
-     * 实名认证时间
-     */
-    private Date verifyTime;
-
-    /**
-     * 认证拒绝原因
-     */
-    private String rejectReason;
-
-    /**
-     * 驾驶证号码
-     */
-    private String driverLicenseNo;
-
-    /**
-     * 驾照类型（A1/A2/B1/B2/C1等）
-     */
-    private String driverLicenseType;
-
-    /**
-     * 驾照发证日期
-     */
-    private Date driverLicenseIssueDate;
-
-    /**
-     * 驾照到期日期
-     */
-    private Date driverLicenseExpireDate;
-
-    /**
-     * 驾龄
-     */
-    private Integer drivingYears;
-
-    /**
      * 会员等级: 0-普通用户，1-vip
      */
     private Integer memberLevel;
 
     /**
-     * 用户角色：1-用户，2-司机，3-管理员
+     * 用户角色: user-普通用户, admin-管理员
      */
-    private Integer userRole;
-
-    /**
-     * 是否为司机：0-否，1-是
-     */
-    private Integer isDriver;
-
-    /**
-     * 状态：0-禁用，1-启用
-     */
-    private Integer status;
+    private String userRole;
 
     /**
      * 创建时间
      */
     private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 
     private static final long serialVersionUID = 1L;
 

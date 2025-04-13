@@ -5,26 +5,30 @@
 <mapper namespace="com.my.mapper.VehicleMapper">
 
     <resultMap id="BaseResultMap" type="com.my.domain.entity.Vehicle">
-        <id property="id" column="id" />
-        <result property="name" column="name" />
-        <result property="vehicleNo" column="vehicleNo" />
-        <result property="brandId" column="brandId" />
-        <result property="modelId" column="modelId" />
-        <result property="vehicleTypeId" column="vehicleTypeId" />
-        <result property="productionYear" column="productionYear" />
-        <result property="dailyPrice" column="dailyPrice" />
-        <result property="deposit" column="deposit" />
-        <result property="status" column="status" />
-        <result property="imageUrl" column="imageUrl" />
-        <result property="description" column="description" />
-        <result property="createTime" column="createTime" />
-        <result property="updateTime" column="updateTime" />
-        <result property="isDelete" column="isDelete" />
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="vehicleNo" column="vehicleNo" jdbcType="VARCHAR"/>
+            <result property="brandId" column="brandId" jdbcType="BIGINT"/>
+            <result property="modelId" column="modelId" jdbcType="BIGINT"/>
+            <result property="energyTypeId" column="energyTypeId" jdbcType="BIGINT"/>
+            <result property="vehicleTypeId" column="vehicleTypeId" jdbcType="BIGINT"/>
+            <result property="productionYear" column="productionYear" jdbcType="INTEGER"/>
+            <result property="dailyPrice" column="dailyPrice" jdbcType="DECIMAL"/>
+            <result property="seatCount" column="seatCount" jdbcType="INTEGER"/>
+            <result property="status" column="status" jdbcType="INTEGER"/>
+            <result property="imageUrl" column="imageUrl" jdbcType="VARCHAR"/>
+            <result property="description" column="description" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,name,vehicleNo,brandId,modelId,vehicleTypeId,
-        productionYear,dailyPrice,deposit,status,imageUrl,
-        description,createTime,updateTime,isDelete
+        id,name,vehicleNo,
+        brandId,modelId,energyTypeId,
+        vehicleTypeId,productionYear,dailyPrice,
+        seatCount,status,imageUrl,
+        description,createTime,updateTime,
+        isDelete
     </sql>
 </mapper>

@@ -9,6 +9,8 @@ import com.my.domain.dto.vehicletypedict.VehicleTypeDictUpdateRequest;
 import com.my.domain.entity.VehicleTypeDict;
 import com.my.domain.vo.VehicleTypeDictVO;
 
+import java.util.List;
+
 /**
 * @author Administrator
 * @description 针对表【vehicle_type_dict(车型字典表)】的数据库操作Service
@@ -53,4 +55,11 @@ public interface VehicleTypeDictService extends IService<VehicleTypeDict> {
      * @return
      */
     VehicleTypeDictVO getVehicleTypeDictVO(VehicleTypeDict vehicleTypeDict);
+
+    /**
+     * 获取车型列表
+     *
+     * @return
+     */
+    List<VehicleTypeDictVO> listVehicleTypeDict();
 }

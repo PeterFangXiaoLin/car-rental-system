@@ -16,9 +16,27 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseDriverVO_ = {
+    code?: number
+    data?: DriverVO
+    message?: string
+  }
+
+  type BaseResponseEnergyTypeDictVO_ = {
+    code?: number
+    data?: EnergyTypeDictVO
+    message?: string
+  }
+
   type BaseResponseListCityVO_ = {
     code?: number
     data?: CityVO[]
+    message?: string
+  }
+
+  type BaseResponseListEnergyTypeDictVO_ = {
+    code?: number
+    data?: EnergyTypeDictVO[]
     message?: string
   }
 
@@ -40,6 +58,12 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseListVehicleTypeDictVO_ = {
+    code?: number
+    data?: VehicleTypeDictVO[]
+    message?: string
+  }
+
   type BaseResponseLoginUserVO_ = {
     code?: number
     data?: LoginUserVO
@@ -49,6 +73,18 @@ declare namespace API {
   type BaseResponseLong_ = {
     code?: number
     data?: number
+    message?: string
+  }
+
+  type BaseResponsePageDriverVO_ = {
+    code?: number
+    data?: PageDriverVO_
+    message?: string
+  }
+
+  type BaseResponsePageEnergyTypeDictVO_ = {
+    code?: number
+    data?: PageEnergyTypeDictVO_
     message?: string
   }
 
@@ -149,6 +185,104 @@ declare namespace API {
     id?: number
   }
 
+  type DriverAddRequest = {
+    age?: number
+    dailyPrice?: number
+    driverAvatar?: string
+    driverLicenseExpireDate?: string
+    driverLicenseImg?: string
+    driverLicenseIssueDate?: string
+    driverLicenseNo?: string
+    driverLicenseType?: string
+    driverName?: string
+    drivingYears?: number
+    gender?: number
+    phoneNumber?: string
+    workStatus?: number
+  }
+
+  type DriverQueryRequest = {
+    current?: number
+    driverLicenseType?: string
+    driverName?: string
+    gender?: number
+    maxPrice?: number
+    minPrice?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
+    workStatus?: number
+  }
+
+  type DriverUpdateRequest = {
+    age?: number
+    dailyPrice?: number
+    driverAvatar?: string
+    driverLicenseExpireDate?: string
+    driverLicenseImg?: string
+    driverLicenseIssueDate?: string
+    driverLicenseNo?: string
+    driverLicenseType?: string
+    driverName?: string
+    drivingYears?: number
+    gender?: number
+    id?: number
+    phoneNumber?: string
+    workStatus?: number
+  }
+
+  type DriverVO = {
+    age?: number
+    createTime?: string
+    dailyPrice?: number
+    driverAvatar?: string
+    driverLicenseExpireDate?: string
+    driverLicenseImg?: string
+    driverLicenseIssueDate?: string
+    driverLicenseNo?: string
+    driverLicenseType?: string
+    driverName?: string
+    drivingYears?: number
+    gender?: number
+    id?: number
+    phoneNumber?: string
+    rating?: number
+    workStatus?: number
+  }
+
+  type EnergyTypeDictAddRequest = {
+    typeName?: string
+  }
+
+  type EnergyTypeDictQueryRequest = {
+    current?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
+    typeName?: string
+  }
+
+  type EnergyTypeDictUpdateRequest = {
+    id?: number
+    typeName?: string
+  }
+
+  type EnergyTypeDictVO = {
+    createTime?: string
+    id?: number
+    typeName?: string
+  }
+
+  type getDriverVOByIdUsingGETParams = {
+    /** id */
+    id: number
+  }
+
+  type getEnergyTypeDictByIdUsingGETParams = {
+    /** id */
+    id: number
+  }
+
   type getStoreUsingGETParams = {
     /** id */
     id: number
@@ -174,35 +308,55 @@ declare namespace API {
     id: number
   }
 
+  type listVehicleBrandByLetterUsingGETParams = {
+    /** letter */
+    letter: string
+  }
+
   type LoginUserVO = {
     createTime?: string
-    driverLicenseExpireDate?: string
-    driverLicenseIssueDate?: string
-    driverLicenseNo?: string
-    driverLicenseType?: string
-    drivingYears?: number
     email?: string
     gender?: number
     id?: number
-    idCardNumber?: string
-    isDriver?: number
     memberLevel?: number
     phoneNumber?: string
-    realName?: string
-    rejectReason?: string
-    status?: number
+    updateTime?: string
     userAccount?: string
     userAvatar?: string
     userName?: string
     userProfile?: string
-    userRole?: number
-    verifyStatus?: number
-    verifyTime?: string
+    userRole?: string
   }
 
   type OrderItem = {
     asc?: boolean
     column?: string
+  }
+
+  type PageDriverVO_ = {
+    countId?: string
+    current?: number
+    maxLimit?: number
+    optimizeCountSql?: boolean
+    orders?: OrderItem[]
+    pages?: number
+    records?: DriverVO[]
+    searchCount?: boolean
+    size?: number
+    total?: number
+  }
+
+  type PageEnergyTypeDictVO_ = {
+    countId?: string
+    current?: number
+    maxLimit?: number
+    optimizeCountSql?: boolean
+    orders?: OrderItem[]
+    pages?: number
+    records?: EnergyTypeDictVO[]
+    searchCount?: boolean
+    size?: number
+    total?: number
   }
 
   type PageStoreVO_ = {
@@ -275,7 +429,17 @@ declare namespace API {
     captchaKey: string
   }
 
-  type RentalOrderCreateRequest = true
+  type RentalOrderCreateRequest = {
+    driverId?: number
+    endTime?: string
+    needDriver?: number
+    pickupLocation?: string
+    remark?: string
+    returnLocation?: string
+    startTime?: string
+    totalDays?: number
+    vehicleId?: number
+  }
 
   type StoreCreateRequest = {
     adcode?: string
@@ -355,23 +519,12 @@ declare namespace API {
 
   type User = {
     createTime?: string
-    driverLicenseExpireDate?: string
-    driverLicenseIssueDate?: string
-    driverLicenseNo?: string
-    driverLicenseType?: string
-    editTime?: string
     email?: string
     gender?: number
     id?: number
-    idCardNumber?: string
     isDelete?: number
-    isDriver?: number
     memberLevel?: number
     phoneNumber?: string
-    realName?: string
-    rejectReason?: string
-    reviewId?: number
-    reviewTime?: string
     status?: number
     updateTime?: string
     userAccount?: string
@@ -379,10 +532,7 @@ declare namespace API {
     userName?: string
     userPassword?: string
     userProfile?: string
-    userRole?: number
-    verifyResult?: number
-    verifyStatus?: number
-    verifyTime?: string
+    userRole?: string
   }
 
   type UserAddRequest = {
@@ -395,7 +545,7 @@ declare namespace API {
     userName?: string
     userPassword?: string
     userProfile?: string
-    userRole?: number
+    userRole?: string
   }
 
   type UserAdminUpdateRequest = {
@@ -407,16 +557,7 @@ declare namespace API {
     userAvatar?: string
     userName?: string
     userProfile?: string
-    userRole?: number
-  }
-
-  type UserAuthRequest = {
-    driverLicenseExpireDate?: string
-    driverLicenseIssueDate?: string
-    driverLicenseNo?: string
-    driverLicenseType?: string
-    idCardNumber?: string
-    realName?: string
+    userRole?: string
   }
 
   type UserLoginRequest = {
@@ -436,7 +577,7 @@ declare namespace API {
     sortOrder?: string
     userAccount?: string
     userName?: string
-    userRole?: number
+    userRole?: string
   }
 
   type UserRegisterRequest = {
@@ -445,12 +586,6 @@ declare namespace API {
     checkPassword?: string
     userAccount?: string
     userPassword?: string
-  }
-
-  type UserReviewRequest = {
-    id?: number
-    rejectReason?: string
-    reviewStatus?: number
   }
 
   type UserUpdatePasswordRequest = {
@@ -469,41 +604,30 @@ declare namespace API {
 
   type UserVO = {
     createTime?: string
-    driverLicenseExpireDate?: string
-    driverLicenseIssueDate?: string
-    driverLicenseNo?: string
-    driverLicenseType?: string
-    drivingYears?: number
-    editTime?: string
     email?: string
     gender?: number
     id?: number
-    idCardNumber?: string
-    isDriver?: number
     memberLevel?: number
     phoneNumber?: string
-    realName?: string
-    rejectReason?: string
     status?: number
     userAccount?: string
     userAvatar?: string
     userName?: string
     userProfile?: string
-    userRole?: number
-    verifyStatus?: number
-    verifyTime?: string
+    userRole?: string
   }
 
   type VehicleAddRequest = {
     brandId?: number
-    color?: string
     dailyPrice?: number
     deposit?: number
     description?: string
+    energyTypeId?: number
     imageUrl?: string
-    mileage?: number
     modelId?: number
+    name?: string
     productionYear?: number
+    seatCount?: number
     status?: number
     vehicleNo?: string
     vehicleTypeId?: number
@@ -512,7 +636,7 @@ declare namespace API {
   type VehicleBrandAddRequest = {
     brandLogo?: string
     brandName?: string
-    description?: string
+    firstLetter?: string
   }
 
   type VehicleBrandQueryRequest = {
@@ -526,7 +650,7 @@ declare namespace API {
   type VehicleBrandUpdateRequest = {
     brandLogo?: string
     brandName?: string
-    description?: string
+    firstLetter?: string
     id?: number
   }
 
@@ -534,12 +658,13 @@ declare namespace API {
     brandLogo?: string
     brandName?: string
     createTime?: string
-    description?: string
+    firstLetter?: string
     id?: number
   }
 
   type VehicleModelAddRequest = {
     brandId?: number
+    modelLogo?: string
     modelName?: string
   }
 
@@ -550,6 +675,7 @@ declare namespace API {
   type VehicleModelUpdateRequest = {
     brandId?: number
     id?: number
+    modelLogo?: string
     modelName?: string
   }
 
@@ -557,21 +683,23 @@ declare namespace API {
     brandId?: number
     createTime?: string
     id?: number
+    modelLogo?: string
     modelName?: string
   }
 
   type VehicleQueryRequest = {
     brandId?: number
-    color?: string
     current?: number
     description?: string
+    energyTypeId?: number
     id?: number
     maxDailyPrice?: number
-    maxDeposit?: number
     minDailyPrice?: number
-    minDeposit?: number
     modelId?: number
+    name?: string
     pageSize?: number
+    searchText?: string
+    seatCount?: number
     sortField?: string
     sortOrder?: string
     status?: number
@@ -604,15 +732,15 @@ declare namespace API {
 
   type VehicleUpdateRequest = {
     brandId?: number
-    color?: string
     dailyPrice?: number
-    deposit?: number
     description?: string
+    energyTypeId?: number
     id?: number
     imageUrl?: string
-    mileage?: number
     modelId?: number
+    name?: string
     productionYear?: number
+    seatCount?: number
     status?: number
     vehicleNo?: string
     vehicleTypeId?: number
@@ -621,17 +749,18 @@ declare namespace API {
   type VehicleVO = {
     brandId?: number
     brandName?: string
-    color?: string
     createTime?: string
     dailyPrice?: number
-    deposit?: number
     description?: string
+    energyTypeId?: number
+    energyTypeName?: string
     id?: number
     imageUrl?: string
-    mileage?: number
     modelId?: number
     modelName?: string
+    name?: string
     productionYear?: number
+    seatCount?: number
     status?: number
     vehicleNo?: string
     vehicleTypeId?: number

@@ -1,50 +1,33 @@
 package com.my.domain.enums;
 
-import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
 
 @Getter
 public enum UserRoleEnum {
-    USER("用户", 1),
-    DRIVER("司机", 2),
-    ADMIN("管理员", 3);
+    USER("用户", "user"),
+    ADMIN("管理员", "admin");
 
     private final String text;
-    private final int value;
+    private final String value;
 
-    UserRoleEnum(String text, int value) {
-        this.text = text;  
-        this.value = value;  
-    }  
-  
-    /**  
-     * 根据 value 获取枚举  
-     */  
-    public static UserRoleEnum getEnumByValue(Integer value) {
-        if (ObjUtil.isEmpty(value)) {
-            return null;  
-        }  
-        for (UserRoleEnum userRoleEnum : UserRoleEnum.values()) {
-            if (userRoleEnum.value == value) {
-                return userRoleEnum;
-            }
-        }  
-        return null;  
+    UserRoleEnum(String text, String value) {
+        this.text = text;
+        this.value = value;
     }
 
     /**
-     * 根据 text 获取枚举
+     * 根据 value 获取枚举
      *
-     * @param text
-     * @return
+     * @param value value
+     * @return 枚举
      */
-    public static UserRoleEnum getEnumByName(String text) {
-        if (StrUtil.isBlank(text)) {
+    public static UserRoleEnum getEnumByValue(String value) {
+        if (StrUtil.isBlank(value)) {
             return null;
         }
         for (UserRoleEnum userRoleEnum : UserRoleEnum.values()) {
-            if (userRoleEnum.text.equals(text)) {
+            if (userRoleEnum.value.equals(value)) {
                 return userRoleEnum;
             }
         }

@@ -41,52 +41,14 @@
               电子邮箱
               <div class="pull-right">{{ form.user.email || '未绑定' }}</div>
             </li>
-            <!-- 司机特有信息 -->
-            <template v-if="form.user.isDriver === 1">
-              <li class="list-group-item">
-                <el-icon>
-                  <Ticket />
-                </el-icon>
-                驾驶证号
-                <div class="pull-right">{{ form.user.driverLicenseNo || '未设置' }}</div>
-              </li>
-              <li class="list-group-item">
-                <el-icon>
-                  <Van />
-                </el-icon>
-                驾龄(年)
-                <div class="pull-right">{{ form.user.drivingYears || '0' }}</div>
-              </li>
-              <!-- <li class="list-group-item">
-                <el-icon>
-                  <Star />
-                </el-icon>
-                信用评分
-                <div class="pull-right">
-                  <el-rate
-                    v-model=""
-                    disabled
-                    show-score
-                    text-color="#ff9900"
-                    score-template="{value}"
-                  />
-                </div>
-              </li> -->
-            </template>
             <li class="list-group-item">
               <el-icon>
                 <Management />
               </el-icon>
               用户角色
               <div class="pull-right">
-                <el-tag :type="form.user?.userRole === 3 ? 'success' : 'info'">
-                  {{
-                    form.user?.userRole === 3
-                      ? '管理员'
-                      : form.user?.userRole === 2
-                        ? '司机'
-                        : '普通用户'
-                  }}
+                <el-tag :type="form.user?.userRole === UserRoleEnum.ADMIN ? 'success' : 'info'">
+                  {{ form.user?.userRole === UserRoleEnum.ADMIN ? '管理员' : '普通用户' }}
                 </el-tag>
               </div>
             </li>
@@ -118,9 +80,6 @@
             <el-tab-pane label="修改密码" name="resetPwd">
               <ResetPassword />
             </el-tab-pane>
-            <el-tab-pane label="实名认证" name="realNameAuth">
-              <RealNameAuth :user="form.user" />
-            </el-tab-pane>
           </el-tabs>
         </el-card>
       </el-col>
@@ -129,19 +88,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import {
-  User,
-  UserFilled,
-  Management,
-  Timer,
-  Iphone,
-  Message,
-  Ticket,
-  Van,
-  Star,
-} from '@element-plus/icons-vue'
+import { Iphone, Management, Message, Timer, User, UserFilled } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 import { getUserByIdUsingGet } from '@/api/userController'
 import UserAvatar from '@/components/user/UserAvatar.vue'
@@ -149,7 +98,7 @@ import UserInfo from '@/components/user/UserInfo.vue'
 import ResetPassword from '@/components/user/ResetPassword.vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import router from '@/router'
-import RealNameAuth from '@/components/user/RealNameAuth.vue'
+import UserRoleEnum from '@/enums/UserRoleEnum.ts'
 
 const activeTab = ref('userinfo')
 
@@ -169,12 +118,11 @@ const getUser = async () => {
     })
     if (res.data?.code === 0 && res.data?.data) {
       form.user = res.data.data
-    }
-    if (form.user.isDriver === 1) {
-      // 获取司机的信息
+    } else {
+      ElMessage.error(res.data?.message || '获取用户信息失败')
     }
   } catch (error) {
-    ElMessage.error(error.message || '获取用户信息失败')
+    ElMessage.error('获取用户信息失败' + error)
   }
 }
 

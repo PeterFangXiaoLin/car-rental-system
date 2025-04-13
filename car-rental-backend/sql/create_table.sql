@@ -92,10 +92,11 @@ CREATE TABLE IF NOT EXISTS `vehicle`
     `vehicleNo`      varchar(50)    NULL COMMENT '车牌号',
     `brandId`        bigint         NOT NULL COMMENT '品牌ID',
     `modelId`        bigint         NOT NULL COMMENT '型号ID',
+    `energyTypeId`   bigint         NOT NULL COMMENT '能源类型ID',
     `vehicleTypeId`  bigint                  DEFAULT NULL COMMENT '车型ID',
     `productionYear` int            NOT NULL COMMENT '生产年份',
     `dailyPrice`     decimal(10, 2) NOT NULL COMMENT '日租金',
-    `deposit`        decimal(10, 2) NOT NULL COMMENT '押金',
+    `seatCount`      int            NOT NULL COMMENT '座位数',
     `status`         int            NOT NULL DEFAULT '0' COMMENT '状态：0-可用，1-已租出，2-维修中，3-报废',
     `imageUrl`       varchar(1024)           DEFAULT NULL COMMENT '车辆图片URL',
     `description`    text COMMENT '车辆描述',
@@ -109,6 +110,18 @@ CREATE TABLE IF NOT EXISTS `vehicle`
     KEY `idx_vehicle_type_id` (`vehicleTypeId`),
     KEY `idx_status` (`status`)
 ) COMMENT ='车辆表' collate = utf8mb4_unicode_ci;
+
+drop table if exists `energy_type_dict`;
+
+CREATE TABLE IF NOT EXISTS `energy_type_dict`
+(
+    `id`         bigint       NOT NULL AUTO_INCREMENT COMMENT '能源类型ID',
+    `typeName`   varchar(100) NOT NULL COMMENT '能源类型名称',
+    `createTime` datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updateTime` datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `isDelete`   tinyint      NOT NULL DEFAULT '0' COMMENT '是否删除',
+    PRIMARY KEY (`id`)
+) COMMENT ='能源类型字典表' collate = utf8mb4_unicode_ci;
 
 
 drop table if exists `vehicle_brand`;
@@ -146,6 +159,8 @@ CREATE TABLE IF NOT EXISTS `vehicle_model`
   DEFAULT CHARSET = utf8mb4 COMMENT ='车辆型号表'
   collate = utf8mb4_unicode_ci;
 
+drop table if exists `vehicle_type_dict`;
+
 CREATE TABLE IF NOT EXISTS `vehicle_type_dict`
 (
     `id`         bigint       NOT NULL AUTO_INCREMENT COMMENT '车型ID',
@@ -157,13 +172,6 @@ CREATE TABLE IF NOT EXISTS `vehicle_type_dict`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='车型字典表'
   collate = utf8mb4_unicode_ci;
-
-insert into `vehicle_type_dict` (`id`, `typeName`)
-values (1, '轿车'),
-       (2, 'SUV'),
-       (3, 'MPV'),
-       (4, '跑车'),
-       (5, '皮卡');
 
 drop table if exists `rental_order`;
 
@@ -386,6 +394,8 @@ CREATE TABLE IF NOT EXISTS `store`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='门店表';
 
+drop table if exists `driver`;
+
 -- 司机表
 CREATE TABLE IF NOT EXISTS `driver`
 (
@@ -418,6 +428,8 @@ CREATE TABLE IF NOT EXISTS `driver`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='司机表';
 
+drop table if exists `user`;
+
 CREATE TABLE IF NOT EXISTS `user`
 (
     `id`              bigint AUTO_INCREMENT COMMENT 'id' PRIMARY KEY,
@@ -429,25 +441,16 @@ CREATE TABLE IF NOT EXISTS `user`
     `userProfile`     varchar(512)                           NULL COMMENT '用户简介',
     `phoneNumber`     varchar(20)                            NULL COMMENT '手机号码',
     `email`           varchar(100)                           NULL COMMENT '电子邮箱',
-    `realName`        varchar(100)                           NULL COMMENT '真实姓名',
-    `idCardNumber`    varchar(50)                            NULL COMMENT '身份证号码',
-    `isVerified`      tinyint      DEFAULT 0                 NOT NULL COMMENT '是否实名认证：0-未认证，1-已认证',
-    `verifyTime`      datetime                               NULL COMMENT '认证时间',
     `memberLevel`     tinyint      DEFAULT 0                 NOT NULL COMMENT '会员等级: 0-普通用户，1-vip',
-    `userRole`        tinyint      DEFAULT 0                 NOT NULL COMMENT '用户角色：0-普通用户，1-管理员',
+    `userRole`        varchar(20)      DEFAULT 'user'                 NOT NULL COMMENT '用户角色: user-普通用户, admin-管理员',
     `status`          tinyint      DEFAULT 1                 NOT NULL COMMENT '状态：0-禁用，1-启用',
-    `lastLoginTime`   datetime                               NULL COMMENT '最后登录时间',
-    `lastLoginIp`     varchar(50)                            NULL COMMENT '最后登录IP',
     `createTime`      datetime     DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '创建时间',
     `updateTime`      datetime     DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `isDelete`        tinyint      DEFAULT 0                 NOT NULL COMMENT '是否删除',
     UNIQUE KEY `uk_userAccount` (`userAccount`),
     UNIQUE KEY `uk_phoneNumber` (`phoneNumber`),
-    UNIQUE KEY `uk_idCardNumber` (`idCardNumber`),
     INDEX `idx_userName` (`userName`),
-    INDEX `idx_realName` (`realName`),
     INDEX `idx_userRole` (`userRole`),
-    INDEX `idx_isVerified` (`isVerified`),
     INDEX `idx_status` (`status`),
     INDEX `idx_memberLevel` (`memberLevel`)
 ) COMMENT '用户' COLLATE = utf8mb4_unicode_ci;
