@@ -5,6 +5,7 @@
 import * as cityController from './cityController'
 import * as driverController from './driverController'
 import * as energyTypeDictController from './energyTypeDictController'
+import * as fileUploadController from './fileUploadController'
 import * as rentalOrderController from './rentalOrderController'
 import * as smsAuthController from './smsAuthController'
 import * as storeController from './storeController'
@@ -17,6 +18,7 @@ export default {
   cityController,
   driverController,
   energyTypeDictController,
+  fileUploadController,
   rentalOrderController,
   smsAuthController,
   storeController,

@@ -3,7 +3,7 @@
     <!-- 搜索表单 -->
     <el-card shadow="never" class="mb-15px">
       <div>
-        <el-form :model="searchParams" class="-mb-15px" label-width="68px" size="large">
+        <el-form :model="searchParams" class="-mb-15px" label-width="78px" size="large">
           <el-row>
             <el-col :span="6">
               <el-form-item label="司机姓名">
@@ -27,7 +27,7 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="4">
+            <el-col :span="6">
               <el-form-item label="驾照类型">
                 <el-select
                   v-model="searchParams.driverLicenseType"
@@ -44,27 +44,14 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="4">
+            <el-col :span="6">
               <el-form-item label="最小日薪">
                 <el-input-number
                   v-model="searchParams.minPrice"
                   :min="0"
                   :precision="2"
-                  :step="100"
+                  :step="50"
                   placeholder="最小日薪"
-                  size="large"
-                  class="w-full"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col :span="4">
-              <el-form-item label="最大日薪">
-                <el-input-number
-                  v-model="searchParams.maxPrice"
-                  :min="0"
-                  :precision="2"
-                  :step="100"
-                  placeholder="最大日薪"
                   size="large"
                   class="w-full"
                 />
@@ -72,6 +59,19 @@
             </el-col>
           </el-row>
           <el-row>
+            <el-col :span="6">
+              <el-form-item label="最大日薪">
+                <el-input-number
+                  v-model="searchParams.maxPrice"
+                  :min="0"
+                  :precision="2"
+                  :step="50"
+                  placeholder="最大日薪"
+                  size="large"
+                  class="w-full"
+                />
+              </el-form-item>
+            </el-col>
             <el-col :span="6">
               <el-form-item label="工作状态">
                 <el-select v-model="searchParams.workStatus" placeholder="请选择工作状态" clearable>
@@ -83,8 +83,10 @@
             </el-col>
             <el-col :span="5">
               <el-form-item>
-                <el-button type="primary" :icon="Search" @click="doSearch">搜索</el-button>
-                <el-button plain type="primary" :icon="Plus" @click="openForm()">新增</el-button>
+                <div class="flex">
+                  <el-button type="primary" :icon="Search" @click="doSearch">搜索</el-button>
+                  <el-button plain type="primary" :icon="Plus" @click="openForm()">新增</el-button>
+                </div>
               </el-form-item>
             </el-col>
           </el-row>
@@ -137,7 +139,44 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label=""
+        <el-table-column label="发证日期" width="120" align="center">
+          <template #default="{ row }">
+            {{
+              row.driverLicenseIssueDate
+                ? dayjs(row.driverLicenseIssueDate).format('YYYY-MM-DD')
+                : '-'
+            }}
+          </template>
+        </el-table-column>
+        <el-table-column label="到期日期" width="120" align="center">
+          <template #default="{ row }">
+            {{
+              row.driverLicenseExpireDate
+                ? dayjs(row.driverLicenseExpireDate).format('YYYY-MM-DD')
+                : '-'
+            }}
+          </template>
+        </el-table-column>
+        <el-table-column label="驾龄" width="60" align="center">
+          <template #default="{ row }"> {{ row.driverExperienceYears }} 年 </template>
+        </el-table-column>
+        <el-table-column label="日薪" width="100" align="center">
+          <template #default="{ row }">
+            <div class="color-#f56c6c">{{ row.dailyPrice }} 元/天</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="工作状态" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="row.workStatus === DriverWorkStatusEnum.RESTING"> 休息中 </el-tag>
+            <el-tag v-else-if="row.workStatus === DriverWorkStatusEnum.AVAILABLE"> 可接单 </el-tag>
+            <el-tag v-else-if="row.workStatus === DriverWorkStatusEnum.ON_ORDER"> 已接单 </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="评分" width="100" align="center">
+          <template #default="{ row }">
+            <el-rate v-model="row.rating" :max="5" readonly />
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="{ row }">
             <el-button link type="primary" @click="selectOpen(1, row.id)">
@@ -182,15 +221,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { pageUserVoUsingPost, adminDeleteUserUsingPost } from '@/api/userController'
 import dayjs from 'dayjs'
-import { Delete, Plus, Search, Edit, View } from '@element-plus/icons-vue'
+import { Delete, Edit, Plus, Search, View } from '@element-plus/icons-vue'
 import UserInfoForm from '@/components/admin/UserInfoForm.vue'
-import USER_ROLE_ENUM from '../../enums/UserRoleEnum.ts'
-import UserRoleEnum from '../../enums/UserRoleEnum.ts'
 import GenderEnum from '@/enums/GenderEnum.ts'
+import DriverWorkStatusEnum from '@/enums/DriverWorkStatusEnum.ts'
+import { deleteDriverUsingPost, listDriverVoByPageUsingPost } from '@/api/driverController.ts'
 
 const loading = ref(false)
 const dataList = ref<API.UserVO[]>([])
@@ -210,7 +248,7 @@ const searchParams = reactive<API.DriverQueryRequest>({
 const fetchData = async () => {
   loading.value = true
   try {
-    const res = await pageUserVoUsingPost(searchParams)
+    const res = await listDriverVoByPageUsingPost(searchParams)
     if (res.data?.code === 0 && res.data.data) {
       dataList.value = res.data.data.records ?? []
       total.value = Number(res.data.data.total) || 0
@@ -251,10 +289,10 @@ const handleSizeChange = (size: number) => {
 // 删除用户
 const handleDelete = async (id: string) => {
   try {
-    await ElMessageBox.confirm('确定要删除该用户吗？', '提示', {
+    await ElMessageBox.confirm('确定要删除该司机吗？', '提示', {
       type: 'warning',
     })
-    const res = await adminDeleteUserUsingPost({ id: Number(id) })
+    const res = await deleteDriverUsingPost({ id: id })
     if (res.data.code === 0) {
       ElMessage.success('删除成功')
       await fetchData()

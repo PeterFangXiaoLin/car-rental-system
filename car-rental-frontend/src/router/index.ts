@@ -89,6 +89,21 @@ export const routes = [
     ],
   },
   {
+    path: '/driver',
+    name: '司机',
+    component: () => import('@/layouts/BasicLayout.vue'),
+    children: [
+      {
+        path: 'manage',
+        name: '司机管理',
+        component: () => import('@/views/driver/DriverManagePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+    ],
+  },
+  {
     path: '/admin',
     name: '管理',
     component: () => import('@/layouts/BasicLayout.vue'),
