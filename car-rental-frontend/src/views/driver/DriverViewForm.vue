@@ -9,132 +9,97 @@
       :rules="rules"
       size="large"
       label-width="100px"
-      label-position="right"
       class="mt-8"
+      disabled
     >
       <el-form-item label="司机姓名" prop="driverName">
-        <el-input
-          v-model="formData.driverName"
-          placeholder="请输入司机姓名"
-          clearable
-        />
+        <el-input v-model="formData.driverName" placeholder="请输入司机姓名" clearable />
       </el-form-item>
       <el-form-item label="司机头像" prop="driverAvatar">
-        <div class="avatar-uploader">
-          <el-upload
-            class="avatar-uploader-box"
-            action="#"
-            :before-upload="beforeAvatarUpload"
-            :http-request="uploadRequest"
-            :show-file-list="false"
-          >
-            <img v-if="formData.driverAvatar" :src="formData.driverAvatar" class="avatar-image"/>
-            <el-icon v-else class="avatar-uploader-icon">
-              <Plus/>
-            </el-icon>
-            <div class="upload-tip">点击上传头像</div>
-          </el-upload>
-        </div>
+        <el-image
+          v-if="formData.driverAvatar"
+          :src="formData.driverAvatar"
+          style="width: 150px; height: 150px; object-fit: cover"
+        />
       </el-form-item>
       <el-form-item label="性别" prop="gender">
-        <el-select
-          v-model="formData.gender"
-          placeholder="请选择性别"
-          clearable
-        >
-          <el-option label="男" :value="0"/>
-          <el-option label="女" :value="1"/>
+        <el-select v-model="formData.gender" placeholder="请选择性别" clearable>
+          <el-option label="男" :value="0" />
+          <el-option label="女" :value="1" />
         </el-select>
       </el-form-item>
       <el-form-item label="年龄" prop="age">
-        <el-input v-model="formData.age" type="number" placeholder="请输入年龄" clearable/>
+        <el-input v-model="formData.age" type="number" placeholder="请输入年龄" clearable />
       </el-form-item>
       <el-form-item label="联系电话" prop="phoneNumber">
-        <el-input v-model="formData.phoneNumber" placeholder="请输入联系电话" clearable/>
+        <el-input v-model="formData.phoneNumber" placeholder="请输入联系电话" clearable />
       </el-form-item>
       <el-form-item label="驾驶证号码" prop="driverLicenseNo">
-        <el-input v-model="formData.driverLicenseNo" placeholder="请输入驾驶证号码" clearable/>
+        <el-input v-model="formData.driverLicenseNo" placeholder="请输入驾驶证号码" clearable />
       </el-form-item>
       <el-form-item label="驾照类型" prop="driverLicenseType">
-        <el-select
-          v-model="formData.driverLicenseType"
-          placeholder="请选择驾照类型"
-          clearable
-        >
-          <el-option label="A1" value="A1"/>
-          <el-option label="A2" value="A2"/>
-          <el-option label="B1" value="B1"/>
-          <el-option label="B2" value="B2"/>
-          <el-option label="C1" value="C1"/>
-          <el-option label="C2" value="C2"/>
+        <el-select v-model="formData.driverLicenseType" placeholder="请选择驾照类型" clearable>
+          <el-option label="A1" value="A1" />
+          <el-option label="A2" value="A2" />
+          <el-option label="B1" value="B1" />
+          <el-option label="B2" value="B2" />
+          <el-option label="C1" value="C1" />
+          <el-option label="C2" value="C2" />
         </el-select>
       </el-form-item>
       <el-form-item label="驾驶证照片" prop="driverLicenseImg">
-        <div class="avatar-uploader">
-          <el-upload
-            class="avatar-uploader-box"
-            action="#"
-            :before-upload="beforeAvatarUpload"
-            :http-request="uploadRequest"
-            :show-file-list="false"
-          >
-            <img v-if="formData.driverLicenseImg" :src="formData.driverLicenseImg"
-                 class="avatar-image"/>
-            <el-icon v-else class="avatar-uploader-icon">
-              <Plus/>
-            </el-icon>
-            <div class="upload-tip">点击上传驾驶证照片</div>
-          </el-upload>
-        </div>
+        <el-image
+          v-if="formData.driverLicenseImg"
+          :src="formData.driverLicenseImg"
+          style="width: 150px; height: 150px; object-fit: cover"
+        />
       </el-form-item>
       <el-form-item label="驾照发证日期" prop="driverLicenseIssueDate">
         <el-date-picker
           v-model="formData.driverLicenseIssueDate"
           type="date"
           placeholder="请选择驾照发证日期"
-          value-format="yyyy-MM-dd"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
           clearable
         />
       </el-form-item>
+      <el-form-item label="驾照到期日期" prop="driverLicenseExpireDate">
+        <el-date-picker
+          v-model="formData.driverLicenseExpireDate"
+          type="date"
+          placeholder="请选择驾照到期日期"
+          format="YYYY-MM-DD"
+          value-format="YYYY-MM-DD"
+          clearable
+        />
+      </el-form-item>
+      <el-form-item label="驾龄" prop="drivingYears">
+        <el-input
+          v-model="formData.drivingYears"
+          type="number"
+          placeholder="请输入驾龄"
+          clearable
+        />
+      </el-form-item>
+      <el-form-item label="日薪" prop="dailyPrice">
+        <el-input-number
+          v-model="formData.dailyPrice"
+          :step="10"
+          :min="0"
+          :precision="2"
+          placeholder="请输入日薪"
+          clearable
+        />
+      </el-form-item>
+      <el-form-item label="工作状态" prop="workStatus">
+        <el-select v-model="formData.workStatus" placeholder="请选择工作状态" clearable>
+          <el-option label="休息中" :value="0" />
+          <el-option label="可接单" :value="1" />
+          <el-option label="已接单" :value="2" />
+        </el-select>
+      </el-form-item>
     </el-form>
-    <el-form-item label="驾照到期日期" prop="driverLicenseExpireDate">
-      <el-date-picker
-        v-model="formData.driverLicenseExpireDate"
-        type="date"
-        placeholder="请选择驾照到期日期"
-        value-format="yyyy-MM-dd"
-        clearable
-      />
-    </el-form-item>
-    <el-form-item label="驾龄" prop="drivingYears">
-      <el-input
-        v-model="formData.drivingYears"
-        type="number"
-        placeholder="请输入驾龄"
-        clearable
-      />
-    </el-form-item>
-    <el-form-item label="日薪" prop="dailyPrice">
-      <el-input-number
-        v-model="formData.dailyPrice"
-        :step="10"
-        :min="0"
-        :precision="2"
-        placeholder="请输入日薪"
-        clearable
-      />
-    </el-form-item>
-    <el-form-item label="工作状态" prop="workStatus">
-      <el-select
-        v-model="formData.workStatus"
-        placeholder="请选择工作状态"
-        clearable
-      >
-        <el-option label="休息中" :value="0"/>
-        <el-option label="可接单" :value="1"/>
-        <el-option label="已接单" :value="2"/>
-      </el-select>
-    </el-form-item>
     <template #footer>
       <div class="flex justify-center gap-[5%]">
         <el-button @click="handleClose" size="large">关闭</el-button>
@@ -144,69 +109,17 @@
 </template>
 
 <script setup lang="ts">
-import {reactive, ref} from 'vue'
-import type {FormInstance, FormRules} from 'element-plus'
-import {ElLoading, ElMessage} from 'element-plus'
-import {Plus} from '@element-plus/icons-vue'
-import {uploadFileUsingPost} from '@/api/fileUploadController'
-import {getDriverVoByIdUsingGet} from "@/api/driverController.ts";
+import { reactive, ref } from 'vue'
+import type { FormInstance, FormRules } from 'element-plus'
+import { getDriverVoByIdUsingGet } from '@/api/driverController.ts'
 
-const visible = ref(false) //
+const visible = ref(false)
 const formRef = ref<FormInstance>()
 const formData = ref<API.DriverUpdateRequest>({})
 
-// 上传前验证
-const beforeAvatarUpload = (file: File) => {
-  // 验证文件类型
-  const isImage = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(file.type)
-  if (!isImage) {
-    ElMessage.error('只能上传图片文件!')
-    return false
-  }
-
-  // 验证文件大小（2MB）
-  const isLt2M = file.size / 1024 / 1024 < 2
-  if (!isLt2M) {
-    ElMessage.error('图片大小不能超过2MB!')
-    return false
-  }
-
-  return true
-}
-
-// 自定义上传请求
-const uploadRequest = async (options: any) => {
-  try {
-    // 显示上传中
-    const loading = ElLoading.service({
-      lock: true,
-      text: '上传中...',
-      background: 'rgba(0, 0, 0, 0.7)',
-    })
-
-    // 调用API上传文件
-    const res = await uploadFileUsingPost({}, options.file)
-
-    // 关闭加载
-    loading.close()
-
-    // 处理响应
-    if (res.data?.code === 0 && res.data?.data) {
-      // 上传成功，设置头像URL
-      formData.value.driverAvatar = res.data.data
-      ElMessage.success('头像上传成功')
-    } else {
-      // 上传失败
-      ElMessage.error('头像上传失败: ' + (res.data?.message || '未知错误'))
-    }
-  } catch (error: any) {
-    ElMessage.error('头像上传失败: ' + (error.message || '未知错误'))
-  }
-}
-
 const rules = reactive<FormRules>({
   userAccount: [],
-  userRole: [{required: true, message: '请选择用户角色', trigger: 'change'}],
+  userRole: [{ required: true, message: '请选择用户角色', trigger: 'change' }],
 })
 
 // 重置表单
@@ -244,8 +157,9 @@ defineExpose({
   font-size: 18px;
   font-weight: bold;
   color: #000;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana,
-  sans-serif;
+  font-family:
+    'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana,
+    sans-serif;
   margin: 0 auto;
 }
 

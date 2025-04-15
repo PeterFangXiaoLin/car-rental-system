@@ -532,6 +532,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String userAccount = userQueryRequest.getUserAccount();
         String userName = userQueryRequest.getUserName();
         String phoneNumber = userQueryRequest.getPhoneNumber();
+        String userProfile = userQueryRequest.getUserProfile();
         String email = userQueryRequest.getEmail();
         Integer memberLevel = userQueryRequest.getMemberLevel();
         String userRole = userQueryRequest.getUserRole();
@@ -541,6 +542,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq(id != null, "id", id);
         queryWrapper.like(StrUtil.isNotBlank(userAccount), "userAccount", userAccount);
         queryWrapper.like(StrUtil.isNotBlank(userName), "userName", userName);
+        queryWrapper.like(StrUtil.isNotBlank(userProfile), "userProfile", userProfile);
         queryWrapper.like(StrUtil.isNotBlank(phoneNumber), "phoneNumber", phoneNumber);
         queryWrapper.like(StrUtil.isNotBlank(email), "email", email);
         queryWrapper.eq(memberLevel != null, "memberLevel", memberLevel);

@@ -577,6 +577,7 @@ declare namespace API {
     sortOrder?: string
     userAccount?: string
     userName?: string
+    userProfile?: string
     userRole?: string
   }
 

@@ -3,22 +3,59 @@
     <!-- 搜索表单 -->
     <el-card shadow="never" class="mb-15px">
       <div>
-        <el-form :model="searchParams" class="-mb-15px" label-width="68px" size="large">
+        <el-form :model="searchParams" class="-mb-15px" label-width="78px" size="large">
           <el-row>
-            <el-col :span="4">
+            <el-col :span="6">
               <el-form-item label="账号">
-                <el-input v-model="searchParams.userAccount" placeholder="输入账号" clearable />
+                <el-input v-model="searchParams.userAccount" placeholder="请输入账号" clearable />
               </el-form-item>
             </el-col>
-            <el-col :span="4">
+            <el-col :span="6">
               <el-form-item label="用户名">
-                <el-input v-model="searchParams.userName" placeholder="输入用户名" clearable />
+                <el-input v-model="searchParams.userName" placeholder="请输入用户名" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item label="简介">
+                <el-input v-model="searchParams.userProfile" placeholder="请输入简介" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item label="性别">
+                <el-select v-model="searchParams.gender" placeholder="请选择性别" clearable>
+                  <el-option label="男" :value="0" />
+                  <el-option label="女" :value="1" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="6">
+              <el-form-item label="会员状态">
+                <el-select
+                  v-model="searchParams.memberLevel"
+                  placeholder="请选择会员状态"
+                  clearable
+                >
+                  <el-option label="vip" :value="1" />
+                  <el-option label="普通用户" :value="0" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item label="用户角色">
+                <el-select v-model="searchParams.userRole" placeholder="请选择用户角色" clearable>
+                  <el-option label="管理员" :value="UserRoleEnum.ADMIN" />
+                  <el-option label="普通用户" :value="UserRoleEnum.USER" />
+                </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="5">
               <el-form-item>
-                <el-button type="primary" :icon="Search" @click="doSearch">搜索</el-button>
-                <el-button plain type="primary" :icon="Plus" @click="openForm()">新增</el-button>
+                <div class="flex">
+                  <el-button type="primary" :icon="Search" @click="doSearch">搜索</el-button>
+                  <el-button plain type="primary" :icon="Plus" @click="openForm()">新增</el-button>
+                </div>
               </el-form-item>
             </el-col>
           </el-row>
@@ -49,7 +86,23 @@
             />
           </template>
         </el-table-column>
+        <el-table-column label="性别" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.gender === GenderEnum.MALE ? 'success' : 'primary'">
+              {{ row.gender === GenderEnum.MALE ? '男' : '女' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="userProfile" label="简介" align="center" />
+        <el-table-column prop="phoneNumber" label="手机号" align="center" />
+        <el-table-column prop="email" label="邮箱" align="center" />
+        <el-table-column label="会员状态" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.memberLevel === 1 ? 'success' : 'primary'">
+              {{ row.memberStatus === 1 ? 'vip' : '普通用户' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="用户角色" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.userRole === UserRoleEnum.ADMIN ? 'success' : 'info'">
@@ -64,13 +117,13 @@
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="{ row }">
-            <el-button link type="primary" @click="selectOpen(1, row.id)">
+            <el-button link type="primary" @click="handleEdit(row.id)">
               <el-icon>
                 <Edit />
               </el-icon>
               编辑
             </el-button>
-            <el-button link type="primary" @click="selectOpen(2, row.id)">
+            <el-button link type="primary" @click="handleView(row.id)">
               <el-icon>
                 <View />
               </el-icon>
@@ -102,27 +155,37 @@
     </el-card>
   </div>
 
-  <UserInfoForm ref="formRef" @success="editSuccess" />
+  <UserAddForm ref="addFormRef" @success="success" />
+  <UserUpdateForm ref="updateFormRef" @success="success" />
+  <UserViewForm ref="viewFormRef" @success="success" />
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { pageUserVoUsingPost, adminDeleteUserUsingPost } from '@/api/userController'
+import { adminDeleteUserUsingPost, pageUserVoUsingPost } from '@/api/userController'
 import dayjs from 'dayjs'
-import { Delete, Plus, Search, Edit, View } from '@element-plus/icons-vue'
-import UserInfoForm from '@/components/admin/UserInfoForm.vue'
+import { Delete, Edit, Plus, Search, View } from '@element-plus/icons-vue'
 import USER_ROLE_ENUM from '../../enums/UserRoleEnum.ts'
 import UserRoleEnum from '../../enums/UserRoleEnum.ts'
+import GenderEnum from '@/enums/GenderEnum.ts'
+import UserAddForm from '@/components/user/UserAddForm.vue'
+import UserUpdateForm from '@/components/user/UserUpdateForm.vue'
+import UserViewForm from '@/components/user/UserViewForm.vue'
+import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 
 const loading = ref(false)
 const dataList = ref<API.UserVO[]>([])
 const total = ref(0)
 
-const formRef = ref()
+const loginUserStore = useLoginUserStore()
+
+const addFormRef = ref()
+const updateFormRef = ref()
+const viewFormRef = ref()
 
 // 搜索参数
-const searchParams = reactive({
+const searchParams = reactive<API.UserQueryRequest>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',
@@ -151,7 +214,7 @@ const fetchData = async () => {
 
 // 新增
 const openForm = () => {
-  formRef.value?.open(0)
+  addFormRef.value?.open()
 }
 
 // 搜索
@@ -179,6 +242,13 @@ const handleDelete = async (id: string) => {
     await ElMessageBox.confirm('确定要删除该用户吗？', '提示', {
       type: 'warning',
     })
+
+    // 当前登录用户不能删除自己
+    const loginUser = loginUserStore.loginUser
+    if (loginUser?.id == id) {
+      ElMessage.error('不能删除自己')
+      return
+    }
     const res = await adminDeleteUserUsingPost({ id })
     if (res.data.code === 0) {
       ElMessage.success('删除成功')
@@ -193,14 +263,16 @@ const handleDelete = async (id: string) => {
   }
 }
 
-// 打开编辑或查看弹窗
-const selectOpen = (type: number, id: string) => {
-  formRef.value?.open(type, id)
+// 编辑和查看用户
+const handleEdit = (id: string) => {
+  updateFormRef.value?.open(id)
+}
+const handleView = (id: string) => {
+  viewFormRef.value?.open(id)
 }
 
 // 编辑成功
-const editSuccess = (msg: string) => {
-  ElMessage.success(msg)
+const success = (msg: string) => {
   fetchData()
 }
 

@@ -157,8 +157,8 @@
             }}
           </template>
         </el-table-column>
-        <el-table-column label="驾龄" width="60" align="center">
-          <template #default="{ row }"> {{ row.driverExperienceYears }} 年 </template>
+        <el-table-column label="驾龄" width="100" align="center">
+          <template #default="{ row }"> {{ row.drivingYears }} 年 </template>
         </el-table-column>
         <el-table-column label="日薪" width="100" align="center">
           <template #default="{ row }">
@@ -172,7 +172,7 @@
             <el-tag v-else-if="row.workStatus === DriverWorkStatusEnum.ON_ORDER"> 已接单 </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="评分" width="100" align="center">
+        <el-table-column label="评分" width="150" align="center">
           <template #default="{ row }">
             <el-rate v-model="row.rating" :max="5" readonly />
           </template>
@@ -217,8 +217,9 @@
     </el-card>
   </div>
 
-  <DriverAddForm ref="addFormRef"/>
-  <DriverUpdateForm ref="updateFormRef"/>
+  <DriverAddForm ref="addFormRef" @success="success" />
+  <DriverUpdateForm ref="updateFormRef" @success="success" />
+  <DriverViewForm ref="viewFormRef" @success="success" />
 </template>
 
 <script setup lang="ts">
@@ -226,12 +227,12 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 import { Delete, Edit, Plus, Search, View } from '@element-plus/icons-vue'
-import UserInfoForm from '@/components/admin/UserInfoForm.vue'
 import GenderEnum from '@/enums/GenderEnum.ts'
 import DriverWorkStatusEnum from '@/enums/DriverWorkStatusEnum.ts'
 import { deleteDriverUsingPost, listDriverVoByPageUsingPost } from '@/api/driverController.ts'
-import DriverAddForm from "@/views/driver/DriverAddForm.vue";
-import DriverUpdateForm from "@/views/driver/DriverUpdateForm.vue";
+import DriverAddForm from '@/views/driver/DriverAddForm.vue'
+import DriverUpdateForm from '@/views/driver/DriverUpdateForm.vue'
+import DriverViewForm from '@/views/driver/DriverViewForm.vue'
 
 const loading = ref(false)
 const dataList = ref<API.UserVO[]>([])
@@ -239,6 +240,7 @@ const total = ref(0)
 
 const addFormRef = ref()
 const updateFormRef = ref()
+const viewFormRef = ref()
 
 // 搜索参数
 const searchParams = reactive<API.DriverQueryRequest>({
@@ -317,12 +319,11 @@ const handleEdit = (id: string) => {
 
 // 查看
 const handleView = (id: string) => {
-  updateFormRef.value?.open(id)
+  viewFormRef.value?.open(id)
 }
 
 // 成功
 const success = (msg: string) => {
-  ElMessage.success(msg)
   fetchData()
 }
 
