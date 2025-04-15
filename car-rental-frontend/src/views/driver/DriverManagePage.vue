@@ -179,13 +179,13 @@
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="{ row }">
-            <el-button link type="primary" @click="selectOpen(1, row.id)">
+            <el-button link type="primary" @click="handleEdit(row.id)">
               <el-icon>
                 <Edit />
               </el-icon>
               编辑
             </el-button>
-            <el-button link type="primary" @click="selectOpen(2, row.id)">
+            <el-button link type="primary" @click="handleView(row.id)">
               <el-icon>
                 <View />
               </el-icon>
@@ -217,7 +217,8 @@
     </el-card>
   </div>
 
-  <UserInfoForm ref="formRef" @success="editSuccess" />
+  <DriverAddForm ref="addFormRef"/>
+  <DriverUpdateForm ref="updateFormRef"/>
 </template>
 
 <script setup lang="ts">
@@ -229,12 +230,15 @@ import UserInfoForm from '@/components/admin/UserInfoForm.vue'
 import GenderEnum from '@/enums/GenderEnum.ts'
 import DriverWorkStatusEnum from '@/enums/DriverWorkStatusEnum.ts'
 import { deleteDriverUsingPost, listDriverVoByPageUsingPost } from '@/api/driverController.ts'
+import DriverAddForm from "@/views/driver/DriverAddForm.vue";
+import DriverUpdateForm from "@/views/driver/DriverUpdateForm.vue";
 
 const loading = ref(false)
 const dataList = ref<API.UserVO[]>([])
 const total = ref(0)
 
-const formRef = ref()
+const addFormRef = ref()
+const updateFormRef = ref()
 
 // 搜索参数
 const searchParams = reactive<API.DriverQueryRequest>({
@@ -264,7 +268,7 @@ const fetchData = async () => {
 
 // 新增
 const openForm = () => {
-  formRef.value?.open(0)
+  addFormRef.value?.open()
 }
 
 // 搜索
@@ -306,13 +310,18 @@ const handleDelete = async (id: string) => {
   }
 }
 
-// 打开编辑或查看弹窗
-const selectOpen = (type: number, id: string) => {
-  formRef.value?.open(type, id)
+// 编辑
+const handleEdit = (id: string) => {
+  updateFormRef.value?.open(id)
 }
 
-// 编辑成功
-const editSuccess = (msg: string) => {
+// 查看
+const handleView = (id: string) => {
+  updateFormRef.value?.open(id)
+}
+
+// 成功
+const success = (msg: string) => {
   ElMessage.success(msg)
   fetchData()
 }
