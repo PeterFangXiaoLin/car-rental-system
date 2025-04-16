@@ -207,15 +207,8 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "分页参数不合法");
         }
 
-        QueryWrapper<Vehicle> queryWrapper = this.getQueryWrapper(vehicleQueryRequest);
-        Page<Vehicle> vehiclePage = vehicleMapper.selectPage(new Page<>(current, pageSize), queryWrapper);
-        Page<VehicleVO> vehicleVOPage = new Page<>(current, pageSize, vehiclePage.getTotal());
-        if (CollUtil.isNotEmpty(vehiclePage.getRecords())) {
-            vehicleVOPage.setRecords(vehiclePage.getRecords().stream()
-                    .map(this::getVehicleVO)
-                    .collect(Collectors.toList()));
-        }
-        return vehicleVOPage;
+        Page<VehicleVO> page = new Page<>(current, pageSize);
+        return vehicleMapper.selectPageVO(page, vehicleQueryRequest);
     }
 
     @Override

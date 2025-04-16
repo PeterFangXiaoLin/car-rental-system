@@ -6,19 +6,19 @@
         <el-form :model="searchParams" class="-mb-15px" label-width="78px" size="large">
           <el-row>
             <el-col :span="6">
-              <el-form-item label="司机姓名">
+              <el-form-item label="车辆名称">
                 <el-input
-                  v-model="searchParams.driverName"
-                  placeholder="请输入司机姓名"
+                  v-model="searchParams.name"
+                  placeholder="请输入车辆名称"
                   clearable
                 />
               </el-form-item>
             </el-col>
             <el-col :span="6">
-              <el-form-item label="性别">
+              <el-form-item label="品牌">
                 <el-select
-                  v-model="searchParams.gender"
-                  placeholder="请选择性别"
+                  v-model="searchParams.brandId"
+                  placeholder="请选择品牌"
                   clearable
                   size="large"
                 >
@@ -28,10 +28,10 @@
               </el-form-item>
             </el-col>
             <el-col :span="6">
-              <el-form-item label="驾照类型">
+              <el-form-item label="型号">
                 <el-select
-                  v-model="searchParams.driverLicenseType"
-                  placeholder="请选择驾照类型"
+                  v-model="searchParams.modelId"
+                  placeholder="请选择型号"
                   clearable
                   size="large"
                 >
@@ -45,43 +45,64 @@
               </el-form-item>
             </el-col>
             <el-col :span="6">
-              <el-form-item label="最小日薪">
+              <el-form-item label="能源类型">
+                <el-select
+                  v-model="searchParams.energyTypeId"
+                  placeholder="请选择能源类型"
+                  clearable
+                  size="large"
+                >
+
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="6">
+              <el-form-item label="最小日租金">
                 <el-input-number
-                  v-model="searchParams.minPrice"
+                  v-model="searchParams.minDailyPrice"
                   :min="0"
                   :precision="2"
-                  :step="50"
+                  :step="10"
                   placeholder="最小日薪"
                   size="large"
                   class="w-full"
                 />
               </el-form-item>
             </el-col>
-          </el-row>
-          <el-row>
             <el-col :span="6">
               <el-form-item label="最大日薪">
                 <el-input-number
-                  v-model="searchParams.maxPrice"
+                  v-model="searchParams.maxDailyPrice"
                   :min="0"
                   :precision="2"
-                  :step="50"
+                  :step="10"
                   placeholder="最大日薪"
                   size="large"
                   class="w-full"
                 />
               </el-form-item>
             </el-col>
-            <el-col :span="6">
-              <el-form-item label="工作状态">
-                <el-select v-model="searchParams.workStatus" placeholder="请选择工作状态" clearable>
-                  <el-option label="休息中" :value="0" />
-                  <el-option label="可接单" :value="1" />
-                  <el-option label="已接单" :value="2" />
+            <el-col :span="4">
+              <el-input-number
+                v-model="searchParams.seatCount"
+                :min="4"
+                :max="20"
+                placeholder="请输入座位数"
+              />
+            </el-col>
+            <el-col :span="4">
+              <el-form-item label="状态">
+                <el-select v-model="searchParams.status" placeholder="请选择状态" clearable>
+                  <el-option label="可用" :value="0" />
+                  <el-option label="已租出" :value="1" />
+                  <el-option label="维修中" :value="2" />
+                  <el-option label="报废" :value="3" />
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="5">
+            <el-col :span="4">
               <el-form-item>
                 <div class="flex">
                   <el-button type="primary" :icon="Search" @click="doSearch">搜索</el-button>
@@ -95,7 +116,7 @@
     </el-card>
 
     <el-card shadow="never" class="mb-15px">
-      <!-- 司机表格 -->
+      <!-- 车辆表格 -->
       <el-table
         :data="dataList"
         style="width: 100%"
@@ -103,12 +124,11 @@
         :header-cell-style="{ 'background-color': '#ecf8fe', color: '#4986EA' }"
       >
         <el-table-column label="序号" type="index" width="60" align="center" />
-        <el-table-column prop="driverName" label="司机姓名" width="120" align="center" />
-        <el-table-column label="头像" width="120" align="center">
+        <el-table-column label="车辆图片" width="120" align="center">
           <template #default="{ row }">
             <el-image
-              :src="row.driverAvatar"
-              :preview-src-list="[row.driverAvata]"
+              :src="row.imageUrl"
+              :preview-src-list="[row.imageUrl]"
               fit="cover"
               style="width: 80px; height: 80px"
               :preview-teleported="true"
@@ -116,65 +136,38 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="性别" width="100" align="center">
+        <el-table-column prop="name" label="车辆名称" width="120" align="center" />
+        <el-table-column prop="vehicleNo" label="车牌号" width="120" align="center" />
+        <el-table-column prop="brandName" label="品牌" width="120" align="center" />
+        <el-table-column prop="modelName" label="型号" width="120" align="center" />
+        <el-table-column prop="vehicleTypeName" label="车型名称" width="120" align="center" />
+        <el-table-column prop="energyTypeName" label="能源类型" width="120" align="center" />
+        <el-table-column label="生产年份" width="120" align="center" >
           <template #default="{ row }">
-            <el-tag :type="row.gender === GenderEnum.MALE ? 'success' : 'primary'">
-              {{ row.gender === GenderEnum.MALE ? '男' : '女' }}
-            </el-tag>
+            <div>{{ row.productionYear }} 年</div>
           </template>
         </el-table-column>
-        <el-table-column label="年龄" width="100" align="center" prop="age" />
-        <el-table-column label="联系电话" width="120" align="center" prop="phoneNumber" />
-        <el-table-column label="驾驶证号码" width="120" align="center" prop="driverLicenseNo" />
-        <el-table-column label="驾驶证类型" width="120" align="center" prop="driverLicenseType" />
-        <el-table-column label="驾驶证照片" width="120" align="center">
-          <template #default="{ row }">
-            <el-image
-              :src="row.driverLicenseImg"
-              :preview-src-list="[row.driverLicenseImg]"
-              fit="cover"
-              style="width: 80px; height: 80px"
-              :preview-teleported="true"
-              :initial-index="0"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column label="发证日期" width="120" align="center">
-          <template #default="{ row }">
-            {{
-              row.driverLicenseIssueDate
-                ? dayjs(row.driverLicenseIssueDate).format('YYYY-MM-DD')
-                : '-'
-            }}
-          </template>
-        </el-table-column>
-        <el-table-column label="到期日期" width="120" align="center">
-          <template #default="{ row }">
-            {{
-              row.driverLicenseExpireDate
-                ? dayjs(row.driverLicenseExpireDate).format('YYYY-MM-DD')
-                : '-'
-            }}
-          </template>
-        </el-table-column>
-        <el-table-column label="驾龄" width="100" align="center">
-          <template #default="{ row }"> {{ row.drivingYears }} 年 </template>
-        </el-table-column>
-        <el-table-column label="日薪" width="100" align="center">
+        <el-table-column label="日租金" align="center">
           <template #default="{ row }">
             <div class="color-#f56c6c">{{ row.dailyPrice }} 元/天</div>
           </template>
         </el-table-column>
-        <el-table-column label="工作状态" width="100" align="center">
+        <el-table-column label="座位数" align="center">
           <template #default="{ row }">
-            <el-tag v-if="row.workStatus === DriverWorkStatusEnum.RESTING"> 休息中 </el-tag>
-            <el-tag v-else-if="row.workStatus === DriverWorkStatusEnum.AVAILABLE"> 可接单 </el-tag>
-            <el-tag v-else-if="row.workStatus === DriverWorkStatusEnum.ON_ORDER"> 已接单 </el-tag>
+            <div>{{ row.seatCount }} 座</div>
           </template>
         </el-table-column>
-        <el-table-column label="评分" width="150" align="center">
+        <el-table-column label="状态" width="100" align="center">
           <template #default="{ row }">
-            <el-rate v-model="row.rating" :max="5" readonly />
+            <el-tag v-if="row.status === VehicleStatusEnum.AVAILABLE" type="primary">可用</el-tag>
+            <el-tag v-else-if="row.status === VehicleStatusEnum.RENTED" type="primary">已租出</el-tag>
+            <el-tag v-else-if="row.status === VehicleStatusEnum.AVAILABLE" type="primary">可用</el-tag>
+            <el-tag v-else-if="row.status === VehicleStatusEnum.AVAILABLE" type="primary">可用</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="描述" width="200" align="center">
+          <template #default="{ row }">
+            <div>{{ row.description }}</div>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right" align="center">
@@ -223,27 +216,32 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import dayjs from 'dayjs'
-import { Delete, Edit, Plus, Search, View } from '@element-plus/icons-vue'
-import GenderEnum from '@/enums/GenderEnum.ts'
-import DriverWorkStatusEnum from '@/enums/DriverWorkStatusEnum.ts'
-import { deleteDriverUsingPost, listDriverVoByPageUsingPost } from '@/api/driverController.ts'
+import {onMounted, reactive, ref, watch} from 'vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {Delete, Edit, Plus, Search, View} from '@element-plus/icons-vue'
+import {deleteDriverUsingPost, listDriverVoByPageUsingPost} from '@/api/driverController.ts'
 import DriverAddForm from '@/views/driver/DriverAddForm.vue'
 import DriverUpdateForm from '@/views/driver/DriverUpdateForm.vue'
 import DriverViewForm from '@/views/driver/DriverViewForm.vue'
+import {listVehicleBrandUsingPost} from "@/api/vehicleBrandController.ts";
+import {listVehicleModelUsingPost} from "@/api/vehicleModelController.ts";
+import {listEnergyTypeDictUsingPost} from "@/api/energyTypeDictController.ts";
+import VehicleStatusEnum from "@/enums/VehicleStatusEnum.ts";
 
 const loading = ref(false)
-const dataList = ref<API.DriverVO[]>([])
+const dataList = ref<API.VehicleVO[]>([])
 const total = ref(0)
+
+const brandList = ref<API.VehicleBrandVO[]>([])
+const modelList = ref<API.VehicleModelVO[]>([])
+const energyTypeList = ref<API.EnergyTypeDictVO[]>([])
 
 const addFormRef = ref()
 const updateFormRef = ref()
 const viewFormRef = ref()
 
 // 搜索参数
-const searchParams = reactive<API.DriverQueryRequest>({
+const searchParams = reactive<API.VehicleQueryRequest>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',
@@ -265,6 +263,42 @@ const fetchData = async () => {
     ElMessage.error('获取数据失败：' + error)
   } finally {
     loading.value = false
+  }
+}
+
+// 获取品牌列表
+const fetchBrandList = async () => {
+  try {
+    const res = await listVehicleBrandUsingPost()
+    if (res.data?.code === 0 && res.data.data) {
+      brandList.value = res.data.data
+    }
+  } catch (error) {
+    ElMessage.error('获取品牌列表失败：' + error)
+  }
+}
+
+// 获取车型列表
+const fetchModelList = async (brandId: string) => {
+  try {
+    const res = await listVehicleModelUsingPost({ brandId })
+    if (res.data?.code === 0 && res.data.data) {
+      modelList.value = res.data.data
+    }
+  } catch (error) {
+    ElMessage.error('获取车型列表失败：' + error)
+  }
+}
+
+// 获取能源类型列表
+const fetchEnergyTypeList = async () => {
+  try {
+    const res = await listEnergyTypeDictUsingPost()
+    if (res.data?.code === 0 && res.data.data) {
+      energyTypeList.value = res.data.data
+    }
+  } catch (error) {
+    ElMessage.error('获取能源类型列表失败：' + error)
   }
 }
 
@@ -327,9 +361,17 @@ const success = (msg: string) => {
   fetchData()
 }
 
+watch(() => searchParams.brandId, async (newVal) => {
+  if (newVal) {
+    await fetchModelList(newVal as string)
+  }
+})
+
 // 页面加载时获取数据
 onMounted(() => {
   fetchData()
+  fetchBrandList()
+  fetchEnergyTypeList()
 })
 </script>
 

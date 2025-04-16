@@ -220,8 +220,8 @@ const uploadLicenseRequest = async (options: { file: File }) => {
       // 上传失败
       ElMessage.error('驾驶证照片上传失败: ' + (res.data?.message || '未知错误'))
     }
-  } catch (error: Error) {
-    ElMessage.error('驾驶证照片上传失败: ' + (error.message || '未知错误'))
+  } catch (error) {
+    ElMessage.error('驾驶证照片上传失败: ' + error)
   }
 }
 

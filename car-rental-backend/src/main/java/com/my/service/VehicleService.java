@@ -10,6 +10,8 @@ import com.my.domain.entity.Vehicle;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.my.domain.vo.VehicleVO;
 
+import java.util.List;
+
 /**
 * @author Administrator
 * @description 针对表【vehicle(车辆表)】的数据库操作Service

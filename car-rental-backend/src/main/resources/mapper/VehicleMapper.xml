@@ -31,4 +31,82 @@
         description,createTime,updateTime,
         isDelete
     </sql>
+    <select id="selectPageVO" resultType="com.my.domain.vo.VehicleVO">
+        select
+            vehicle.id,
+            vehicle.name,
+            vehicle.vehicleNo,
+            vehicle.brandId,
+            vb.name as brandName,
+            vehicle.modelId,
+            vm.name as modelName,
+            vehicle.vehicleTypeId,
+            vtd.name as vehicleTypeName,
+            vehicle.energyTypeId,
+            etd.name as energyTypeName,
+            vehicle.productionYear,
+            vehicle.dailyPrice,
+            vehicle.seatCount,
+            vehicle.status,
+            vehicle.imageUrl,
+            vehicle.description,
+            vehicle.createTime
+        from
+            vehicle
+        inner join
+            vehicle_brand as vb on vehicle.brandId = vb.id and vb.isDelete = 0
+        inner join
+            vehicle_model as vm on vehicle.modelId = vm.id and vm.isDelete = 0
+        inner join
+            energy_type_dict as etd on vehicle.energyTypeId = etd.id and etd.isDelete = 0
+        inner join
+            vehicle_type_dict as vtd on vehicle.vehicleTypeId = vtd.id and vtd.isDelete = 0
+        where
+            vehicle.isDelete = 0
+        <if test="req.searchText != null and req.searchText != ''">
+            and (
+                vehicle.name like concat('%', #{req.searchText}, '%')
+                or vb.name like concat('%', #{req.searchText}, '%')
+                or vm.name like concat('%', #{req.searchText}, '%')
+                or vtd.name like concat('%', #{req.searchText}, '%')
+                or etd.name like concat('%', #{req.searchText}, '%')
+            )
+        </if>
+        <if test="req.id != null">
+            and vehicle.id = #{req.id}
+        </if>
+        <if test="req.brandId != null">
+            and vehicle.brandId = #{req.brandId}
+        </if>
+        <if test="req.modelId!= null">
+            and vehicle.modelId = #{req.modelId}
+        </if>
+        <if test="req.name != null and req.name != ''">
+            and vehicle.name like concat('%', #{req.name}, '%')
+        </if>
+        <if test="req.vehicleNo!= null and req.vehicleNo!= ''">
+            and vehicle.vehicleNo like concat('%', #{req.vehicleNo}, '%')
+        </if>
+        <if test="req.vehicleTypeId!= null">
+            and vehicle.vehicleTypeId = #{req.vehicleTypeId}
+        </if>
+        <if test="req.energyTypeId!= null">
+            and vehicle.energyTypeId = #{req.energyTypeId}
+        </if>
+        <if test="req.minDailyPrice!= null">
+            and vehicle.dailyPrice &gt;= #{req.minDailyPrice}
+        </if>
+        <if test="req.maxDailyPrice!= null">
+            and vehicle.dailyPrice &lt;= #{req.maxDailyPrice}
+        </if>
+        <if test="req.seatCount!= null">
+            and vehicle.seatCount = #{req.seatCount}
+        </if>
+        <if test="req.status!= null">
+            and vehicle.status = #{req.status}
+        </if>
+        <if test="req.description!= null and req.description!= ''">
+            and vehicle.description like concat('%', #{req.description}, '%')
+        </if>
+    </select>
 </mapper>

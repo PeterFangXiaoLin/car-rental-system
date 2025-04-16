@@ -1,7 +1,11 @@
 package com.my.mapper;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.my.domain.dto.vehicle.VehicleQueryRequest;
 import com.my.domain.entity.Vehicle;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.my.domain.vo.VehicleVO;
+import org.apache.ibatis.annotations.Param;
 
 /**
 * @author Administrator
@@ -11,6 +15,14 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface VehicleMapper extends BaseMapper<Vehicle> {
 
+    /**
+     * 分页查询
+     *
+     * @param page
+     * @param vehicleQueryRequest
+     * @return
+     */
+    Page<VehicleVO> selectPageVO(Page<VehicleVO> page, @Param("req") VehicleQueryRequest vehicleQueryRequest);
 }
 
 
