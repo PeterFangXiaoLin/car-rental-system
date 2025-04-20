@@ -26,31 +26,6 @@ public class StoreQueryRequest extends PageRequest implements Serializable {
     private String address;
 
     /**
-     * 省份
-     */
-    private String province;
-
-    /**
-     * 城市
-     */
-    private String city;
-
-    /**
-     * 区县
-     */
-    private String district;
-
-    /**
-     * 行政区划编码（高德地图）
-     */
-    private String adcode;
-
-    /**
-     * 城市编码（高德地图）
-     */
-    private String citycode;
-
-    /**
      * 联系电话
      */
     private String contactPhone;
@@ -69,9 +44,4 @@ public class StoreQueryRequest extends PageRequest implements Serializable {
      * 状态：0-关闭，1-营业中
      */
     private Integer status;
-
-    /**
-     * 门店描述
-     */
-    private String description;
 }

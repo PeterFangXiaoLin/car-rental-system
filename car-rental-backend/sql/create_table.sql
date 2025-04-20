@@ -284,31 +284,24 @@ CREATE TABLE IF NOT EXISTS `city`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='城市表';
 
+drop table if exists `store`;
+
 CREATE TABLE IF NOT EXISTS `store`
 (
     `id`            bigint       NOT NULL AUTO_INCREMENT COMMENT '门店ID',
     `storeName`     varchar(100) NOT NULL COMMENT '门店名称',
     `address`       varchar(255) NOT NULL COMMENT '门店地址',
-    `province`      varchar(50)  NOT NULL COMMENT '省份',
-    `city`          varchar(50)  NOT NULL COMMENT '城市',
-    `district`      varchar(50)  NOT NULL COMMENT '区县',
-    `adcode`        varchar(20)  NOT NULL COMMENT '行政区划编码（高德地图）',
-    `citycode`      varchar(20)  NOT NULL COMMENT '城市编码（高德地图）',
     `longitude`     decimal(10, 6)        DEFAULT NULL COMMENT '经度',
     `latitude`      decimal(10, 6)        DEFAULT NULL COMMENT '纬度',
-    `contactPhone`  varchar(20)  NOT NULL COMMENT '联系电话',
+    `mobile`  varchar(30)  NOT NULL COMMENT '联系电话',
     `openTime`      time NOT NULL DEFAULT '09:00:00' COMMENT '开始营业时间',
     `closeTime`     time NOT NULL DEFAULT '21:00:00' COMMENT '结束营业时间',
     `status`        tinyint      NOT NULL DEFAULT '1' COMMENT '状态：0-关闭，1-营业中',
     `images`        text                  DEFAULT NULL COMMENT '门店图片URL，多个用逗号分隔',
-    `description`   varchar(500)          DEFAULT NULL COMMENT '门店描述',
     `createTime`    datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updateTime`    datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `isDelete`      tinyint      NOT NULL DEFAULT '0' COMMENT '是否删除',
     PRIMARY KEY (`id`),
-    KEY `idx_city` (`city`),
-    KEY `idx_adcode` (`adcode`),
-    KEY `idx_citycode` (`citycode`),
     KEY `idx_status` (`status`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='门店表';

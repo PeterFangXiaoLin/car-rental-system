@@ -22,6 +22,11 @@ public class VehicleModelVO implements Serializable {
     private Long brandId;
 
     /**
+     * 品牌名称
+     */
+    private String brandName;
+
+    /**
      * 型号名称
      */
     private String modelName;

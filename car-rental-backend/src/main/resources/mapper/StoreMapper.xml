@@ -8,19 +8,13 @@
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="storeName" column="storeName" jdbcType="VARCHAR"/>
             <result property="address" column="address" jdbcType="VARCHAR"/>
-            <result property="province" column="province" jdbcType="VARCHAR"/>
-            <result property="city" column="city" jdbcType="VARCHAR"/>
-            <result property="district" column="district" jdbcType="VARCHAR"/>
-            <result property="adcode" column="adcode" jdbcType="VARCHAR"/>
-            <result property="citycode" column="citycode" jdbcType="VARCHAR"/>
             <result property="longitude" column="longitude" jdbcType="DECIMAL"/>
             <result property="latitude" column="latitude" jdbcType="DECIMAL"/>
-            <result property="contactPhone" column="contactPhone" jdbcType="VARCHAR"/>
+            <result property="mobile" column="mobile" jdbcType="VARCHAR"/>
             <result property="openTime" column="openTime" jdbcType="TIME"/>
             <result property="closeTime" column="closeTime" jdbcType="TIME"/>
             <result property="status" column="status" jdbcType="TINYINT"/>
             <result property="images" column="images" jdbcType="VARCHAR"/>
-            <result property="description" column="description" jdbcType="VARCHAR"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
             <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
@@ -28,11 +22,9 @@
 
     <sql id="Base_Column_List">
         id,storeName,address,
-        province,city,district,
-        adcode,citycode,longitude,
-        latitude,contactPhone,openTime,
-        closeTime,status,images,
-        description,createTime,updateTime,
+        longitude,latitude,mobile,
+        openTime,closeTime,status,
+        images,createTime,updateTime,
         isDelete
     </sql>
 </mapper>

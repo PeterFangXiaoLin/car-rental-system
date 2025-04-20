@@ -170,7 +170,6 @@ const handleCommand = async (command: string) => {
           router.push('/')
         }
       } catch (error) {
-        console.error('退出登录失败:', error)
         ElMessage.error('退出登录失败')
       }
       break

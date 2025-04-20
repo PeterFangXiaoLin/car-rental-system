@@ -1,5 +1,6 @@
 package com.my.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.my.common.DeleteRequest;
 import com.my.domain.dto.vehiclemodel.VehicleModelAddRequest;
 import com.my.domain.dto.vehiclemodel.VehicleModelQueryRequest;
@@ -55,4 +56,20 @@ public interface VehicleModelService extends IService<VehicleModel> {
      * @return
      */
     boolean deleteVehicleModel(DeleteRequest deleteRequest);
+
+    /**
+     * 分页获取车辆型号列表
+     *
+     * @param vehicleModelQueryRequest
+     * @return
+     */
+    Page<VehicleModelVO> listVehicleModelByPage(VehicleModelQueryRequest vehicleModelQueryRequest);
+
+    /**
+     * 根据id获取车辆型号
+     *
+     * @param id
+     * @return
+     */
+    VehicleModelVO getVehicleModelById(Long id);
 }

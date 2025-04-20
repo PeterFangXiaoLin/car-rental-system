@@ -1,20 +1,24 @@
 <template>
   <div>
+    <!-- 搜索表单 -->
     <el-card shadow="never" class="mb-15px">
       <div>
-        <el-form :model="searchParams" label-width="68px" size="large" class="-mb-15px">
-          <el-row :gutter="20">
+        <el-form :model="searchParams" class="-mb-15px" label-width="88px" size="large">
+          <el-row>
             <el-col :span="6">
-              <el-form-item label="车型">
-                <el-input v-model="searchParams.typeName" placeholder="请输入车型" clearable />
+              <el-form-item label="品牌名称">
+                <el-input
+                  v-model="searchParams.searchText"
+                  placeholder="请输入品牌名称"
+                  clearable
+                />
               </el-form-item>
             </el-col>
-
-            <el-col :span="12">
+            <el-col :span="6">
               <el-form-item>
                 <div class="flex">
                   <el-button type="primary" :icon="Search" @click="doSearch">搜索</el-button>
-                  <el-button plain type="primary" :icon="Plus" @click="openForm()">新增</el-button>
+                  <el-button plain type="primary" :icon="Plus" @click="openForm()">新增 </el-button>
                 </div>
               </el-form-item>
             </el-col>
@@ -24,6 +28,7 @@
     </el-card>
 
     <el-card shadow="never" class="mb-15px">
+      <!-- 车辆表格 -->
       <el-table
         :data="dataList"
         style="width: 100%"
@@ -31,13 +36,21 @@
         :header-cell-style="{ 'background-color': '#ecf8fe', color: '#4986EA' }"
       >
         <el-table-column label="序号" type="index" width="60" align="center" />
-        <el-table-column label="类型名称" prop="typeName" align="center" />
-        <el-table-column label="创建时间" prop="createTime" align="center">
+        <el-table-column prop="brandName" label="品牌名称" width="120" align="center" />
+        <el-table-column label="品牌Logo" width="120" align="center">
           <template #default="{ row }">
-            {{ dayjs(row.createTime).format('YYYY-MM-DD HH:mm:ss') }}
+            <el-image
+              :src="row.imageUrl"
+              :preview-src-list="[row.imageUrl]"
+              fit="cover"
+              style="width: 80px; height: 80px"
+              :preview-teleported="true"
+              :initial-index="0"
+            />
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center">
+        <el-table-column prop="firstLetter" label="首字母" width="120" align="center" />
+        <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleEdit(row.id)">
               <el-icon>
@@ -77,36 +90,56 @@
     </el-card>
   </div>
 
-  <VehicleTypeDictAddForm ref="addFormRef" @success="success" />
-  <VehicleTypeDictUpdateForm ref="updateFormRef" @success="success" />
-  <VehicleTypeDictViewForm ref="viewFormRef"/>
+  <VehicleBrandAddForm ref="addFormRef" @success="success" />
+  <VehicleBrandUpdateForm ref="updateFormRef" @success="success" />
+  <VehicleBrandViewForm ref="viewFormRef" />
 </template>
+
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import {Edit, Plus, Search, Delete, View} from '@element-plus/icons-vue'
-import {
-  deleteVehicleTypeDictUsingPost,
-  pageVehicleTypeDictUsingPost,
-} from '@/api/vehicleTypeDictController.ts'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import dayjs from 'dayjs'
-import VehicleTypeDictAddForm from '@/components/vehicletypedict/VehicleTypeDictAddForm.vue'
-import VehicleTypeDictUpdateForm from '@/components/vehicletypedict/VehicleTypeDictUpdateForm.vue'
-import VehicleTypeDictViewForm from '@/components/vehicletypedict/VehicleTypeDictViewForm.vue'
-
-const searchParams = reactive<API.VehicleTypeDictQueryRequest>({
-  typeName: '',
-  current: 1,
-  pageSize: 10,
-})
+import { Delete, Edit, Plus, Search, View } from '@element-plus/icons-vue'
+import {
+  deleteVehicleBrandUsingPost,
+  listVehicleBrandByPageUsingPost,
+} from '@/api/vehicleBrandController.ts'
+import VehicleBrandAddForm from '@/components/vehiclebrand/VehicleBrandAddForm.vue'
+import VehicleBrandUpdateForm from '@/components/vehiclebrand/VehicleBrandUpdateForm.vue'
+import VehicleBrandViewForm from '@/components/vehiclebrand/VehicleBrandViewForm.vue'
 
 const loading = ref(false)
-const dataList = ref<API.VehicleTypeDictVO[]>([])
+const dataList = ref<API.VehicleVO[]>([])
 const total = ref(0)
+
 const addFormRef = ref()
 const updateFormRef = ref()
 const viewFormRef = ref()
 
+// 搜索参数
+const searchParams = reactive<API.VehicleBrandQueryRequest>({
+  current: 1,
+  pageSize: 10,
+  sortField: 'createTime',
+  sortOrder: 'descend',
+})
+
+// 获取用户列表数据
+const fetchData = async () => {
+  loading.value = true
+  try {
+    const res = await listVehicleBrandByPageUsingPost(searchParams)
+    if (res.data?.code === 0 && res.data.data) {
+      dataList.value = res.data.data.records ?? []
+      total.value = Number(res.data.data.total) || 0
+    } else {
+      ElMessage.error(res.data.message || '获取数据失败')
+    }
+  } catch (error) {
+    ElMessage.error('获取数据失败：' + error)
+  } finally {
+    loading.value = false
+  }
+}
 
 // 新增
 const openForm = () => {
@@ -132,18 +165,13 @@ const handleSizeChange = (size: number) => {
   fetchData()
 }
 
-// 编辑
-const handleEdit = (id: string) => {
-  updateFormRef.value?.open(id)
-}
-
-// 删除
+// 删除用户
 const handleDelete = async (id: string) => {
   try {
-    await ElMessageBox.confirm('确定要删除该类型吗？', '提示', {
+    await ElMessageBox.confirm('确定要删除该品牌吗？', '提示', {
       type: 'warning',
     })
-    const res = await deleteVehicleTypeDictUsingPost({ id: id })
+    const res = await deleteVehicleBrandUsingPost({ id: id })
     if (res.data.code === 0) {
       ElMessage.success('删除成功')
       await fetchData()
@@ -157,33 +185,22 @@ const handleDelete = async (id: string) => {
   }
 }
 
+// 编辑
+const handleEdit = (id: string) => {
+  updateFormRef.value?.open(id)
+}
+
 // 查看
 const handleView = (id: string) => {
   viewFormRef.value?.open(id)
 }
 
-const success = () => {
+// 成功
+const success = (msg: string) => {
   fetchData()
 }
 
-/**
- * 获取数据
- */
-const fetchData = async () => {
-  loading.value = true
-  try {
-    const res = await pageVehicleTypeDictUsingPost(searchParams)
-    if (res.data?.code === 0 && res.data.data) {
-      dataList.value = res.data.data.records || []
-      total.value = Number(res.data.data.total) || 0
-    } else {
-      ElMessage.error(res.data?.message || '获取数据失败')
-    }
-  } finally {
-    loading.value = false
-  }
-}
-
+// 页面加载时获取数据
 onMounted(() => {
   fetchData()
 })

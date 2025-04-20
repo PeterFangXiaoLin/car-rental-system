@@ -86,7 +86,6 @@ const customUpload = async (options: UploadRequestOptions) => {
     // 使用类型断言处理错误
     onError(error as never)
     ElMessage.error('上传失败')
-    console.error('上传错误:', error)
   }
 }
 

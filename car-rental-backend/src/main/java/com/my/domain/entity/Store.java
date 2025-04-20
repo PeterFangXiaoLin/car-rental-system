@@ -34,31 +34,6 @@ public class Store implements Serializable {
     private String address;
 
     /**
-     * 省份
-     */
-    private String province;
-
-    /**
-     * 城市
-     */
-    private String city;
-
-    /**
-     * 区县
-     */
-    private String district;
-
-    /**
-     * 行政区划编码（高德地图）
-     */
-    private String adcode;
-
-    /**
-     * 城市编码（高德地图）
-     */
-    private String citycode;
-
-    /**
      * 经度
      */
     private BigDecimal longitude;
@@ -71,7 +46,7 @@ public class Store implements Serializable {
     /**
      * 联系电话
      */
-    private String contactPhone;
+    private String mobile;
 
     /**
      * 开始营业时间
@@ -92,11 +67,6 @@ public class Store implements Serializable {
      * 门店图片URL，多个用逗号分隔
      */
     private String images;
-
-    /**
-     * 门店描述
-     */
-    private String description;
 
     /**
      * 创建时间

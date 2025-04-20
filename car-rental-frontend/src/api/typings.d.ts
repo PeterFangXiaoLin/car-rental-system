@@ -106,6 +106,12 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponsePageVehicleModelVO_ = {
+    code?: number
+    data?: PageVehicleModelVO_
+    message?: string
+  }
+
   type BaseResponsePageVehicleTypeDictVO_ = {
     code?: number
     data?: PageVehicleTypeDictVO_
@@ -145,6 +151,18 @@ declare namespace API {
   type BaseResponseVehicleBrandVO_ = {
     code?: number
     data?: VehicleBrandVO
+    message?: string
+  }
+
+  type BaseResponseVehicleModelVO_ = {
+    code?: number
+    data?: VehicleModelVO
+    message?: string
+  }
+
+  type BaseResponseVehicleTypeDictVO_ = {
+    code?: number
+    data?: VehicleTypeDictVO
     message?: string
   }
 
@@ -308,6 +326,16 @@ declare namespace API {
     id: number
   }
 
+  type getVehicleModelByIdUsingGETParams = {
+    /** id */
+    id: number
+  }
+
+  type getVehicleTypeDictByIdUsingGETParams = {
+    /** id */
+    id: number
+  }
+
   type listVehicleBrandByLetterUsingGETParams = {
     /** letter */
     letter: string
@@ -393,6 +421,19 @@ declare namespace API {
     orders?: OrderItem[]
     pages?: number
     records?: VehicleBrandVO[]
+    searchCount?: boolean
+    size?: number
+    total?: number
+  }
+
+  type PageVehicleModelVO_ = {
+    countId?: string
+    current?: number
+    maxLimit?: number
+    optimizeCountSql?: boolean
+    orders?: OrderItem[]
+    pages?: number
+    records?: VehicleModelVO[]
     searchCount?: boolean
     size?: number
     total?: number
@@ -621,7 +662,6 @@ declare namespace API {
   type VehicleAddRequest = {
     brandId?: number
     dailyPrice?: number
-    deposit?: number
     description?: string
     energyTypeId?: number
     imageUrl?: string
@@ -671,6 +711,11 @@ declare namespace API {
 
   type VehicleModelQueryRequest = {
     brandId?: number
+    current?: number
+    modelName?: string
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
   }
 
   type VehicleModelUpdateRequest = {
@@ -682,6 +727,7 @@ declare namespace API {
 
   type VehicleModelVO = {
     brandId?: number
+    brandName?: string
     createTime?: string
     id?: number
     modelLogo?: string

@@ -11,10 +11,7 @@ import com.my.domain.dto.vehicletypedict.VehicleTypeDictUpdateRequest;
 import com.my.domain.vo.VehicleTypeDictVO;
 import com.my.service.VehicleTypeDictService;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -65,5 +62,11 @@ public class VehicleTypeDictController {
     @ApiOperation(value = "获取车辆类型列表")
     public BaseResponse<List<VehicleTypeDictVO>> listVehicleTypeDict() {
         return success(vehicleTypeDictService.listVehicleTypeDict());
+    }
+
+    @ApiOperation(value = "根据id获取车辆类型")
+    @GetMapping("/get")
+    public BaseResponse<VehicleTypeDictVO> getVehicleTypeDictById(@RequestParam("id") Long id) {
+        return success(vehicleTypeDictService.getVehicleTypeDictById(id));
     }
 }

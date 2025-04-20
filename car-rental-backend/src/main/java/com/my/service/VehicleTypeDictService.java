@@ -62,4 +62,11 @@ public interface VehicleTypeDictService extends IService<VehicleTypeDict> {
      * @return
      */
     List<VehicleTypeDictVO> listVehicleTypeDict();
+
+    /**
+     * 根据id获取车型
+     * @param id
+     * @return
+     */
+    VehicleTypeDictVO getVehicleTypeDictById(Long id);
 }

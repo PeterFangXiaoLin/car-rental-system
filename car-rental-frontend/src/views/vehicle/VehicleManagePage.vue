@@ -3,15 +3,11 @@
     <!-- 搜索表单 -->
     <el-card shadow="never" class="mb-15px">
       <div>
-        <el-form :model="searchParams" class="-mb-15px" label-width="78px" size="large">
+        <el-form :model="searchParams" class="-mb-15px" label-width="88px" size="large">
           <el-row>
             <el-col :span="6">
               <el-form-item label="车辆名称">
-                <el-input
-                  v-model="searchParams.name"
-                  placeholder="请输入车辆名称"
-                  clearable
-                />
+                <el-input v-model="searchParams.name" placeholder="请输入车辆名称" clearable />
               </el-form-item>
             </el-col>
             <el-col :span="6">
@@ -22,8 +18,12 @@
                   clearable
                   size="large"
                 >
-                  <el-option label="男" :value="0" />
-                  <el-option label="女" :value="1" />
+                  <el-option
+                    v-for="item in brandList"
+                    :key="item.id"
+                    :label="item.brandName"
+                    :value="item.id"
+                  />
                 </el-select>
               </el-form-item>
             </el-col>
@@ -35,12 +35,12 @@
                   clearable
                   size="large"
                 >
-                  <el-option label="A1" value="A1" />
-                  <el-option label="A2" value="A2" />
-                  <el-option label="B1" value="B1" />
-                  <el-option label="B2" value="B2" />
-                  <el-option label="C1" value="C1" />
-                  <el-option label="C2" value="C2" />
+                  <el-option
+                    v-for="item in modelList"
+                    :key="item.id"
+                    :label="item.modelName"
+                    :value="item.id"
+                  />
                 </el-select>
               </el-form-item>
             </el-col>
@@ -52,7 +52,12 @@
                   clearable
                   size="large"
                 >
-
+                  <el-option
+                    v-for="item in energyTypeList"
+                    :key="item.id"
+                    :label="item.typeName"
+                    :value="item.id"
+                  />
                 </el-select>
               </el-form-item>
             </el-col>
@@ -84,15 +89,18 @@
                 />
               </el-form-item>
             </el-col>
-            <el-col :span="4">
-              <el-input-number
-                v-model="searchParams.seatCount"
-                :min="4"
-                :max="20"
-                placeholder="请输入座位数"
-              />
+            <el-col :span="6">
+              <el-form-item label="座位数">
+                <el-input-number
+                  v-model="searchParams.seatCount"
+                  :min="4"
+                  :max="20"
+                  placeholder="请输入座位数"
+                  class="w-full"
+                />
+              </el-form-item>
             </el-col>
-            <el-col :span="4">
+            <el-col :span="6">
               <el-form-item label="状态">
                 <el-select v-model="searchParams.status" placeholder="请选择状态" clearable>
                   <el-option label="可用" :value="0" />
@@ -102,7 +110,9 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="4">
+          </el-row>
+          <el-row>
+            <el-col :span="6" :offset="18">
               <el-form-item>
                 <div class="flex">
                   <el-button type="primary" :icon="Search" @click="doSearch">搜索</el-button>
@@ -142,7 +152,7 @@
         <el-table-column prop="modelName" label="型号" width="120" align="center" />
         <el-table-column prop="vehicleTypeName" label="车型名称" width="120" align="center" />
         <el-table-column prop="energyTypeName" label="能源类型" width="120" align="center" />
-        <el-table-column label="生产年份" width="120" align="center" >
+        <el-table-column label="生产年份" width="120" align="center">
           <template #default="{ row }">
             <div>{{ row.productionYear }} 年</div>
           </template>
@@ -160,9 +170,15 @@
         <el-table-column label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag v-if="row.status === VehicleStatusEnum.AVAILABLE" type="primary">可用</el-tag>
-            <el-tag v-else-if="row.status === VehicleStatusEnum.RENTED" type="primary">已租出</el-tag>
-            <el-tag v-else-if="row.status === VehicleStatusEnum.AVAILABLE" type="primary">可用</el-tag>
-            <el-tag v-else-if="row.status === VehicleStatusEnum.AVAILABLE" type="primary">可用</el-tag>
+            <el-tag v-else-if="row.status === VehicleStatusEnum.RENTED" type="primary"
+              >已租出
+            </el-tag>
+            <el-tag v-else-if="row.status === VehicleStatusEnum.AVAILABLE" type="primary"
+              >可用
+            </el-tag>
+            <el-tag v-else-if="row.status === VehicleStatusEnum.AVAILABLE" type="primary"
+              >可用
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="描述" width="200" align="center">
@@ -210,23 +226,24 @@
     </el-card>
   </div>
 
-  <DriverAddForm ref="addFormRef" @success="success" />
-  <DriverUpdateForm ref="updateFormRef" @success="success" />
-  <DriverViewForm ref="viewFormRef" @success="success" />
+  <VehicleAddForm ref="addFormRef" @success="success" />
+  <VehicleUpdateForm ref="updateFormRef" @success="success" />
+  <VehicleViewForm ref="viewFormRef" />
 </template>
 
 <script setup lang="ts">
-import {onMounted, reactive, ref, watch} from 'vue'
-import {ElMessage, ElMessageBox} from 'element-plus'
-import {Delete, Edit, Plus, Search, View} from '@element-plus/icons-vue'
-import {deleteDriverUsingPost, listDriverVoByPageUsingPost} from '@/api/driverController.ts'
-import DriverAddForm from '@/views/driver/DriverAddForm.vue'
-import DriverUpdateForm from '@/views/driver/DriverUpdateForm.vue'
-import DriverViewForm from '@/views/driver/DriverViewForm.vue'
-import {listVehicleBrandUsingPost} from "@/api/vehicleBrandController.ts";
-import {listVehicleModelUsingPost} from "@/api/vehicleModelController.ts";
-import {listEnergyTypeDictUsingPost} from "@/api/energyTypeDictController.ts";
-import VehicleStatusEnum from "@/enums/VehicleStatusEnum.ts";
+import { onMounted, reactive, ref, watch } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Delete, Edit, Plus, Search, View } from '@element-plus/icons-vue'
+import { deleteDriverUsingPost } from '@/api/driverController.ts'
+import { listVehicleBrandUsingPost } from '@/api/vehicleBrandController.ts'
+import { listVehicleModelUsingPost } from '@/api/vehicleModelController.ts'
+import { listEnergyTypeDictUsingPost } from '@/api/energyTypeDictController.ts'
+import VehicleStatusEnum from '@/enums/VehicleStatusEnum.ts'
+import VehicleAddForm from '@/components/vehicle/VehicleAddForm.vue'
+import VehicleUpdateForm from '@/components/vehicle/VehicleUpdateForm.vue'
+import VehicleViewForm from '@/components/vehicle/VehicleViewForm.vue'
+import { listVehicleByPageUsingPost } from '@/api/vehicleController.ts'
 
 const loading = ref(false)
 const dataList = ref<API.VehicleVO[]>([])
@@ -245,14 +262,14 @@ const searchParams = reactive<API.VehicleQueryRequest>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',
-  sortOrder: 'ascend',
+  sortOrder: 'descend',
 })
 
 // 获取用户列表数据
 const fetchData = async () => {
   loading.value = true
   try {
-    const res = await listDriverVoByPageUsingPost(searchParams)
+    const res = await listVehicleByPageUsingPost(searchParams)
     if (res.data?.code === 0 && res.data.data) {
       dataList.value = res.data.data.records ?? []
       total.value = Number(res.data.data.total) || 0
@@ -329,7 +346,7 @@ const handleSizeChange = (size: number) => {
 // 删除用户
 const handleDelete = async (id: string) => {
   try {
-    await ElMessageBox.confirm('确定要删除该司机吗？', '提示', {
+    await ElMessageBox.confirm('确定要删除该车辆吗？', '提示', {
       type: 'warning',
     })
     const res = await deleteDriverUsingPost({ id: id })
@@ -361,11 +378,14 @@ const success = (msg: string) => {
   fetchData()
 }
 
-watch(() => searchParams.brandId, async (newVal) => {
-  if (newVal) {
-    await fetchModelList(newVal as string)
-  }
-})
+watch(
+  () => searchParams.brandId,
+  (newVal) => {
+    if (newVal) {
+      fetchModelList(String(newVal))
+    }
+  },
+)
 
 // 页面加载时获取数据
 onMounted(() => {

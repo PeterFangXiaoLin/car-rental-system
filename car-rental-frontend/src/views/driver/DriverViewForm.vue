@@ -3,15 +3,7 @@
     <template #header>
       <h3 class="title">司机详情</h3>
     </template>
-    <el-form
-      ref="formRef"
-      :model="formData"
-      :rules="rules"
-      size="large"
-      label-width="100px"
-      class="mt-8"
-      disabled
-    >
+    <el-form ref="formRef" :model="formData" size="large" label-width="100px" class="mt-8" disabled>
       <el-form-item label="司机姓名" prop="driverName">
         <el-input v-model="formData.driverName" placeholder="请输入司机姓名" clearable />
       </el-form-item>
@@ -109,18 +101,13 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import type { FormInstance, FormRules } from 'element-plus'
+import { ref } from 'vue'
+import type { FormInstance } from 'element-plus'
 import { getDriverVoByIdUsingGet } from '@/api/driverController.ts'
 
 const visible = ref(false)
 const formRef = ref<FormInstance>()
 const formData = ref<API.DriverUpdateRequest>({})
-
-const rules = reactive<FormRules>({
-  userAccount: [],
-  userRole: [{ required: true, message: '请选择用户角色', trigger: 'change' }],
-})
 
 // 重置表单
 const resetForm = () => {

@@ -133,6 +133,18 @@ public class VehicleTypeDictServiceImpl extends ServiceImpl<VehicleTypeDictMappe
         return vehicleTypeDictList.stream().map(this::getVehicleTypeDictVO).collect(Collectors.toList());
     }
 
+    @Override
+    public VehicleTypeDictVO getVehicleTypeDictById(Long id) {
+        if (id == null || id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        VehicleTypeDict vehicleTypeDict = this.getById(id);
+        if (vehicleTypeDict == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "车辆类型不存在");
+        }
+        return getVehicleTypeDictVO(vehicleTypeDict);
+    }
+
 
 }
 

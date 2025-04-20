@@ -1,6 +1,5 @@
 package com.my.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -28,31 +27,6 @@ public class StoreVO implements Serializable {
     private String address;
 
     /**
-     * 省份
-     */
-    private String province;
-
-    /**
-     * 城市
-     */
-    private String city;
-
-    /**
-     * 区县
-     */
-    private String district;
-
-    /**
-     * 行政区划编码（高德地图）
-     */
-    private String adcode;
-
-    /**
-     * 城市编码（高德地图）
-     */
-    private String citycode;
-
-    /**
      * 经度
      */
     private BigDecimal longitude;
@@ -65,7 +39,7 @@ public class StoreVO implements Serializable {
     /**
      * 联系电话
      */
-    private String contactPhone;
+    private String mobile;
 
     /**
      * 开始营业时间
@@ -87,11 +61,5 @@ public class StoreVO implements Serializable {
      */
     private String images;
 
-    /**
-     * 门店描述
-     */
-    private String description;
-
-    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

@@ -18,4 +18,32 @@
         id,brandId,modelName,modelLogo,createTime,updateTime,
         isDelete
     </sql>
+
+    <select id="selectPageVO" resultType="com.my.domain.vo.VehicleModelVO">
+        select
+            vehicle_model.id,
+            vehicle_model.brandId,
+            vehicle_model.modelName,
+            vehicle_model.modelLogo,
+            vehicle_model.createTime
+        from
+            vehicle_model
+        inner join
+            vehicle_brand
+        on vehicle_model.brandId = vehicle_brand.id and vehicle_brand.isDelete = 0
+        where
+            vehicle_model.isDelete = 0
+        <if test="req.brandId != null">
+            and vehicle_model.brandId = #{req.brandId}
+        </if>
+        <if test="req.modelName != null and req.modelName != ''">
+            and vehicle_model.modelName like concat('%', #{req.modelName}, '%')
+        </if>
+        <if test="req.sortField != null and req.sortField!= ''">
+            order by vehicle_model.${req.sortField}
+            <if test="req.sortOrder!= null and req.sortOrder == 'descend'">
+                desc
+            </if>
+        </if>
+    </select>
 </mapper>

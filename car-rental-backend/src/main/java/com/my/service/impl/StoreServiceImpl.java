@@ -27,7 +27,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -149,32 +148,20 @@ public class StoreServiceImpl extends ServiceImpl<StoreMapper, Store>
         Long id = storeQueryRequest.getId();
         String storeName = storeQueryRequest.getStoreName();
         String address = storeQueryRequest.getAddress();
-        String province = storeQueryRequest.getProvince();
-        String city = storeQueryRequest.getCity();
-        String district = storeQueryRequest.getDistrict();
-        String adcode = storeQueryRequest.getAdcode();
-        String citycode = storeQueryRequest.getCitycode();
         String contactPhone = storeQueryRequest.getContactPhone();
         Date openTime = storeQueryRequest.getOpenTime();
         Date closeTime = storeQueryRequest.getCloseTime();
         Integer status = storeQueryRequest.getStatus();
-        String description = storeQueryRequest.getDescription();
         String sortField = storeQueryRequest.getSortField();
         String sortOrder = storeQueryRequest.getSortOrder();
 
         queryWrapper.eq(id != null, "id", id);
         queryWrapper.like(StrUtil.isNotBlank(storeName), "storeName", storeName);
         queryWrapper.like(StrUtil.isNotBlank(address), "address", address);
-        queryWrapper.like(StrUtil.isNotBlank(province), "province", province);
-        queryWrapper.like(StrUtil.isNotBlank(city), "city", city);
-        queryWrapper.like(StrUtil.isNotBlank(district), "district", district);
-        queryWrapper.like(StrUtil.isNotBlank(adcode), "adcode", adcode);
-        queryWrapper.like(StrUtil.isNotBlank(citycode), "citycode", citycode);
         queryWrapper.like(StrUtil.isNotBlank(contactPhone), "contactPhone", contactPhone);
         queryWrapper.gt(openTime != null, "openTime", openTime);
         queryWrapper.lt(closeTime!= null, "closeTime", closeTime);
         queryWrapper.eq(status!= null, "status", status);
-        queryWrapper.like(StrUtil.isNotBlank(description), "description", description);
         queryWrapper.orderBy(StrUtil.isNotBlank(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC), sortField);
 
         return queryWrapper;
@@ -240,19 +227,7 @@ public class StoreServiceImpl extends ServiceImpl<StoreMapper, Store>
 
         String storeName = store.getStoreName();
         String address = store.getAddress();
-        String province = store.getProvince();
-        String city = store.getCity();
-        String district = store.getDistrict();
-        String adcode = store.getAdcode();
-        String citycode = store.getCitycode();
-        BigDecimal longitude = store.getLongitude();
-        BigDecimal latitude = store.getLatitude();
-        String contactPhone = store.getContactPhone();
-        Date openTime = store.getOpenTime();
-        Date closeTime = store.getCloseTime();
         Integer status = store.getStatus();
-        String images = store.getImages();
-        String description = store.getDescription();
 
         if (StrUtil.isBlank(storeName)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "门店名称为空");
@@ -263,6 +238,9 @@ public class StoreServiceImpl extends ServiceImpl<StoreMapper, Store>
             ThrowUtils.throwIf(storeStatusEnum == null, ErrorCode.PARAMS_ERROR, "门店状态不合法");
         }
 
+        if (StrUtil.isBlank(address)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "门店地址为空");
+        }
     }
 
 

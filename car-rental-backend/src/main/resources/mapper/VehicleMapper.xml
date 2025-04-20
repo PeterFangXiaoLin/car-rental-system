@@ -37,13 +37,13 @@
             vehicle.name,
             vehicle.vehicleNo,
             vehicle.brandId,
-            vb.name as brandName,
+            vb.brandName as brandName,
             vehicle.modelId,
-            vm.name as modelName,
+            vm.modelName as modelName,
             vehicle.vehicleTypeId,
-            vtd.name as vehicleTypeName,
+            vtd.typeName as vehicleTypeName,
             vehicle.energyTypeId,
-            etd.name as energyTypeName,
+            etd.typeName as energyTypeName,
             vehicle.productionYear,
             vehicle.dailyPrice,
             vehicle.seatCount,
@@ -66,10 +66,10 @@
         <if test="req.searchText != null and req.searchText != ''">
             and (
                 vehicle.name like concat('%', #{req.searchText}, '%')
-                or vb.name like concat('%', #{req.searchText}, '%')
-                or vm.name like concat('%', #{req.searchText}, '%')
-                or vtd.name like concat('%', #{req.searchText}, '%')
-                or etd.name like concat('%', #{req.searchText}, '%')
+                or vb.brandName like concat('%', #{req.searchText}, '%')
+                or vm.modelName like concat('%', #{req.searchText}, '%')
+                or vtd.typeName like concat('%', #{req.searchText}, '%')
+                or etd.typeName like concat('%', #{req.searchText}, '%')
             )
         </if>
         <if test="req.id != null">
@@ -107,6 +107,12 @@
         </if>
         <if test="req.description!= null and req.description!= ''">
             and vehicle.description like concat('%', #{req.description}, '%')
+        </if>
+        <if test="req.sortField != null and req.sortField!= ''">
+            order by #{req.sortField}
+            <if test="req.sortOrder!= null and req.sortOrder == 'descend'">
+                desc
+            </if>
         </if>
     </select>
 </mapper>

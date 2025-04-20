@@ -1,16 +1,16 @@
 <template>
   <div>
+    <!-- 搜索表单 -->
     <el-card shadow="never" class="mb-15px">
       <div>
-        <el-form :model="searchParams" label-width="68px" size="large" class="-mb-15px">
-          <el-row :gutter="20">
+        <el-form :model="searchParams" class="-mb-15px" label-width="88px" size="large">
+          <el-row>
             <el-col :span="6">
-              <el-form-item label="车型">
-                <el-input v-model="searchParams.typeName" placeholder="请输入车型" clearable />
+              <el-form-item label="能源名称">
+                <el-input v-model="searchParams.typeName" placeholder="请输入能源名称" clearable />
               </el-form-item>
             </el-col>
-
-            <el-col :span="12">
+            <el-col :span="6">
               <el-form-item>
                 <div class="flex">
                   <el-button type="primary" :icon="Search" @click="doSearch">搜索</el-button>
@@ -24,6 +24,7 @@
     </el-card>
 
     <el-card shadow="never" class="mb-15px">
+      <!-- 车辆表格 -->
       <el-table
         :data="dataList"
         style="width: 100%"
@@ -31,13 +32,8 @@
         :header-cell-style="{ 'background-color': '#ecf8fe', color: '#4986EA' }"
       >
         <el-table-column label="序号" type="index" width="60" align="center" />
-        <el-table-column label="类型名称" prop="typeName" align="center" />
-        <el-table-column label="创建时间" prop="createTime" align="center">
-          <template #default="{ row }">
-            {{ dayjs(row.createTime).format('YYYY-MM-DD HH:mm:ss') }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" align="center">
+        <el-table-column prop="typeName" label="能源名称" width="120" align="center" />
+        <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleEdit(row.id)">
               <el-icon>
@@ -77,36 +73,56 @@
     </el-card>
   </div>
 
-  <VehicleTypeDictAddForm ref="addFormRef" @success="success" />
-  <VehicleTypeDictUpdateForm ref="updateFormRef" @success="success" />
-  <VehicleTypeDictViewForm ref="viewFormRef"/>
+  <EnergyTypeDictAddForm ref="addFormRef" @success="success" />
+  <EnergyTypeDictUpdateForm ref="updateFormRef" @success="success" />
+  <EnergyTypeDictViewForm ref="viewFormRef" />
 </template>
+
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import {Edit, Plus, Search, Delete, View} from '@element-plus/icons-vue'
-import {
-  deleteVehicleTypeDictUsingPost,
-  pageVehicleTypeDictUsingPost,
-} from '@/api/vehicleTypeDictController.ts'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import dayjs from 'dayjs'
-import VehicleTypeDictAddForm from '@/components/vehicletypedict/VehicleTypeDictAddForm.vue'
-import VehicleTypeDictUpdateForm from '@/components/vehicletypedict/VehicleTypeDictUpdateForm.vue'
-import VehicleTypeDictViewForm from '@/components/vehicletypedict/VehicleTypeDictViewForm.vue'
-
-const searchParams = reactive<API.VehicleTypeDictQueryRequest>({
-  typeName: '',
-  current: 1,
-  pageSize: 10,
-})
+import { Delete, Edit, Plus, Search, View } from '@element-plus/icons-vue'
+import {
+  deleteEnergyTypeDictUsingPost,
+  listEnergyTypeDictByPageUsingPost,
+} from '@/api/energyTypeDictController.ts'
+import EnergyTypeDictAddForm from '@/components/energytypedict/EnergyTypeDictAddForm.vue'
+import EnergyTypeDictUpdateForm from '@/components/energytypedict/EnergyTypeDictUpdateForm.vue'
+import EnergyTypeDictViewForm from '@/components/energytypedict/EnergyTypeDictViewForm.vue'
 
 const loading = ref(false)
-const dataList = ref<API.VehicleTypeDictVO[]>([])
+const dataList = ref<API.EnergyTypeDictVO[]>([])
 const total = ref(0)
+
 const addFormRef = ref()
 const updateFormRef = ref()
 const viewFormRef = ref()
 
+// 搜索参数
+const searchParams = reactive<API.EnergyTypeDictQueryRequest>({
+  current: 1,
+  pageSize: 10,
+  sortField: 'createTime',
+  sortOrder: 'descend',
+})
+
+// 获取用户列表数据
+const fetchData = async () => {
+  loading.value = true
+  try {
+    const res = await listEnergyTypeDictByPageUsingPost(searchParams)
+    if (res.data?.code === 0 && res.data.data) {
+      dataList.value = res.data.data.records ?? []
+      total.value = Number(res.data.data.total) || 0
+    } else {
+      ElMessage.error(res.data.message || '获取数据失败')
+    }
+  } catch (error) {
+    ElMessage.error('获取数据失败：' + error)
+  } finally {
+    loading.value = false
+  }
+}
 
 // 新增
 const openForm = () => {
@@ -132,18 +148,13 @@ const handleSizeChange = (size: number) => {
   fetchData()
 }
 
-// 编辑
-const handleEdit = (id: string) => {
-  updateFormRef.value?.open(id)
-}
-
-// 删除
+// 删除用户
 const handleDelete = async (id: string) => {
   try {
-    await ElMessageBox.confirm('确定要删除该类型吗？', '提示', {
+    await ElMessageBox.confirm('确定要删除该能源类型吗？', '提示', {
       type: 'warning',
     })
-    const res = await deleteVehicleTypeDictUsingPost({ id: id })
+    const res = await deleteEnergyTypeDictUsingPost({ id: id })
     if (res.data.code === 0) {
       ElMessage.success('删除成功')
       await fetchData()
@@ -157,33 +168,22 @@ const handleDelete = async (id: string) => {
   }
 }
 
+// 编辑
+const handleEdit = (id: string) => {
+  updateFormRef.value?.open(id)
+}
+
 // 查看
 const handleView = (id: string) => {
   viewFormRef.value?.open(id)
 }
 
-const success = () => {
+// 成功
+const success = (msg: string) => {
   fetchData()
 }
 
-/**
- * 获取数据
- */
-const fetchData = async () => {
-  loading.value = true
-  try {
-    const res = await pageVehicleTypeDictUsingPost(searchParams)
-    if (res.data?.code === 0 && res.data.data) {
-      dataList.value = res.data.data.records || []
-      total.value = Number(res.data.data.total) || 0
-    } else {
-      ElMessage.error(res.data?.message || '获取数据失败')
-    }
-  } finally {
-    loading.value = false
-  }
-}
-
+// 页面加载时获取数据
 onMounted(() => {
   fetchData()
 })

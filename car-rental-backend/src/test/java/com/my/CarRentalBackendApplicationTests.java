@@ -1,7 +1,11 @@
 package com.my;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.Header;
+import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,6 +19,7 @@ import com.qcloud.cos.COSClient;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +28,8 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SpringBootTest
 @Slf4j
@@ -45,6 +52,9 @@ class CarRentalBackendApplicationTests {
 
     @Resource
     private EnergyTypeDictService energyTypeDictService;
+
+    @Resource
+    private StoreService storeService;
 
     @Test
     void test() throws JsonProcessingException {
@@ -202,7 +212,7 @@ class CarRentalBackendApplicationTests {
                 VehicleBrand vehicleBrand = new VehicleBrand();
                 vehicleBrand.setBrandName(brandName);
                 vehicleBrand.setBrandLogo("https:" + brandLogo);
-                vehicleBrand.setFirstLetter((char)(finalI + 'A') + "");
+                vehicleBrand.setFirstLetter((char) (finalI + 'A') + "");
                 vehicleBrandService.save(vehicleBrand);
 
                 String getCarByBrand = "https://www.dongchedi.com/motor/pc/car/brand/select_series_v2?aid=1839&app_name=auto_web_pc";
@@ -343,6 +353,85 @@ class CarRentalBackendApplicationTests {
                 }
             });
         }
+    }
+
+    @Test
+    void testSpiderStore() throws IOException, InterruptedException {
+        String url = "https://service.zuche.com/";
+        Document document = Jsoup.connect(url).get();
+        Elements aList = document.select("dl.citySort dd a:not(.more-city)");
+
+        Pattern pattern = Pattern.compile("deptId=(\\d+)");
+        String urlTemplate = "https://service.zuche.com/api/gw.do?uri=/action/carrctapi/order/deptDetail/v1";
+        String bodyTemplate = "data={\"deptId\":\"%s\"}";
+
+        List<Store> storeList = new ArrayList<>();
+
+        for (Element a : aList) {
+            String href = a.attr("href");
+            Document doc = Jsoup.connect(href).get();
+            Elements ddLinks = doc.select("ul.depUlClass dd > a");
+            for (Element ddLink : ddLinks) {
+                String href1 = ddLink.attr("href");
+
+                Matcher matcher = pattern.matcher(href1);
+                if (matcher.find()) {
+                    String deptId = matcher.group(1);
+                    String body = HttpRequest.post(urlTemplate)
+                            .header(Header.REFERER, String.format("https://service.zuche.com/dept/detail.do?deptId=%s", deptId))
+                            .body(String.format(bodyTemplate, deptId))
+                            .execute()
+                            .body();
+                    JSONObject jsonObject = JSONUtil.parseObj(body);
+                    JSONObject content = jsonObject.getJSONObject("content");
+
+                    JSONArray largeImgs = content.getJSONArray("largeImgs");
+                    String deptMobile = content.getStr("deptMobile");
+                    String deptName = content.getStr("deptName");
+                    String deptAddress = content.getStr("deptAddress");
+                    String deptLon = content.getStr("deptLon");
+                    String deptLat = content.getStr("deptLat");
+
+                    String imgUrls = CollUtil.join(largeImgs, StrUtil.COMMA);
+                    Store store = new Store();
+                    store.setStoreName(deptName);
+                    store.setAddress(deptAddress);
+                    store.setMobile(deptMobile);
+                    store.setImages(imgUrls);
+                    store.setLongitude(new BigDecimal(deptLon));
+                    store.setLatitude(new BigDecimal(deptLat));
+                    storeList.add(store);
+                    Thread.sleep(1500);
+                }
+            }
+        }
+
+        storeService.saveBatch(storeList);
+        log.info("爬取成功");
+    }
+
+    @Test
+    void testSpiderStore2() throws IOException {
+        String url = "https://service.zuche.com/api/gw.do?uri=/action/carrctapi/order/deptDetail/v1";
+        System.out.println(HttpRequest.post(url)
+//                .header(Header.ACCEPT, "application/json, text/plain, */*")
+//                        .header(Header.ACCEPT_LANGUAGE, "zh-CN,zh;q=0.9")
+//                        .header(Header.CONNECTION, "keep-alive")
+//                        .header(Header.CONTENT_TYPE, "application/x-www-form-urlencoded")
+//                        .header(Header.COOKIE, "aliyungf_tc=3aaf8fe1dc883b9538af468e587cd675a09f918dc0a55bf415e5897c3d579c68; lctuid=37b58ca0320755b01340cef1c7bc2ed8; acw_tc=f5bc4421-16fd-4e02-bc68-d908ee1b3054907b9b4602d24acc7ac211f4c2ec945a; intranet-sessionid=a9e49952-9e78-4900-b022-d4a142cf974b")
+//                        .header(Header.ORIGIN, "https://service.zuche.com")
+                        .header(Header.REFERER, "https://service.zuche.com/dept/detail.do?deptId=1248")
+//                        .header(Header.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36")
+//                        .header("Sec-Fetch-Dest", "empty")
+//                        .header("Sec-Fetch-Mode", "cors")
+//                        .header("Sec-Fetch-Site", "same-origin")
+//                        .header("sec-ch-ua", "\"Google Chrome\";v=\"135\", \"Not-A.Brand\";v=\"8\", \"Chromium\";v=\"135\"")
+//                        .header("sec-ch-ua-mobile", "?0")
+//                        .header("sec-ch-ua-platform", "\"Windows\"")
+                        .body("data={\"deptId\":\"1248\"}")
+                        .execute()
+                        .body());
+
     }
 
     @Test

@@ -104,6 +104,21 @@ export const routes = [
     ],
   },
   {
+    path: '/vehicle',
+    name: '司机',
+    component: () => import('@/layouts/BasicLayout.vue'),
+    children: [
+      {
+        path: 'manage',
+        name: '车辆管理',
+        component: () => import('@/views/vehicle/VehicleManagePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+    ],
+  },
+  {
     path: '/admin',
     name: '管理',
     component: () => import('@/layouts/BasicLayout.vue'),

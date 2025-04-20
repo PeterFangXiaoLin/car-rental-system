@@ -3,6 +3,7 @@ package com.my.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.common.DeleteRequest;
 import com.my.common.ErrorCode;
@@ -13,9 +14,9 @@ import com.my.domain.entity.VehicleBrand;
 import com.my.domain.entity.VehicleModel;
 import com.my.domain.vo.VehicleModelVO;
 import com.my.exception.BusinessException;
+import com.my.mapper.VehicleModelMapper;
 import com.my.service.VehicleBrandService;
 import com.my.service.VehicleModelService;
-import com.my.mapper.VehicleModelMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -108,6 +109,31 @@ public class VehicleModelServiceImpl extends ServiceImpl<VehicleModelMapper, Veh
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除失败");
         }
         return true;
+    }
+
+    @Override
+    public Page<VehicleModelVO> listVehicleModelByPage(VehicleModelQueryRequest vehicleModelQueryRequest) {
+        if (vehicleModelQueryRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        long current = vehicleModelQueryRequest.getCurrent();
+        long pageSize = vehicleModelQueryRequest.getPageSize();
+
+        Page<VehicleModelVO> page = new Page<>(current, pageSize);
+        return vehicleModelMapper.selectPageVO(page, vehicleModelQueryRequest);
+    }
+
+    @Override
+    public VehicleModelVO getVehicleModelById(Long id) {
+        if (id == null || id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        VehicleModel vehicleModel = this.getById(id);
+        if (vehicleModel == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "车辆型号不存在");
+        }
+        return getVehicleModelVO(vehicleModel);
     }
 
     private void validateVehicleModel(VehicleModel vehicleModel, boolean add) {

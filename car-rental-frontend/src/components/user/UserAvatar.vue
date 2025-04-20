@@ -195,7 +195,6 @@ const handleUpload = () => {
         ElMessage.error('修改失败：' + (res.data?.message ? res.data.message : '未知错误'))
       }
     } catch (error) {
-      console.error('上传失败：', error)
       ElMessage.error('上传失败，请稍后重试')
     }
   })

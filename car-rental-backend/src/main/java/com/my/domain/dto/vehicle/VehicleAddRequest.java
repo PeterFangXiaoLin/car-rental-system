@@ -52,11 +52,6 @@ public class VehicleAddRequest implements Serializable {
     private BigDecimal dailyPrice;
 
     /**
-     * 押金
-     */
-    private BigDecimal deposit;
-
-    /**
      * 座位数
      */
     private Integer seatCount;

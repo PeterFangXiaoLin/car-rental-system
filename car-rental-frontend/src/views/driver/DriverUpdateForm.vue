@@ -139,11 +139,7 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { ElLoading, ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { uploadFileUsingPost } from '@/api/fileUploadController'
-import {
-  addDriverUsingPost,
-  getDriverVoByIdUsingGet,
-  updateDriverUsingPost,
-} from '@/api/driverController.ts'
+import { getDriverVoByIdUsingGet, updateDriverUsingPost } from '@/api/driverController.ts'
 
 const emit = defineEmits(['success']) // 定义成功事件, 供父组件调用
 
@@ -195,8 +191,8 @@ const uploadRequest = async (options: { file: File }) => {
       // 上传失败
       ElMessage.error('头像上传失败: ' + (res.data?.message || '未知错误'))
     }
-  } catch (error: Error) {
-    ElMessage.error('头像上传失败: ' + (error.message || '未知错误'))
+  } catch (error) {
+    ElMessage.error('头像上传失败: ' + (error?.message || '未知错误'))
   }
 }
 
@@ -225,8 +221,8 @@ const uploadLicenseRequest = async (options: { file: File }) => {
       // 上传失败
       ElMessage.error('驾驶证照片上传失败: ' + (res.data?.message || '未知错误'))
     }
-  } catch (error: Error) {
-    ElMessage.error('驾驶证照片上传失败: ' + (error.message || '未知错误'))
+  } catch (error) {
+    ElMessage.error('驾驶证照片上传失败: ' + (error?.message || '未知错误'))
   }
 }
 
@@ -301,7 +297,6 @@ const handleSubmit = async () => {
           ElMessage.error('新增失败: ' + (res.data?.message || '未知错误'))
         }
       } catch (error) {
-        console.error('提交请求错误:', error)
         ElMessage.error('操作失败: ' + (error instanceof Error ? error.message : String(error)))
       } finally {
         loading.close()

@@ -106,7 +106,6 @@ const handleSubmit = async () => {
           ElMessage.error(res.data?.message || '修改失败')
         }
       } catch (error) {
-        console.error('修改用户信息失败:', error)
         ElMessage.error('修改失败，请稍后重试')
       }
     }

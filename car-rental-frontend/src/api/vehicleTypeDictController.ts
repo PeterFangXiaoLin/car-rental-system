@@ -32,6 +32,21 @@ export async function deleteVehicleTypeDictUsingPost(
   })
 }
 
+/** 根据id获取车辆类型 GET /api/vehicleTypeDict/get */
+export async function getVehicleTypeDictByIdUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getVehicleTypeDictByIdUsingGETParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseVehicleTypeDictVO_>('/api/vehicleTypeDict/get', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  })
+}
+
 /** 获取车辆类型列表 POST /api/vehicleTypeDict/list */
 export async function listVehicleTypeDictUsingPost(options?: { [key: string]: any }) {
   return request<API.BaseResponseListVehicleTypeDictVO_>('/api/vehicleTypeDict/list', {
