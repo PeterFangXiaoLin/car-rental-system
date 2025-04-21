@@ -157,12 +157,13 @@ CREATE TABLE IF NOT EXISTS `payment_record`
     `id`            bigint         NOT NULL AUTO_INCREMENT COMMENT '支付记录ID',
     `orderId`       bigint         NOT NULL COMMENT '订单ID',
     `userId`        bigint         NOT NULL COMMENT '用户ID',
-    `paymentNo`     varchar(100)   NOT NULL COMMENT '支付流水号',
-    `transactionId` varchar(100)            DEFAULT NULL COMMENT '第三方交易号',
-    `paymentMethod` varchar(50)    NOT NULL COMMENT '支付方式',
+    `paymentNo`     varchar(100)   NOT NULL COMMENT '支付流水号（交易号）',
+    `paymentMethod` varchar(50)    NOT NULL COMMENT '支付方式: 0-支付宝，1-微信',
     `amount`        decimal(10, 2) NOT NULL COMMENT '支付金额',
     `status`        tinyint        NOT NULL DEFAULT '0' COMMENT '状态：0-待支付，1-支付成功，2-支付失败，3-已退款',
     `paymentTime`   datetime                DEFAULT NULL COMMENT '支付时间',
+    `buyerId`       varchar(100)            DEFAULT NULL COMMENT '买家支付宝ID',
+    `buyerPayAmount` decimal(10, 2)          DEFAULT NULL COMMENT '买家实际支付金额',
     `refundTime`    datetime                DEFAULT NULL COMMENT '退款时间',
     `refundAmount`  decimal(10, 2)          DEFAULT NULL COMMENT '退款金额',
     `refundReason`  varchar(500)            DEFAULT NULL COMMENT '退款原因',
@@ -174,7 +175,6 @@ CREATE TABLE IF NOT EXISTS `payment_record`
     KEY `idx_orderId` (`orderId`),
     KEY `idx_userId` (`userId`),
     KEY `idx_status` (`status`),
-    KEY `idx_transactionId` (`transactionId`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='支付记录表';
 
