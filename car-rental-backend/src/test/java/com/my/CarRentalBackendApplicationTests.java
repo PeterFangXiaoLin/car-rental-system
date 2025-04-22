@@ -356,7 +356,7 @@ class CarRentalBackendApplicationTests {
     }
 
     @Test
-    void testSpiderStore() throws IOException, InterruptedException {
+    void testSpiderStore() throws IOException {
         String url = "https://service.zuche.com/";
         Document document = Jsoup.connect(url).get();
         Elements aList = document.select("dl.citySort dd a:not(.more-city)");
@@ -376,32 +376,35 @@ class CarRentalBackendApplicationTests {
 
                 Matcher matcher = pattern.matcher(href1);
                 if (matcher.find()) {
-                    String deptId = matcher.group(1);
-                    String body = HttpRequest.post(urlTemplate)
-                            .header(Header.REFERER, String.format("https://service.zuche.com/dept/detail.do?deptId=%s", deptId))
-                            .body(String.format(bodyTemplate, deptId))
-                            .execute()
-                            .body();
-                    JSONObject jsonObject = JSONUtil.parseObj(body);
-                    JSONObject content = jsonObject.getJSONObject("content");
+                    try {
+                        String deptId = matcher.group(1);
+                        String body = HttpRequest.post(urlTemplate)
+                                .header(Header.REFERER, String.format("https://service.zuche.com/dept/detail.do?deptId=%s", deptId))
+                                .body(String.format(bodyTemplate, deptId))
+                                .execute()
+                                .body();
+                        JSONObject jsonObject = JSONUtil.parseObj(body);
+                        JSONObject content = jsonObject.getJSONObject("content");
 
-                    JSONArray largeImgs = content.getJSONArray("largeImgs");
-                    String deptMobile = content.getStr("deptMobile");
-                    String deptName = content.getStr("deptName");
-                    String deptAddress = content.getStr("deptAddress");
-                    String deptLon = content.getStr("deptLon");
-                    String deptLat = content.getStr("deptLat");
+                        JSONArray largeImgs = content.getJSONArray("largeImgs");
+                        String deptMobile = content.getStr("deptMobile");
+                        String deptName = content.getStr("deptName");
+                        String deptAddress = content.getStr("deptAddress");
+                        String deptLon = content.getStr("deptLon");
+                        String deptLat = content.getStr("deptLat");
 
-                    String imgUrls = CollUtil.join(largeImgs, StrUtil.COMMA);
-                    Store store = new Store();
-                    store.setStoreName(deptName);
-                    store.setAddress(deptAddress);
-                    store.setMobile(deptMobile);
-                    store.setImages(imgUrls);
-                    store.setLongitude(new BigDecimal(deptLon));
-                    store.setLatitude(new BigDecimal(deptLat));
-                    storeList.add(store);
-                    Thread.sleep(1500);
+                        String imgUrls = CollUtil.join(largeImgs, StrUtil.COMMA);
+                        Store store = new Store();
+                        store.setStoreName(deptName);
+                        store.setAddress(deptAddress);
+                        store.setMobile(deptMobile);
+                        store.setImages(imgUrls);
+                        store.setLongitude(new BigDecimal(deptLon));
+                        store.setLatitude(new BigDecimal(deptLat));
+                        storeList.add(store);
+                    } catch (Exception e) {
+                        log.info("爬取失败，跳过此条");
+                    }
                 }
             }
         }
