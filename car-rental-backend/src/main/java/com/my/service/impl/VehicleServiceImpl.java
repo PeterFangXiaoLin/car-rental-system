@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -252,6 +253,12 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         queryWrapper.orderBy(StrUtil.isNotBlank(sortField), sortOrder.equalsIgnoreCase(CommonConstant.SORT_ORDER_ASC), sortField);
 
         return queryWrapper;
+    }
+
+    @Override
+    public List<VehicleVO> recommendVehicle() {
+
+
     }
 }
 

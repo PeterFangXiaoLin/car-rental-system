@@ -74,4 +74,11 @@ public interface VehicleService extends IService<Vehicle> {
      * @return
      */
     QueryWrapper<Vehicle> getQueryWrapper(VehicleQueryRequest vehicleQueryRequest);
+
+    /**
+     * 推荐车辆
+     *
+     * @return
+     */
+    List<VehicleVO> recommendVehicle();
 }

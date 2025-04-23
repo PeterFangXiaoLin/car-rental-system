@@ -91,6 +91,28 @@
       </div>
     </el-card>
 
+    <!-- 猜你喜欢 -->
+    <el-card shadow="never" class="mb-15px" v-if="recommendedVehicles.length > 0">
+      <div class="section-header">
+        <div class="section-title">
+          <el-icon><StarFilled /></el-icon> 猜你喜欢
+        </div>
+        <el-button type="text" @click="refreshRecommendations">换一批</el-button>
+      </div>
+      <el-carousel :interval="4000" type="card" height="240px" :autoplay="true">
+        <el-carousel-item v-for="vehicle in recommendedVehicles" :key="vehicle.id">
+          <div class="recommendation-card" @click="doClickVehicle(vehicle)">
+            <el-image :src="vehicle.imageUrl" fit="cover" class="recommendation-image" />
+            <div class="recommendation-info">
+              <h3 class="recommendation-title">{{ vehicle.name }}</h3>
+              <div class="recommendation-price">{{ vehicle.dailyPrice }}元/天</div>
+              <el-tag size="small" type="success" class="mr-5px">{{ vehicle.modelName }}</el-tag>
+            </div>
+          </div>
+        </el-carousel-item>
+      </el-carousel>
+    </el-card>
+
     <!-- 车辆列表 -->
     <el-card shadow="never" v-loading="loading">
       <el-row :gutter="16">
@@ -154,17 +176,20 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
+import { Search, StarFilled } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { listVehicleBrandByLetterUsingGet } from '@/api/vehicleBrandController.ts'
 import { listVehicleTypeDictUsingPost } from '@/api/vehicleTypeDictController.ts'
 import { listEnergyTypeDictUsingPost } from '@/api/energyTypeDictController.ts'
 import { listVehicleByPageUsingPost } from '@/api/vehicleController.ts'
+import { getRecommendedVehiclesUsingGet } from '@/api/recommendationController.ts'
+import { addBrowsingHistoryUsingPost } from '@/api/browsingHistoryController.ts'
 
 // 定义数据
 const dataList = ref<API.VehicleVO[]>([])
 const total = ref(0)
 const loading = ref(true)
+const recommendedVehicles = ref<API.VehicleVO[]>([])
 
 // 搜索条件
 const searchParams = reactive<API.VehicleQueryRequest>({
@@ -272,6 +297,23 @@ const fetchData = async () => {
   }
 }
 
+// 获取推荐车辆
+const fetchRecommendations = async () => {
+  try {
+    const res = await getRecommendedVehiclesUsingGet()
+    if (res.data.code === 0 && res.data.data) {
+      recommendedVehicles.value = res.data.data ?? []
+    }
+  } catch (error) {
+    console.error('获取推荐车辆失败：', error)
+  }
+}
+
+// 手动刷新推荐
+const refreshRecommendations = () => {
+  fetchRecommendations()
+}
+
 // 获取品牌
 const getBrandList = async () => {
   try {
@@ -336,9 +378,20 @@ const handleSizeChange = (size: number) => {
 }
 
 const router = useRouter()
-// 跳转至车辆详情页
+// 跳转至车辆详情页并记录浏览历史
 const doClickVehicle = (vehicle: API.VehicleVO) => {
+  // 添加浏览记录
+  addBrowsingHistory(vehicle.id)
   router.push(`/vehicle/${vehicle.id}`)
+}
+
+// 添加浏览历史
+const addBrowsingHistory = async (vehicleId: string) => {
+  try {
+    await addBrowsingHistoryUsingPost({ vehicleId })
+  } catch (error) {
+    console.error('记录浏览历史失败：', error)
+  }
 }
 
 // 页面加载时获取数据
@@ -347,6 +400,7 @@ onMounted(() => {
   getVehicleTypeList()
   getEnergyTypeList()
   fetchData()
+  fetchRecommendations()
 })
 </script>
 
@@ -459,5 +513,63 @@ onMounted(() => {
   flex-wrap: nowrap;
   overflow: hidden;
   gap: 5px;
+}
+
+/* 猜你喜欢样式 */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.recommendation-card {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.recommendation-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.recommendation-info {
+  padding: 12px;
+}
+
+.recommendation-title {
+  margin: 0;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recommendation-price {
+  color: #f56c6c;
+  margin: 5px 0;
+  font-weight: bold;
+}
+
+.el-carousel__item:nth-child(2n) {
+  background-color: #eff3f8;
+}
+
+.el-carousel__item:nth-child(2n+1) {
+  background-color: #f7f9fc;
 }
 </style>

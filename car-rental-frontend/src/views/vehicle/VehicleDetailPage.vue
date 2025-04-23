@@ -60,6 +60,15 @@
               <el-icon><ShoppingCart /></el-icon>
               立即下单
             </el-button>
+            
+            <el-button 
+              :type="isFavorite ? 'danger' : 'default'" 
+              @click="toggleFavorite"
+              :loading="favoriteLoading"
+            >
+              <el-icon><Star /></el-icon>
+              {{ isFavorite ? '取消收藏' : '收藏' }}
+            </el-button>
           </el-space>
         </el-card>
       </el-col>
@@ -71,10 +80,12 @@
 import { ref, onMounted } from 'vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { ElMessage } from 'element-plus'
-import { ShoppingCart } from '@element-plus/icons-vue'
+import { ShoppingCart, Star } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { getVehicleByIdUsingGet } from '@/api/vehicleController.ts'
 import VehicleStatusEnum from '@/enums/VehicleStatusEnum.ts'
+import { addFavoriteUsingPost, removeFavoriteUsingDelete, checkFavoriteStatusUsingGet } from '@/api/favoriteController.ts'
+import { addBrowsingHistoryUsingPost } from '@/api/browsingHistoryController.ts'
 
 interface Props {
   id: string | number
@@ -86,6 +97,8 @@ const loginUserStore = useLoginUserStore()
 const props = defineProps<Props>()
 const vehicle = ref<API.VehicleVO>()
 const loading = ref(false)
+const isFavorite = ref(false)
+const favoriteLoading = ref(false)
 
 // 获取车辆详情
 const fetchPictureDetail = async () => {
@@ -101,6 +114,76 @@ const fetchPictureDetail = async () => {
     ElMessage.error('获取车辆详情失败：' + error)
   } finally {
     loading.value = false
+  }
+}
+
+// 记录浏览历史
+const recordBrowsingHistory = async () => {
+  // 如果用户已登录，记录浏览历史
+  if (loginUserStore.loginUser?.id) {
+    try {
+      await addBrowsingHistoryUsingPost({ vehicleId: props.id })
+    } catch (error) {
+      console.error('记录浏览历史失败：', error)
+    }
+  }
+}
+
+// 检查收藏状态
+const checkFavoriteStatus = async () => {
+  // 如果用户已登录，检查收藏状态
+  if (loginUserStore.loginUser?.id) {
+    try {
+      const res = await checkFavoriteStatusUsingGet(props.id as string)
+      if (res.data.code === 0) {
+        isFavorite.value = !!res.data.data
+      }
+    } catch (error) {
+      console.error('检查收藏状态失败：', error)
+    }
+  }
+}
+
+// 切换收藏状态
+const toggleFavorite = async () => {
+  // 判断是否登录
+  if (!loginUserStore.loginUser?.id || loginUserStore.loginUser?.userName === '未登录') {
+    ElMessage.warning('请先登录后再进行收藏操作')
+    // 跳转到登录页，并设置登录成功后的回调地址为当前页面
+    router.push({
+      path: '/auth/login',
+      query: {
+        redirect: router.currentRoute.value.fullPath,
+      },
+    })
+    return
+  }
+
+  favoriteLoading.value = true
+  try {
+    if (isFavorite.value) {
+      // 已收藏，取消收藏
+      const res = await removeFavoriteUsingDelete(props.id as string)
+      if (res.data.code === 0) {
+        isFavorite.value = false
+        ElMessage.success('取消收藏成功')
+      } else {
+        ElMessage.error('取消收藏失败：' + res.data.message)
+      }
+    } else {
+      // 未收藏，添加收藏
+      const res = await addFavoriteUsingPost({ vehicleId: props.id })
+      if (res.data.code === 0) {
+        isFavorite.value = true
+        ElMessage.success('收藏成功')
+      } else {
+        ElMessage.error('收藏失败：' + res.data.message)
+      }
+    }
+  } catch (error) {
+    ElMessage.error('操作失败：' + error)
+  } finally {
+    favoriteLoading.value = false
   }
 }
 
@@ -135,6 +218,8 @@ const handleOrder = () => {
 
 onMounted(() => {
   fetchPictureDetail()
+  recordBrowsingHistory()
+  checkFavoriteStatus()
 })
 </script>
 

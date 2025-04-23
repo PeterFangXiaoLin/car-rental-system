@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
+import java.util.List;
+
 import static com.my.common.ResultUtils.success;
 
 @RestController
@@ -55,5 +57,11 @@ public class VehicleController {
     @PostMapping("/page")
     public BaseResponse<Page<VehicleVO>> listVehicleByPage(@RequestBody VehicleQueryRequest vehicleQueryRequest) {
         return success(vehicleService.listVehicleByPage(vehicleQueryRequest));
+    }
+
+    @ApiOperation(value = "推荐车辆")
+    @PostMapping("/recommend")
+    public BaseResponse<List<VehicleVO>> recommendVehicle() {
+        return success(vehicleService.recommendVehicle());
     }
 }
