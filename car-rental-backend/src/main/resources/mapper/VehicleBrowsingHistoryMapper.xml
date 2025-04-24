@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.mapper.VehicleBrowsingHistoryMapper">
+
+    <resultMap id="BaseResultMap" type="com.my.domain.entity.VehicleBrowsingHistory">
+            <id property="id" column="id" />
+            <result property="userId" column="userId" />
+            <result property="vehicleId" column="vehicleId" />
+            <result property="browseTime" column="browseTime" />
+            <result property="createTime" column="createTime" />
+            <result property="updateTime" column="updateTime" />
+            <result property="isDelete" column="isDelete" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,userId,vehicleId,browseTime,createTime,updateTime,
+        isDelete
+    </sql>
+
+    <select id="pageBrowseHistory" resultType="com.my.domain.vo.VehicleBrowsingHistoryVO">
+        SELECT
+
+        FROM
+            vehicle_browsing_history
+        INNER JOIN
+            vehicle ON vehicle_browsing_history.vehicleId = vehicle.id AND vehicle.isDelete = 0
+        INNER JOIN
+            vehicle_brand ON vehicle.brandId = vehicle_brand.id AND vehicle_brand.isDelete = 0
+        INNER JOIN
+            vehicle_model ON vehicle.modelId = vehicle_model.id AND vehicle_model.isDelete = 0
+        INNER JOIN
+            vehicle_type_detail ON vehicle.vehicleTypeId = vehicle_type_detail.id AND vehicle_type_detail.isDelete = 0
+        INNER JOIN
+            energy_type_detail ON vehicle.energyTypeId = energy_type_detail.id ANd energy_type_detail.isDelete = 0
+        WHERE
+            vehicle_browsing_history.userId = #{userId} AND vehicle_browsing_history.isDelete = 0
+        ORDER BY
+            vehicle_browsing_history.browseTime DESC
+    </select>
+</mapper>

@@ -114,6 +114,24 @@
             <version>4.34.0.ALL</version>
         </dependency>
 
+        <!-- 协同推荐-->
+        <!-- 引入Apache Mahout推荐系统库 -->
+        <dependency>
+            <groupId>org.apache.mahout</groupId>
+            <artifactId>mahout-core</artifactId>
+            <version>0.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.mahout</groupId>
+            <artifactId>mahout-math</artifactId>
+            <version>0.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.mahout</groupId>
+            <artifactId>mahout-hdfs</artifactId>
+            <version>0.13.0</version>
+        </dependency>
+
     </dependencies>
     <dependencyManagement>
         <dependencies>
