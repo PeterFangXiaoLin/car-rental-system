@@ -24,14 +24,14 @@ public class VehicleBrowsingHistoryVO implements Serializable {
     private Long vehicleId;
 
     /**
-     * 车辆名称
+     * 浏览时间
      */
-    private String name;
+    private Date browseTime;
 
     /**
-     * 车牌号
+     * 车辆名称
      */
-    private String vehicleNo;
+    private String vehicleName;
 
     /**
      * 品牌ID
@@ -102,11 +102,6 @@ public class VehicleBrowsingHistoryVO implements Serializable {
      * 车辆描述
      */
     private String description;
-
-    /**
-     * 浏览时间
-     */
-    private Date browseTime;
 
     private static final long serialVersionUID = 1L;
 }

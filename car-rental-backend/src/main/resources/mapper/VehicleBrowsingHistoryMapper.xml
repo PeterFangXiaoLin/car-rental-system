@@ -21,7 +21,24 @@
 
     <select id="pageBrowseHistory" resultType="com.my.domain.vo.VehicleBrowsingHistoryVO">
         SELECT
-
+            vehicle_browsing_history.id,
+            vehicle_browsing_history.vehicleId,
+            vehicle_browsing_history.browseTime,
+            vehicle.name as vehicleName,
+            vehicle_brand.id as brandId,
+            vehicle_brand.name as brandName,
+            vehicle_model.id as modelId,
+            vehicle_model.name as modelName,
+            vehicle_type_dict.id as vehicleTypeId,
+            vehicle_type_dict.typeName as vehicleTypeName,
+            energy_type_dict.id as energyTypeId,
+            energy_type_dict.typeName as energyTypeName,
+            vehicle.productionYear,
+            vehicle.dailyPrice,
+            vehicle.seatCount,
+            vehicle.status,
+            vehicle.imageUrl,
+            vehicle.description
         FROM
             vehicle_browsing_history
         INNER JOIN

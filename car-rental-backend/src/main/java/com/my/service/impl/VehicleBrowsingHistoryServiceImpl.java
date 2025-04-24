@@ -132,6 +132,20 @@ public class VehicleBrowsingHistoryServiceImpl extends ServiceImpl<VehicleBrowsi
         Page<VehicleBrowsingHistoryVO> page = new Page<>(current, pageSize);
         return vehicleBrowsingHistoryMapper.pageBrowseHistory(page, browsHistoryQueryRequest, userId);
     }
+
+    @Override
+    public Boolean clearBrowsHistory(HttpServletRequest request) {
+        LoginUserVO loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
+        // 删除当前用户的所有浏览历史
+        boolean result = this.lambdaUpdate()
+                .eq(VehicleBrowsingHistory::getUserId, userId)
+                .remove();
+        if (!result) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "系统错误");
+        }
+        return true;
+    }
 }
 
 

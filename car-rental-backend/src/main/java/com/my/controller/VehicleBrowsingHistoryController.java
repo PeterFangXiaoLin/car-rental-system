@@ -37,6 +37,12 @@ public class VehicleBrowsingHistoryController {
     @PostMapping("/page")
     @ApiOperation(value = "分页查询浏览历史")
     public BaseResponse<Page<VehicleBrowsingHistoryVO>> pageBrowseHistory(@RequestBody BrowsHistoryQueryRequest browsHistoryQueryRequest, HttpServletRequest request) {
-        return success(vehicleBrowsingHistoryService.pageBrowseHistory(browsHistoryQueryRequest, request))
+        return success(vehicleBrowsingHistoryService.pageBrowseHistory(browsHistoryQueryRequest, request));
+    }
+
+    @PostMapping("/clear")
+    @ApiOperation(value = "清空浏览历史")
+    public BaseResponse<Boolean> clearBrowsHistory(HttpServletRequest request) {
+        return success(vehicleBrowsingHistoryService.clearBrowsHistory(request));
     }
 }

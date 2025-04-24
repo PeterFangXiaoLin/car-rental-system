@@ -43,4 +43,12 @@ public interface VehicleBrowsingHistoryService extends IService<VehicleBrowsingH
      * @return
      */
     Page<VehicleBrowsingHistoryVO> pageBrowseHistory(BrowsHistoryQueryRequest browsHistoryQueryRequest, HttpServletRequest request);
+
+    /**
+     * 清空浏览历史
+     *
+     * @param request
+     * @return
+     */
+    Boolean clearBrowsHistory(HttpServletRequest request);
 }
