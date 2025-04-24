@@ -107,11 +107,6 @@ CREATE TABLE IF NOT EXISTS `rental_order`
     `dailyPrice`          decimal(10, 2) NOT NULL COMMENT '日租金',
     `totalDays`           int            NOT NULL COMMENT '租赁天数',
     `totalAmount`         decimal(10, 2) NOT NULL COMMENT '总金额',
-    `deposit`             decimal(10, 2) NOT NULL COMMENT '押金',
-    `damageAmount`        decimal(10, 2)          DEFAULT '0.00' COMMENT '车辆损坏赔偿金额',
-    `extraFee`            decimal(10, 2)          DEFAULT '0.00' COMMENT '额外费用(如超时、违章等)',
-    `extraFeeDesc`        varchar(255)            DEFAULT NULL COMMENT '额外费用说明',
-    `finalAmount`         decimal(10, 2)          DEFAULT NULL COMMENT '最终结算金额',
     `needDriver`          tinyint        NOT NULL DEFAULT '0' COMMENT '是否需要司机：0-不需要，1-需要',
     `driverId`            bigint                  DEFAULT NULL COMMENT '司机ID',
     `driverPrice`         decimal(10, 2)          DEFAULT '0.00' COMMENT '司机服务费用/天',
@@ -119,20 +114,13 @@ CREATE TABLE IF NOT EXISTS `rental_order`
     `status`              int            NOT NULL DEFAULT '0' COMMENT '订单状态：0-待支付，1-已支付待取车，2-已取车，3-已还车，4-已完成，5-已取消',
     `paymentStatus`       int            NOT NULL DEFAULT '0' COMMENT '支付状态：0-未支付，1-已支付，2-已退款，3-部分退款',
     `paymentTime`         datetime                DEFAULT NULL COMMENT '支付时间',
-    `paymentMethod`       varchar(50)             DEFAULT NULL COMMENT '支付方式',
-    `transactionId`       varchar(100)            DEFAULT NULL COMMENT '支付交易号',
     `refundAmount`        decimal(10, 2)          DEFAULT NULL COMMENT '退款金额',
     `refundTime`          datetime                DEFAULT NULL COMMENT '退款时间',
-    `refundTransactionId` varchar(100)            DEFAULT NULL COMMENT '退款交易号',
     `pickupLocation`      varchar(255)            DEFAULT NULL COMMENT '取车地点',
     `returnLocation`      varchar(255)            DEFAULT NULL COMMENT '还车地点',
-    `pickupOperatorId`    bigint                  DEFAULT NULL COMMENT '取车操作人ID',
-    `returnOperatorId`    bigint                  DEFAULT NULL COMMENT '还车操作人ID',
     `cancelReason`        varchar(255)            DEFAULT NULL COMMENT '取消原因',
     `cancelTime`          datetime                DEFAULT NULL COMMENT '取消时间',
     `expireTime`          datetime                DEFAULT NULL COMMENT '订单支付过期时间',
-    `fuelLevelStart`      varchar(20)             DEFAULT NULL COMMENT '起始油量',
-    `fuelLevelEnd`        varchar(20)             DEFAULT NULL COMMENT '结束油量',
     `remark`              varchar(500)            DEFAULT NULL COMMENT '备注',
     `createTime`          datetime       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updateTime`          datetime       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -151,6 +139,54 @@ CREATE TABLE IF NOT EXISTS `rental_order`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='租赁订单表';
 
+-- 评论表
+CREATE TABLE IF NOT EXISTS `vehicle_comment`
+(
+    `id`             bigint       NOT NULL AUTO_INCREMENT COMMENT '评论ID',
+    `orderId`        bigint       NOT NULL COMMENT '订单ID',
+    `userId`         bigint       NOT NULL COMMENT '用户ID',
+    `vehicleId`      bigint       NOT NULL COMMENT '车辆ID',
+    `driverId`       bigint                DEFAULT NULL COMMENT '司机ID',
+    `content`        varchar(1000) NOT NULL COMMENT '评论内容',
+    `vehicleRating`  int          NOT NULL COMMENT '车辆评分(1-5星)',
+    `driverRating`   int                   DEFAULT NULL COMMENT '司机评分(1-5星)',
+    `commentTime`    datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '评论时间',
+    `images`         text                  DEFAULT NULL COMMENT '评论图片URL，多个以逗号分隔',
+    `createTime`     datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updateTime`     datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `isDelete`       tinyint      NOT NULL DEFAULT '0' COMMENT '是否删除',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_orderId` (`orderId`),
+    KEY `idx_userId` (`userId`),
+    KEY `idx_vehicleId` (`vehicleId`),
+    KEY `idx_driverId` (`driverId`),
+    KEY `idx_createTime` (`createTime`),
+    KEY `idx_vehicleRating` (`vehicleRating`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='车辆评论表';
+
+-- 评论回复表
+CREATE TABLE IF NOT EXISTS `comment_reply`
+(
+    `id`             bigint       NOT NULL AUTO_INCREMENT COMMENT '回复ID',
+    `commentId`      bigint       NOT NULL COMMENT '评论ID',
+    `userId`         bigint       NOT NULL COMMENT '回复用户ID',
+    `content`        varchar(500) NOT NULL COMMENT '回复内容',
+    `parentId`       bigint                DEFAULT NULL COMMENT '父回复ID（回复其他回复时使用）',
+    `replyToUserId`  bigint                DEFAULT NULL COMMENT '被回复用户ID',
+    `images`         text                  DEFAULT NULL COMMENT '回复图片URL，多个以逗号分隔',
+    `createTime`     datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updateTime`     datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `isDelete`       tinyint      NOT NULL DEFAULT '0' COMMENT '是否删除',
+    PRIMARY KEY (`id`),
+    KEY `idx_commentId` (`commentId`),
+    KEY `idx_userId` (`userId`),
+    KEY `idx_parentId` (`parentId`),
+    KEY `idx_replyToUserId` (`replyToUserId`),
+    KEY `idx_createTime` (`createTime`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='评论回复表';
+
 -- 支付记录表
 CREATE TABLE IF NOT EXISTS `payment_record`
 (
@@ -158,12 +194,9 @@ CREATE TABLE IF NOT EXISTS `payment_record`
     `orderId`        bigint         NOT NULL COMMENT '订单ID',
     `userId`         bigint         NOT NULL COMMENT '用户ID',
     `paymentNo`      varchar(100)   NOT NULL COMMENT '支付流水号（交易号）',
-    `paymentMethod`  varchar(50)    NOT NULL COMMENT '支付方式: 0-支付宝，1-微信',
     `amount`         decimal(10, 2) NOT NULL COMMENT '支付金额',
     `status`         tinyint        NOT NULL DEFAULT '0' COMMENT '状态：0-待支付，1-支付成功，2-支付失败，3-已退款',
     `paymentTime`    datetime                DEFAULT NULL COMMENT '支付时间',
-    `buyerId`        varchar(100)            DEFAULT NULL COMMENT '买家支付宝ID',
-    `buyerPayAmount` decimal(10, 2)          DEFAULT NULL COMMENT '买家实际支付金额',
     `refundTime`     datetime                DEFAULT NULL COMMENT '退款时间',
     `refundAmount`   decimal(10, 2)          DEFAULT NULL COMMENT '退款金额',
     `refundReason`   varchar(500)            DEFAULT NULL COMMENT '退款原因',
@@ -177,63 +210,6 @@ CREATE TABLE IF NOT EXISTS `payment_record`
     KEY `idx_status` (`status`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='支付记录表';
-
-CREATE TABLE IF NOT EXISTS `driver`
-(
-    `id`               bigint       NOT NULL AUTO_INCREMENT COMMENT '司机ID',
-    `userId`           bigint       NOT NULL COMMENT '用户ID（关联用户表）',
-    `driverName`       varchar(100) NOT NULL COMMENT '司机姓名',
-    `driverLicenseNo`  varchar(50)  NOT NULL COMMENT '驾驶证号码',
-    `driverLicenseImg` varchar(255)          DEFAULT NULL COMMENT '驾驶证照片URL',
-    `idCardNo`         varchar(50)  NOT NULL COMMENT '身份证号码',
-    `idCardFrontImg`   varchar(255)          DEFAULT NULL COMMENT '身份证正面照片URL',
-    `idCardBackImg`    varchar(255)          DEFAULT NULL COMMENT '身份证背面照片URL',
-    `phoneNumber`      varchar(20)  NOT NULL COMMENT '联系电话',
-    `gender`           tinyint               DEFAULT '0' COMMENT '性别：0-男，1-女',
-    `age`              int                   DEFAULT NULL COMMENT '年龄',
-    `drivingYears`     int          NOT NULL COMMENT '驾龄',
-    `driverType`       varchar(50)  NOT NULL COMMENT '驾照类型',
-    `dailyPrice`       decimal(10, 2)        DEFAULT '0.00' COMMENT '日薪',
-    `workStatus`       tinyint      NOT NULL DEFAULT '1' COMMENT '工作状态：0-休息中，1-可接单，2-已接单',
-    `rating`           decimal(2, 1)         DEFAULT '5.0' COMMENT '评分（1-5分）',
-    `description`      varchar(500)          DEFAULT NULL COMMENT '个人简介',
-    `avatarUrl`        varchar(255)          DEFAULT NULL COMMENT '头像URL',
-    `verifyStatus`     tinyint      NOT NULL DEFAULT '0' COMMENT '认证状态：0-未认证，1-认证中，2-已认证，3-认证失败',
-    `verifyTime`       datetime              DEFAULT NULL COMMENT '认证时间',
-    `rejectReason`     varchar(500)          DEFAULT NULL COMMENT '拒绝原因',
-    `createTime`       datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `updateTime`       datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `isDelete`         tinyint      NOT NULL DEFAULT '0' COMMENT '是否删除',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_userId` (`userId`),
-    UNIQUE KEY `uk_driverLicenseNo` (`driverLicenseNo`),
-    UNIQUE KEY `uk_idCardNo` (`idCardNo`),
-    KEY `idx_phoneNumber` (`phoneNumber`),
-    KEY `idx_workStatus` (`workStatus`),
-    KEY `idx_verifyStatus` (`verifyStatus`),
-    KEY `idx_rating` (`rating`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='司机表';
-
-CREATE TABLE IF NOT EXISTS `driver_schedule`
-(
-    `id`           bigint   NOT NULL AUTO_INCREMENT COMMENT '排班ID',
-    `driverId`     bigint   NOT NULL COMMENT '司机ID',
-    `scheduleDate` date     NOT NULL COMMENT '排班日期',
-    `startTime`    time     NOT NULL COMMENT '开始时间',
-    `endTime`      time     NOT NULL COMMENT '结束时间',
-    `status`       tinyint  NOT NULL DEFAULT '1' COMMENT '状态：0-休息，1-工作中，2-已预约',
-    `orderId`      bigint            DEFAULT NULL COMMENT '关联订单ID（如果已预约）',
-    `createTime`   datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `updateTime`   datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `isDelete`     tinyint  NOT NULL DEFAULT '0' COMMENT '是否删除',
-    PRIMARY KEY (`id`),
-    KEY `idx_driverId` (`driverId`),
-    KEY `idx_scheduleDate` (`scheduleDate`),
-    KEY `idx_status` (`status`),
-    KEY `idx_orderId` (`orderId`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='司机排班表';
 
 drop table `verify_record`;
 
