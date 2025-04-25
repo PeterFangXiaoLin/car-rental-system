@@ -29,6 +29,11 @@ public class StoreCreateRequest implements Serializable {
     private BigDecimal latitude;
 
     /**
+     * 城市名称
+     */
+    private String cityName;
+
+    /**
      * 联系电话
      */
     private String mobile;

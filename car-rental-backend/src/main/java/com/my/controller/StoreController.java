@@ -66,4 +66,10 @@ public class StoreController {
     public BaseResponse<List<String>> uploadStoreImage(@RequestPart("files") MultipartFile[] files, HttpServletRequest request) {
         return success(storeService.uploadStoreImage(files, request));
     }
+
+    @GetMapping("/list")
+    @ApiOperation(value = "根据城市名获取门店列表")
+    public BaseResponse<List<StoreVO>> listStoreByCityName(@RequestParam("cityName") String cityName) {
+        return success(storeService.getStoreVOByCityName(cityName));
+    }
 }

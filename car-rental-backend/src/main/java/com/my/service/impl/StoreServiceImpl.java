@@ -1,6 +1,7 @@
 package com.my.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -207,6 +208,20 @@ public class StoreServiceImpl extends ServiceImpl<StoreMapper, Store>
         }
 
         return urlList;
+    }
+
+    @Override
+    public List<StoreVO> getStoreVOByCityName(String cityName) {
+        if (StrUtil.isBlank(cityName)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "城市名称为空");
+        }
+        QueryWrapper<Store> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like("cityName", cityName);
+        List<Store> storeList = storeMapper.selectList(queryWrapper);
+        if (CollUtil.isEmpty(storeList)) {
+            return new ArrayList<>();
+        }
+        return storeList.stream().map(this::getStoreVO).collect(Collectors.toList());
     }
 
     private void validateStore(Store store, boolean isAdd) {

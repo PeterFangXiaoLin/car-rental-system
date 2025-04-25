@@ -26,6 +26,11 @@ public class StoreQueryRequest extends PageRequest implements Serializable {
     private String address;
 
     /**
+     * 城市名称
+     */
+    private String cityName;
+
+    /**
      * 联系电话
      */
     private String contactPhone;

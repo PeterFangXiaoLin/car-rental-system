@@ -85,4 +85,12 @@ public interface StoreService extends IService<Store> {
      * @return
      */
     List<String> uploadStoreImage(MultipartFile[] files, HttpServletRequest request);
+
+    /**
+     * 根据城市名获取门店列表
+     *
+     * @param cityName
+     * @return
+     */
+    List<StoreVO> getStoreVOByCityName(String cityName);
 }

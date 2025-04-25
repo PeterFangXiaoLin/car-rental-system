@@ -61,15 +61,8 @@ export const routes = [
           hideInMenu: true,
         },
       },
-    ],
-  },
-  {
-    path: '/user',
-    name: '用户',
-    component: () => import('@/layouts/BasicLayout.vue'),
-    children: [
       {
-        path: 'profile',
+        path: 'user/profile',
         name: '个人中心',
         component: () => import('@/views/user/ProfilePage.vue'),
         meta: {
@@ -78,53 +71,7 @@ export const routes = [
         },
       },
       {
-        path: 'settings',
-        name: '账号设置',
-        component: () => import('@/views/user/SettingsPage.vue'),
-        meta: {
-          access: ACCESS_ENUM.USER,
-          hideInMenu: true,
-        },
-      },
-    ],
-  },
-  {
-    path: '/driver',
-    name: '司机',
-    component: () => import('@/layouts/BasicLayout.vue'),
-    children: [
-      {
-        path: 'manage',
-        name: '司机管理',
-        component: () => import('@/views/driver/DriverManagePage.vue'),
-        meta: {
-          access: ACCESS_ENUM.ADMIN,
-        },
-      },
-    ],
-  },
-  {
-    path: '/vehicle',
-    name: '司机',
-    component: () => import('@/layouts/BasicLayout.vue'),
-    children: [
-      {
-        path: 'manage',
-        name: '车辆管理',
-        component: () => import('@/views/vehicle/VehicleManagePage.vue'),
-        meta: {
-          access: ACCESS_ENUM.ADMIN,
-        },
-      },
-    ],
-  },
-  {
-    path: '/admin',
-    name: '管理',
-    component: () => import('@/layouts/BasicLayout.vue'),
-    children: [
-      {
-        path: 'userManage',
+        path: 'user/manage',
         name: '用户管理',
         component: () => import('@/views/admin/UserManagePage.vue'),
         meta: {
@@ -132,13 +79,53 @@ export const routes = [
         },
       },
       {
-        path: 'storeManage',
-        name: '店铺管理',
-        component: () => import('@/views/admin/StoreManagePage.vue'),
+        path: 'driver/manage',
+        name: '司机管理',
+        component: () => import('@/views/driver/DriverManagePage.vue'),
         meta: {
           access: ACCESS_ENUM.ADMIN,
         },
       },
+      {
+        path: 'vehicle/manage',
+        name: '车辆管理',
+        component: () => import('@/views/vehicle/VehicleManagePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+      {
+        path: 'vehicle/brand/manage',
+        name: '车辆品牌管理',
+        component: () => import('@/views/vehiclebrand/VehicleBrandManagePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+      {
+        path: 'vehicle/model/manage',
+        name: '车辆型号管理',
+        component: () => import('@/views/vehiclemodel/VehicleModelManagePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+      {
+        path: 'vehicle/type/manage',
+        name: '车型管理',
+        component: () => import('@/views/vehicletypedict/VehicleTypeDictManagePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+      {
+        path: 'vehicle/energy/manage',
+        name: '能源类型管理',
+        component: () => import('@/views/energytypedict/EnergyTypeDictManagePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      }
     ],
   },
   {

@@ -267,6 +267,7 @@ CREATE TABLE IF NOT EXISTS `store`
     `id`         bigint       NOT NULL AUTO_INCREMENT COMMENT '门店ID',
     `storeName`  varchar(100) NOT NULL COMMENT '门店名称',
     `address`    varchar(255) NOT NULL COMMENT '门店地址',
+    `cityName`       varchar(50)  NOT NULL COMMENT '门店所在城市',
     `longitude`  decimal(10, 6)        DEFAULT NULL COMMENT '经度',
     `latitude`   decimal(10, 6)        DEFAULT NULL COMMENT '纬度',
     `mobile`     varchar(30)  NOT NULL COMMENT '联系电话',

@@ -15,6 +15,7 @@
       <el-menu
         :collapse="isCollapse"
         :default-active="activeIndex"
+        @select="handleSelect"
         class="el-menu-vertical"
         background-color="#001529"
         text-color="#fff"
@@ -46,9 +47,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { Location, Document, Menu as IconMenu, Setting, Van, House } from '@element-plus/icons-vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { routes } from '@/router'
+import { useLoginUserStore } from '@/stores/useLoginUserStore'
+import { checkAccess } from '@/access/checkAccess'
+import * as Icons from '@element-plus/icons-vue'
 
 // 定义props
 defineProps({
@@ -58,53 +63,76 @@ defineProps({
   },
 })
 
+const router = useRouter()
 const route = useRoute()
+const loginUserStore = useLoginUserStore()
 
 // 当前激活的菜单项
-const activeIndex = ref('/')
+const activeIndex = computed(() => route.path)
 
-// 监听路由变化，更新当前激活的菜单项
-watch(
-  () => route.path,
-  (newPath) => {
-    activeIndex.value = newPath
-  },
-  { immediate: true },
-)
+// 处理菜单选择
+const handleSelect = (index: string) => {
+  router.push(index)
+}
 
-// 手动定义菜单项
-const menuItems = [
-  {
-    index: '/',
-    title: '首页',
-    icon: House,
-  },
-  {
-    index: '/car',
-    title: '车辆管理',
-    icon: Location,
-    children: [
-      { index: '/car/list', title: '车辆列表' },
-      { index: '/car/category', title: '车辆分类' },
-      { index: '/car/status', title: '车辆状态' },
-    ],
-  },
-  {
-    index: '/order',
-    title: '订单管理',
-    icon: IconMenu,
-  },
-  {
-    index: '/admin/userManage',
-    title: '用户管理',
-    icon: Document,
-  },
-  {
-    index: '/system',
-    title: '系统设置',
-    icon: Setting,
-  },
-]
+// 把路由转换成菜单项
+const routeToMenuItem = (route: any) => {
+  // 根据路由路径获取对应的图标
+  const getIconForRoute = (path: string) => {
+    const iconMap: Record<string, any> = {
+      '/': Icons.HomeFilled,
+      '/user/manage': Icons.User,
+      '/driver/manage': Icons.Van,
+      '/vehicle/manage': Icons.CarFilled,
+      '/vehicle/brand/manage': Icons.Shop,
+      '/vehicle/model/manage': Icons.Operation,
+      '/vehicle/type/manage': Icons.List,
+      '/vehicle/energy/manage': Icons.Lightning
+    }
+    
+    return iconMap[path] || Icons.Document
+  }
+  
+  return {
+    index: route.path,
+    title: route.name,
+    icon: getIconForRoute(route.path),
+    children: route.children
+      ? route.children
+          .filter((child: any) => {
+            if (child.meta?.hideInMenu) {
+              return false
+            }
+            return checkAccess(loginUserStore.loginUser, child.meta?.access)
+          })
+          .map((child: any) => ({
+            index: route.path === '/' ? child.path : `${route.path}/${child.path}`,
+            title: child.name,
+          }))
+      : []
+  }
+}
+
+// 生成菜单项
+const menuItems = computed(() => {
+  // 找到主布局下的路由
+  const mainLayoutRoute = routes.find(route => route.path === '/')
+  if (!mainLayoutRoute || !mainLayoutRoute.children) {
+    return []
+  }
+  
+  // 过滤出符合条件的路由，并转换为菜单项
+  return mainLayoutRoute.children
+    .filter((route: any) => {
+      // 过滤掉隐藏的菜单项
+      if (route.meta?.hideInMenu) {
+        return false
+      }
+      // 根据用户权限过滤
+      return checkAccess(loginUserStore.loginUser, route.meta?.access)
+    })
+    .map(routeToMenuItem)
+})
 </script>
 
 <style scoped>

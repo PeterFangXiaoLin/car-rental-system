@@ -27,6 +27,11 @@ public class StoreVO implements Serializable {
     private String address;
 
     /**
+     * 城市名称
+     */
+    private String cityName;
+
+    /**
      * 经度
      */
     private BigDecimal longitude;
