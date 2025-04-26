@@ -5,57 +5,103 @@
 <mapper namespace="com.my.mapper.RentalOrderMapper">
 
     <resultMap id="BaseResultMap" type="com.my.domain.entity.RentalOrder">
-            <id property="id" column="id" />
-            <result property="orderNo" column="orderNo" />
-            <result property="userId" column="userId" />
-            <result property="vehicleId" column="vehicleId" />
-            <result property="startTime" column="startTime" />
-            <result property="endTime" column="endTime" />
-            <result property="actualStartTime" column="actualStartTime" />
-            <result property="actualReturnTime" column="actualReturnTime" />
-            <result property="dailyPrice" column="dailyPrice" />
-            <result property="totalDays" column="totalDays" />
-            <result property="totalAmount" column="totalAmount" />
-            <result property="deposit" column="deposit" />
-            <result property="damageAmount" column="damageAmount" />
-            <result property="extraFee" column="extraFee" />
-            <result property="extraFeeDesc" column="extraFeeDesc" />
-            <result property="finalAmount" column="finalAmount" />
-            <result property="needDriver" column="needDriver" />
-            <result property="driverId" column="driverId" />
-            <result property="driverPrice" column="driverPrice" />
-            <result property="driverTotalAmount" column="driverTotalAmount" />
-            <result property="status" column="status" />
-            <result property="paymentStatus" column="paymentStatus" />
-            <result property="paymentTime" column="paymentTime" />
-            <result property="paymentMethod" column="paymentMethod" />
-            <result property="transactionId" column="transactionId" />
-            <result property="refundAmount" column="refundAmount" />
-            <result property="refundTime" column="refundTime" />
-            <result property="refundTransactionId" column="refundTransactionId" />
-            <result property="pickupLocation" column="pickupLocation" />
-            <result property="returnLocation" column="returnLocation" />
-            <result property="pickupOperatorId" column="pickupOperatorId" />
-            <result property="returnOperatorId" column="returnOperatorId" />
-            <result property="cancelReason" column="cancelReason" />
-            <result property="cancelTime" column="cancelTime" />
-            <result property="expireTime" column="expireTime" />
-            <result property="fuelLevelStart" column="fuelLevelStart" />
-            <result property="fuelLevelEnd" column="fuelLevelEnd" />
-            <result property="remark" column="remark" />
-            <result property="createTime" column="createTime" />
-            <result property="updateTime" column="updateTime" />
-            <result property="isDelete" column="isDelete" />
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="orderNo" column="orderNo" jdbcType="VARCHAR"/>
+            <result property="userId" column="userId" jdbcType="BIGINT"/>
+            <result property="vehicleId" column="vehicleId" jdbcType="BIGINT"/>
+            <result property="startTime" column="startTime" jdbcType="TIMESTAMP"/>
+            <result property="endTime" column="endTime" jdbcType="TIMESTAMP"/>
+            <result property="actualStartTime" column="actualStartTime" jdbcType="TIMESTAMP"/>
+            <result property="actualReturnTime" column="actualReturnTime" jdbcType="TIMESTAMP"/>
+            <result property="vehicleDailyPrice" column="vehicleDailyPrice" jdbcType="DECIMAL"/>
+            <result property="totalDays" column="totalDays" jdbcType="INTEGER"/>
+            <result property="vehicleTotalAmount" column="vehicleTotalAmount" jdbcType="DECIMAL"/>
+            <result property="needDriver" column="needDriver" jdbcType="TINYINT"/>
+            <result property="driverId" column="driverId" jdbcType="BIGINT"/>
+            <result property="driverDailyPrice" column="driverDailyPrice" jdbcType="DECIMAL"/>
+            <result property="driverTotalAmount" column="driverTotalAmount" jdbcType="DECIMAL"/>
+            <result property="totalAmount" column="totalAmount" jdbcType="DECIMAL"/>
+            <result property="status" column="status" jdbcType="INTEGER"/>
+            <result property="paymentStatus" column="paymentStatus" jdbcType="INTEGER"/>
+            <result property="paymentTime" column="paymentTime" jdbcType="TIMESTAMP"/>
+            <result property="refundAmount" column="refundAmount" jdbcType="DECIMAL"/>
+            <result property="refundTime" column="refundTime" jdbcType="TIMESTAMP"/>
+            <result property="pickupStoreId" column="pickupStoreId" jdbcType="BIGINT"/>
+            <result property="returnStoreId" column="returnStoreId" jdbcType="BIGINT"/>
+            <result property="cancelReason" column="cancelReason" jdbcType="VARCHAR"/>
+            <result property="cancelTime" column="cancelTime" jdbcType="TIMESTAMP"/>
+            <result property="expireTime" column="expireTime" jdbcType="TIMESTAMP"/>
+            <result property="remark" column="remark" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,orderNo,userId,vehicleId,startTime,endTime,
-        actualStartTime,actualReturnTime,dailyPrice,totalDays,totalAmount,
-        deposit,damageAmount,extraFee,extraFeeDesc,finalAmount,
-        needDriver,driverId,driverPrice,driverTotalAmount,status,
-        paymentStatus,paymentTime,paymentMethod,transactionId,refundAmount,
-        refundTime,refundTransactionId,pickupLocation,returnLocation,pickupOperatorId,
-        returnOperatorId,cancelReason,cancelTime,expireTime,fuelLevelStart,
-        fuelLevelEnd,remark,createTime,updateTime,isDelete
+        id,orderNo,userId,
+        vehicleId,startTime,endTime,
+        actualStartTime,actualReturnTime,vehicleDailyPrice,
+        totalDays,vehicleTotalAmount,needDriver,
+        driverId,driverDailyPrice,driverTotalAmount,
+        totalAmount,status,paymentStatus,
+        paymentTime,refundAmount,refundTime,
+        pickupStoreId,returnStoreId,cancelReason,
+        cancelTime,expireTime,remark,
+        createTime,updateTime,isDelete
     </sql>
+    <select id="pageRentalOrder" resultType="com.my.domain.vo.RentalOrderVO">
+        SELECT
+            rental_order.id,
+            rental_order.orderNo,
+            rental_order.userId,
+            user.userName,
+            rental_order.vehicleId,
+            vehicle.name AS vehicleName,
+            rental_order.startTime,
+            rental_order.endTime,
+            rental_order.actualStartTime,
+            rental_order.actualReturnTime,
+            rental_order.vehicleDailyPrice,
+            rental_order.totalDays,
+            rental_order.vehicleTotalAmount,
+            rental_order.needDriver,
+            rental_order.driverId,
+            driver.driverName,
+            rental_order.driverDailyPrice,
+            rental_order.driverTotalAmount,
+            rental_order.totalAmount,
+            rental_order.status,
+            rental_order.paymentStatus,
+            rental_order.paymentTime,
+            rental_order.refundAmount,
+            rental_order.refundTime,
+            rental_order.pickupStoreId,
+            pickup_store.storeName AS pickupStoreName,
+            rental_order.returnStoreId,
+            return_store.storeName AS returnStoreName,
+            rental_order.cancelReason,
+            rental_order.cancelTime,
+            rental_order.expireTime,
+            rental_order.remark,
+            rental_order.createTime
+        FROM rental_order
+        INNER JOIN user ON rental_order.userId = user.id AND user.isDelete = 0
+        INNER JOIN vehicle ON rental_order.vehicleId = vehicle.id AND vehicle.isDelete = 0
+        INNER JOIN driver ON rental_order.driverId = driver.id AND driver.isDelete = 0
+        INNER JOIN store pickup_store ON rental_order.pickupStoreId = pickup_store.id AND pickup_store.isDelete = 0
+        INNER JOIN store return_store ON rental_order.returnStoreId = return_store.id AND return_store.isDelete = 0
+        WHERE isDelete = 0
+        <if test="userId != null">
+            AND rental_order.userId = #{userId}
+        </if>
+        <if test="searchText != null and searchText != ''">
+            AND (
+                user.userName LIKE CONCAT('%', #{searchText}, '%') OR
+                vehicle.name LIKE CONCAT('%', #{searchText}, '%') OR
+                driver.driverName LIKE CONCAT('%', #{searchText}, '%') OR
+                pickup_store.storeName LIKE CONCAT('%', #{searchText}, '%')
+                return_store.storeName LIKE CONCAT('%', #{searchText}, '%')
+            )
+        </if>
+    </select>
 </mapper>

@@ -1,28 +1,34 @@
 package com.my.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.common.ErrorCode;
+import com.my.config.AlipayConfigProperties;
 import com.my.domain.dto.rentalorder.RentalOrderCreateRequest;
+import com.my.domain.dto.rentalorder.RentalOrderPageRequest;
 import com.my.domain.entity.Driver;
 import com.my.domain.entity.RentalOrder;
+import com.my.domain.entity.Store;
 import com.my.domain.entity.Vehicle;
 import com.my.domain.enums.OrderStatusEnum;
 import com.my.domain.enums.PaymentStatusEnum;
 import com.my.domain.enums.VehicleStatusEnum;
 import com.my.domain.vo.LoginUserVO;
+import com.my.domain.vo.RentalOrderVO;
 import com.my.exception.BusinessException;
 import com.my.exception.ThrowUtils;
-import com.my.service.DriverService;
-import com.my.service.RentalOrderService;
 import com.my.mapper.RentalOrderMapper;
-import com.my.service.UserService;
-import com.my.service.VehicleService;
+import com.my.service.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.my.constant.RedisConstant.VEHICLE_LOCK_PREFIX;
 
@@ -32,6 +38,7 @@ import static com.my.constant.RedisConstant.VEHICLE_LOCK_PREFIX;
 * @createDate 2025-04-08 09:38:16
 */
 @Service
+@Slf4j
 public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, RentalOrder>
     implements RentalOrderService{
 
@@ -46,6 +53,12 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
 
     @Resource
     private DriverService driverService;
+
+    @Resource
+    private StoreService storeService;
+
+    @Resource
+    private AlipayConfigProperties alipayConfigProperties;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -73,6 +86,9 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
             rentalOrder.setStatus(OrderStatusEnum.UNPAID.getValue());
             // 设置支付状态为未支付
             rentalOrder.setPaymentStatus(PaymentStatusEnum.UNPAID.getValue());
+            
+            // 生成订单编号
+            rentalOrder.setOrderNo(generateOrderNo());
 
             // 保存订单
             boolean saveResult = this.save(rentalOrder);
@@ -82,7 +98,61 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
             return rentalOrder.getId();
         }
     }
+    
+    /**
+     * 生成订单编号
+     */
+    private String generateOrderNo() {
+        return "CAR" + System.currentTimeMillis() + String.format("%04d", (int)(Math.random() * 10000));
+    }
 
+    @Override
+    public String getNotifyUrl() {
+        return alipayConfigProperties.getNotifyUrl();
+    }
+
+    @Override
+    public String getReturnUrl() {
+        return alipayConfigProperties.getReturnUrl();
+    }
+
+    @Override
+    public boolean updateOrderPayStatus(Long orderId, Integer status) {
+        RentalOrder order = this.getById(orderId);
+        if (order == null) {
+            log.error("更新支付状态失败，订单不存在: {}", orderId);
+            return false;
+        }
+        
+        // 更新支付状态
+        order.setPaymentStatus(status);
+        
+        // 如果支付成功，更新订单状态为已支付待取车
+        if (status == PaymentStatusEnum.PAID.getValue()) {
+            order.setStatus(OrderStatusEnum.PAID_UNPICKED.getValue());
+        }
+        
+        return this.updateById(order);
+    }
+
+    @Override
+    public Page<RentalOrderVO> pageRentalOrder(RentalOrderPageRequest pageRequest, HttpServletRequest request) {
+        if (pageRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        // 获取当前登录用户
+        LoginUserVO loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
+
+        String searchText = pageRequest.getSearchText();
+
+        long pageSize = pageRequest.getPageSize();
+        long current = pageRequest.getCurrent();
+
+        Page<RentalOrderVO> page = new Page<>(current, pageSize);
+        return rentalOrderMapper.pageRentalOrder(page, searchText, userId);
+    }
 
     private void validate(RentalOrder rentalOrder, boolean isAdd) {
         if (rentalOrder == null) {
@@ -94,6 +164,16 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
         if (vehicle == null || !vehicle.getStatus().equals(VehicleStatusEnum.AVAILABLE.getValue())) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "车辆不存在或不可用");
         }
+        // 设置日租金
+        Integer totalDays = rentalOrder.getTotalDays();
+        if (totalDays == null || totalDays <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "租赁天数必须大于0");
+        }
+        rentalOrder.setVehicleDailyPrice(vehicle.getDailyPrice());
+        rentalOrder.setVehicleTotalAmount(vehicle.getDailyPrice().multiply(BigDecimal.valueOf(totalDays)));
+
+        // 计算总金额
+        rentalOrder.setTotalAmount(rentalOrder.getVehicleTotalAmount());
 
         // 如果选了司机，则校验司机是否存在
         if (rentalOrder.getNeedDriver() == 1) {
@@ -102,6 +182,24 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
             if (driver == null) {
                 throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "司机不存在");
             }
+            // 设置司机服务费用
+            rentalOrder.setDriverDailyPrice(driver.getDailyPrice());
+            rentalOrder.setDriverTotalAmount(driver.getDailyPrice().multiply(BigDecimal.valueOf(totalDays)));
+            rentalOrder.setTotalAmount(rentalOrder.getTotalAmount().add(rentalOrder.getDriverTotalAmount()));
+        }
+
+        // 校验门店是否存在
+        Long pickupStoreId = rentalOrder.getPickupStoreId();
+        Long returnStoreId = rentalOrder.getReturnStoreId();
+        if (pickupStoreId == null || returnStoreId == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "取车或还车门店不能为空");
+        }
+        List<Long> storeIds = new ArrayList<>();
+        storeIds.add(pickupStoreId);
+        storeIds.add(returnStoreId);
+        boolean storesExist = storeService.lambdaQuery().in(Store::getId, storeIds).exists();
+        if (!storesExist) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "取车或还车门店不存在");
         }
     }
 }

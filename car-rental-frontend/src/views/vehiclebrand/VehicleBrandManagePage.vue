@@ -36,12 +36,11 @@
         :header-cell-style="{ 'background-color': '#ecf8fe', color: '#4986EA' }"
       >
         <el-table-column label="序号" type="index" width="60" align="center" />
-        <el-table-column prop="brandName" label="品牌名称" width="120" align="center" />
-        <el-table-column label="品牌Logo" width="120" align="center">
+        <el-table-column prop="brandName" label="品牌名称" align="center" />
+        <el-table-column label="品牌Logo" align="center">
           <template #default="{ row }">
             <el-image
-              :src="row.imageUrl"
-              :preview-src-list="[row.imageUrl]"
+              :src="row.brandLogo"
               fit="cover"
               style="width: 80px; height: 80px"
               :preview-teleported="true"
@@ -49,7 +48,7 @@
             />
           </template>
         </el-table-column>
-        <el-table-column prop="firstLetter" label="首字母" width="120" align="center" />
+        <el-table-column prop="firstLetter" label="首字母" align="center" />
         <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleEdit(row.id)">

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.mapper.VehicleFavoriteMapper">
+
+    <resultMap id="BaseResultMap" type="com.my.domain.entity.VehicleFavorite">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="userId" column="userId" jdbcType="BIGINT"/>
+            <result property="vehicleId" column="vehicleId" jdbcType="BIGINT"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,userId,vehicleId,
+        createTime,updateTime,isDelete
+    </sql>
+    <select id="pageVehicleFavorite" resultType="com.my.domain.vo.VehicleFavoriteVO">
+        select
+            vehicle_favorite.id,
+            vehicle_favorite.userId,
+            vehicle_favorite.vehicleId,
+            vehicle_favorite.createTime
+        from vehicle_favorite
+        inner join vehicle
+        on vehicle_favorite.vehicleId = vehicle.id and vehicle.isDelete = 0
+        where vehicle_favorite.isDelete = 0
+        <if test="userId != null">
+            and vehicle_favorite.userId = #{userId}
+        </if>
+        <if test="searchText != null and searchText != ''">
+            and vehicle.name like concat('%',#{searchText},'%')
+        </if>
+        order by vehicle_favorite.createTime desc
+    </select>
+    <select id="selectByUserId" resultType="com.my.domain.entity.VehicleFavorite">
+        SELECT * FROM vehicle_favorite
+        WHERE userId = #{userId} AND isDelete = 0
+    </select>
+    <select id="selectVehicleIdsByUserId" resultType="java.lang.Long">
+        SELECT vehicleId FROM vehicle_favorite
+        WHERE userId = #{userId} AND isDelete = 0
+    </select>
+</mapper>

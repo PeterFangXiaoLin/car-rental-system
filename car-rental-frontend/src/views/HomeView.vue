@@ -137,7 +137,6 @@
               :alt="vehicle.name"
               fit="cover"
               class="picture-image"
-              :preview-src-list="[vehicle.imageUrl]"
             />
             <div class="picture-info">
               <h3 class="picture-title">{{ vehicle.name }}</h3>
@@ -181,9 +180,7 @@ import { useRouter } from 'vue-router'
 import { listVehicleBrandByLetterUsingGet } from '@/api/vehicleBrandController.ts'
 import { listVehicleTypeDictUsingPost } from '@/api/vehicleTypeDictController.ts'
 import { listEnergyTypeDictUsingPost } from '@/api/energyTypeDictController.ts'
-import { listVehicleByPageUsingPost } from '@/api/vehicleController.ts'
-import { getRecommendedVehiclesUsingGet } from '@/api/recommendationController.ts'
-import { addBrowsingHistoryUsingPost } from '@/api/browsingHistoryController.ts'
+import {listVehicleByPageUsingPost, recommendVehicleUsingPost} from '@/api/vehicleController.ts'
 
 // 定义数据
 const dataList = ref<API.VehicleVO[]>([])
@@ -300,7 +297,7 @@ const fetchData = async () => {
 // 获取推荐车辆
 const fetchRecommendations = async () => {
   try {
-    const res = await getRecommendedVehiclesUsingGet()
+    const res = await recommendVehicleUsingPost()
     if (res.data.code === 0 && res.data.data) {
       recommendedVehicles.value = res.data.data ?? []
     }

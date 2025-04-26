@@ -62,6 +62,14 @@ export async function listVehicleByPageUsingPost(
   })
 }
 
+/** 推荐车辆 POST /api/vehicle/recommend */
+export async function recommendVehicleUsingPost(options?: { [key: string]: any }) {
+  return request<API.BaseResponseListVehicleVO_>('/api/vehicle/recommend', {
+    method: 'POST',
+    ...(options || {}),
+  })
+}
+
 /** 修改车辆 POST /api/vehicle/update */
 export async function updateVehicleUsingPost(
   body: API.VehicleUpdateRequest,

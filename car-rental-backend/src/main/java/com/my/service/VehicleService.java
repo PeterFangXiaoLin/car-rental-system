@@ -10,6 +10,7 @@ import com.my.domain.entity.Vehicle;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.my.domain.vo.VehicleVO;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -80,5 +81,5 @@ public interface VehicleService extends IService<Vehicle> {
      *
      * @return
      */
-    List<VehicleVO> recommendVehicle();
+    List<VehicleVO> recommendVehicle(HttpServletRequest request);
 }

@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.Date;
 
 /**
@@ -56,12 +57,12 @@ public class Store implements Serializable {
     /**
      * 开始营业时间
      */
-    private Date openTime;
+    private LocalTime openTime;
 
     /**
      * 结束营业时间
      */
-    private Date closeTime;
+    private LocalTime closeTime;
 
     /**
      * 状态：0-关闭，1-营业中

@@ -1,7 +1,10 @@
 package com.my.mapper;
 
-import com.my.domain.entity.RentalOrder;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.my.domain.entity.RentalOrder;
+import com.my.domain.vo.RentalOrderVO;
+import org.apache.ibatis.annotations.Param;
 
 /**
 * @author Administrator
@@ -11,6 +14,14 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface RentalOrderMapper extends BaseMapper<RentalOrder> {
 
+    /**
+     * 分页查询订单
+     * @param page 分页参数
+     * @param searchText 搜索文本
+     * @param userId 用户ID
+     * @return 订单分页结果
+     */
+    Page<RentalOrderVO> pageRentalOrder(Page<RentalOrderVO> page, @Param("searchText") String searchText, @Param("userId") Long userId);
 }
 
 

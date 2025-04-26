@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -38,12 +38,12 @@ public class StoreQueryRequest extends PageRequest implements Serializable {
     /**
      * 开始营业时间
      */
-    private Date openTime;
+    private LocalTime openTime;
 
     /**
      * 结束营业时间
      */
-    private Date closeTime;
+    private LocalTime closeTime;
 
     /**
      * 状态：0-关闭，1-营业中

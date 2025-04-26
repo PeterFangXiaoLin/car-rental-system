@@ -115,4 +115,75 @@
             </if>
         </if>
     </select>
+    <select id="selectHotVehicles" resultType="com.my.domain.vo.VehicleVO">
+        SELECT v.*,
+               b.brandName as brandName,
+               m.modelName as modelName,
+               vt.typeName as vehicleTypeName,
+               et.typeName as energyTypeName
+        FROM vehicle v
+                 LEFT JOIN vehicle_brand b ON v.brandId = b.id
+                 LEFT JOIN vehicle_model m ON v.modelId = m.id
+                 LEFT JOIN vehicle_type_dict vt ON v.vehicleTypeId = vt.id
+                 LEFT JOIN energy_type_dict et ON v.energyTypeId = et.id
+                 LEFT JOIN (
+            -- 计算车辆热度，将浏览、收藏、下单数量加权
+            SELECT
+                vehicleId,
+                COUNT(*) * 1 AS browse_count,
+                SUM(CASE WHEN source = 'browse' THEN 1 ELSE 0 END) AS browse_count,
+                SUM(CASE WHEN source = 'favorite' THEN 3 ELSE 0 END) AS favorite_count,
+                SUM(CASE WHEN source = 'order' THEN 5 ELSE 0 END) AS order_count,
+                (SUM(CASE WHEN source = 'browse' THEN 1 ELSE 0 END) +
+                 SUM(CASE WHEN source = 'favorite' THEN 3 ELSE 0 END) +
+                 SUM(CASE WHEN source = 'order' THEN 5 ELSE 0 END)) AS hotness
+            FROM (
+                     SELECT vehicleId, 'browse' as source FROM vehicle_browsing_history
+                     UNION ALL
+                     SELECT vehicleId, 'favorite' as source FROM vehicle_favorite
+                     UNION ALL
+                     SELECT vehicleId, 'order' as source FROM rental_order
+                 ) all_interactions
+            GROUP BY vehicleId
+        ) hotness ON v.id = hotness.vehicleId
+        WHERE v.isDelete = 0
+        ORDER BY hotness.hotness DESC NULLS LAST, v.createTime DESC
+        LIMIT #{count}
+    </select>
+    <select id="selectRandomVehicles" resultType="com.my.domain.vo.VehicleVO">
+        SELECT v.*,
+               b.brandName as brandName,
+               m.modelName as modelName,
+               vt.typeName as vehicleTypeName,
+               et.typeName as energyTypeName
+        FROM vehicle v
+                 LEFT JOIN vehicle_brand b ON v.brandId = b.id
+                 LEFT JOIN vehicle_model m ON v.modelId = m.id
+                 LEFT JOIN vehicle_type_dict vt ON v.vehicleTypeId = vt.id
+                 LEFT JOIN energy_type_dict et ON v.energyTypeId = et.id
+        WHERE v.isDelete = 0
+          AND v.status = 1 /* 可用状态的车辆 */
+        ORDER BY RAND() /* 使用MySQL的RAND()函数实现随机排序 */
+        LIMIT #{count}
+    </select>
+    <select id="selectHotVehicleIds" resultType="java.lang.Long">
+        SELECT vehicleId
+        FROM (
+                 SELECT
+                     vehicleId,
+                     (SUM(CASE WHEN source = 'browse' THEN 1 ELSE 0 END) +
+                      SUM(CASE WHEN source = 'favorite' THEN 3 ELSE 0 END) +
+                      SUM(CASE WHEN source = 'order' THEN 5 ELSE 0 END)) AS hotness
+                 FROM (
+                          SELECT vehicleId, 'browse' as source FROM vehicle_browsing_history
+                          UNION ALL
+                          SELECT vehicleId, 'favorite' as source FROM vehicle_favorite
+                          UNION ALL
+                          SELECT vehicleId, 'order' as source FROM rental_order
+                      ) all_interactions
+                 GROUP BY vehicleId
+             ) ranked
+        ORDER BY hotness DESC
+        LIMIT #{limit}
+    </select>
 </mapper>

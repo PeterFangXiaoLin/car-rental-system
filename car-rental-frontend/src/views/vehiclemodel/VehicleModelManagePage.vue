@@ -49,13 +49,12 @@
         :header-cell-style="{ 'background-color': '#ecf8fe', color: '#4986EA' }"
       >
         <el-table-column label="序号" type="index" width="60" align="center" />
-        <el-table-column prop="brandName" label="品牌名称" width="120" align="center" />
-        <el-table-column prop="modelName" label="型号名称" width="120" align="center" />
-        <el-table-column label="型号Logo" width="120" align="center">
+        <el-table-column prop="brandName" label="品牌名称" align="center" />
+        <el-table-column prop="modelName" label="型号名称" align="center" />
+        <el-table-column label="型号Logo" align="center">
           <template #default="{ row }">
             <el-image
               :src="row.modelLogo"
-              :preview-src-list="[row.modelLogo]"
               fit="cover"
               style="width: 80px; height: 80px"
               :preview-teleported="true"

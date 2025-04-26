@@ -60,9 +60,9 @@
               <el-icon><ShoppingCart /></el-icon>
               立即下单
             </el-button>
-            
-            <el-button 
-              :type="isFavorite ? 'danger' : 'default'" 
+
+            <el-button
+              :type="isFavorite ? 'danger' : 'default'"
               @click="toggleFavorite"
               :loading="favoriteLoading"
             >
@@ -84,8 +84,12 @@ import { ShoppingCart, Star } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { getVehicleByIdUsingGet } from '@/api/vehicleController.ts'
 import VehicleStatusEnum from '@/enums/VehicleStatusEnum.ts'
-import { addFavoriteUsingPost, removeFavoriteUsingDelete, checkFavoriteStatusUsingGet } from '@/api/favoriteController.ts'
-import { addBrowsingHistoryUsingPost } from '@/api/browsingHistoryController.ts'
+import {
+  addVehicleFavoriteUsingPost,
+  cancelVehicleFavoriteUsingPost,
+  checkVehicleFavoriteUsingGet
+} from "@/api/vehicleFavoriteController.ts";
+import {addOrUpdateBrowsHistoryUsingPost} from "@/api/vehicleBrowsingHistoryController.ts";
 
 interface Props {
   id: string | number
@@ -122,7 +126,7 @@ const recordBrowsingHistory = async () => {
   // 如果用户已登录，记录浏览历史
   if (loginUserStore.loginUser?.id) {
     try {
-      await addBrowsingHistoryUsingPost({ vehicleId: props.id })
+      await addOrUpdateBrowsHistoryUsingPost({ vehicleId: props.id })
     } catch (error) {
       console.error('记录浏览历史失败：', error)
     }
@@ -134,7 +138,7 @@ const checkFavoriteStatus = async () => {
   // 如果用户已登录，检查收藏状态
   if (loginUserStore.loginUser?.id) {
     try {
-      const res = await checkFavoriteStatusUsingGet(props.id as string)
+      const res = await checkVehicleFavoriteUsingGet({vehicleId: props.id})
       if (res.data.code === 0) {
         isFavorite.value = !!res.data.data
       }
@@ -163,7 +167,9 @@ const toggleFavorite = async () => {
   try {
     if (isFavorite.value) {
       // 已收藏，取消收藏
-      const res = await removeFavoriteUsingDelete(props.id as string)
+      const res = await cancelVehicleFavoriteUsingPost({
+        vehicleId: props.id,
+      })
       if (res.data.code === 0) {
         isFavorite.value = false
         ElMessage.success('取消收藏成功')
@@ -172,7 +178,7 @@ const toggleFavorite = async () => {
       }
     } else {
       // 未收藏，添加收藏
-      const res = await addFavoriteUsingPost({ vehicleId: props.id })
+      const res = await addVehicleFavoriteUsingPost({ vehicleId: props.id })
       if (res.data.code === 0) {
         isFavorite.value = true
         ElMessage.success('收藏成功')

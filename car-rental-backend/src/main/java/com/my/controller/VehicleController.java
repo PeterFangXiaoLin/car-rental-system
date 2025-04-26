@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class VehicleController {
 
     @ApiOperation(value = "推荐车辆")
     @PostMapping("/recommend")
-    public BaseResponse<List<VehicleVO>> recommendVehicle() {
-        return success(vehicleService.recommendVehicle());
+    public BaseResponse<List<VehicleVO>> recommendVehicle(HttpServletRequest request) {
+        return success(vehicleService.recommendVehicle(request));
     }
 }

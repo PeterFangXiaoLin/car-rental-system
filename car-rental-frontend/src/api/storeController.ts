@@ -47,6 +47,21 @@ export async function getStoreUsingGet(
   })
 }
 
+/** 根据城市名获取门店列表 GET /api/store/list */
+export async function listStoreByCityNameUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.listStoreByCityNameUsingGETParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseListStoreVO_>('/api/store/list', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  })
+}
+
 /** 分页获取门店列表 POST /api/store/page */
 export async function listStoreByPageUsingPost(
   body: API.StoreQueryRequest,

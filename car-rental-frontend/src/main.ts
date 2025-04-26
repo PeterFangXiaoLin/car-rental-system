@@ -24,7 +24,7 @@ const app = createApp(App)
 initAMapApiLoader({
   key: '057c2b362166596ed5265b3eb0ff78f1',
   securityJsCode: '2b380a75669690008ab9dd509b86237f', // 新版key需要配合安全密钥使用
-  plugins: ['AMap.Geocoder'], // 全局注册插件
+  plugins: ['AMap.Geocoder', 'AMap.CitySearch'], // 全局注册插件
 })
 
 dayjs.locale('zh-cn')

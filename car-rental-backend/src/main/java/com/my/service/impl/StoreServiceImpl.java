@@ -28,8 +28,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -150,8 +150,8 @@ public class StoreServiceImpl extends ServiceImpl<StoreMapper, Store>
         String storeName = storeQueryRequest.getStoreName();
         String address = storeQueryRequest.getAddress();
         String contactPhone = storeQueryRequest.getContactPhone();
-        Date openTime = storeQueryRequest.getOpenTime();
-        Date closeTime = storeQueryRequest.getCloseTime();
+        LocalTime openTime = storeQueryRequest.getOpenTime();
+        LocalTime closeTime = storeQueryRequest.getCloseTime();
         Integer status = storeQueryRequest.getStatus();
         String sortField = storeQueryRequest.getSortField();
         String sortOrder = storeQueryRequest.getSortOrder();

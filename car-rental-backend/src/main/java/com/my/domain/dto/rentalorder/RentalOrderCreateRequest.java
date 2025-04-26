@@ -8,6 +8,7 @@ import java.util.Date;
 @Data
 public class RentalOrderCreateRequest implements Serializable {
 
+
     /**
      * 车辆ID
      */
@@ -24,7 +25,17 @@ public class RentalOrderCreateRequest implements Serializable {
     private Date endTime;
 
     /**
-     * 总租赁天数
+     * 实际取车时间
+     */
+    private Date actualStartTime;
+
+    /**
+     * 实际归还时间
+     */
+    private Date actualReturnTime;
+
+    /**
+     * 租赁天数
      */
     private Integer totalDays;
 
@@ -34,19 +45,19 @@ public class RentalOrderCreateRequest implements Serializable {
     private Integer needDriver;
 
     /**
-     * 司机ID（如选择需要司机）
+     * 司机ID
      */
     private Long driverId;
 
     /**
-     * 取车地点
+     * 取车地点门店
      */
-    private String pickupLocation;
+    private Long pickupStoreId;
 
     /**
-     * 还车地点
+     * 还车地点门店
      */
-    private String returnLocation;
+    private Long returnStoreId;
 
     /**
      * 备注

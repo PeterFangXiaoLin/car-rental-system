@@ -27,10 +27,10 @@ myAxios.interceptors.response.use(
     if (data.code === 40100) {
       if (
         !response.request.responseURL.includes('user/get/login') &&
-        !window.location.href.includes('user/login')
+        !window.location.href.includes('auth/login')
       ) {
         ElMessage.warning('请先登录')
-        window.location.href = `user/login?redirect=${window.location.href}`
+        window.location.href = `/auth/login?redirect=${window.location.href}`
       }
     }
     return response

@@ -367,16 +367,18 @@ class CarRentalBackendApplicationTests {
 
         List<Store> storeList = new ArrayList<>();
 
-        for (Element a : aList) {
-            String href = a.attr("href");
-            Document doc = Jsoup.connect(href).get();
-            Elements ddLinks = doc.select("ul.depUlClass dd > a");
-            for (Element ddLink : ddLinks) {
-                String href1 = ddLink.attr("href");
+        try {
+            for (Element a : aList) {
+                String href = a.attr("href");
+                String cityName = a.text();
+                Document doc = Jsoup.connect(href).get();
+                Elements ddLinks = doc.select("ul.depUlClass dd > a");
+                for (Element ddLink : ddLinks) {
+                    String href1 = ddLink.attr("href");
 
-                Matcher matcher = pattern.matcher(href1);
-                if (matcher.find()) {
-                    try {
+                    Matcher matcher = pattern.matcher(href1);
+                    if (matcher.find()) {
+
                         String deptId = matcher.group(1);
                         String body = HttpRequest.post(urlTemplate)
                                 .header(Header.REFERER, String.format("https://service.zuche.com/dept/detail.do?deptId=%s", deptId))
@@ -397,16 +399,17 @@ class CarRentalBackendApplicationTests {
                         Store store = new Store();
                         store.setStoreName(deptName);
                         store.setAddress(deptAddress);
+                        store.setCityName(cityName);
                         store.setMobile(deptMobile);
                         store.setImages(imgUrls);
                         store.setLongitude(new BigDecimal(deptLon));
                         store.setLatitude(new BigDecimal(deptLat));
                         storeList.add(store);
-                    } catch (Exception e) {
-                        log.info("爬取失败，跳过此条");
                     }
                 }
             }
+        } catch (Exception e) {
+            log.info("爬取失败，跳过此条");
         }
 
         storeService.saveBatch(storeList);
@@ -423,7 +426,7 @@ class CarRentalBackendApplicationTests {
 //                        .header(Header.CONTENT_TYPE, "application/x-www-form-urlencoded")
 //                        .header(Header.COOKIE, "aliyungf_tc=3aaf8fe1dc883b9538af468e587cd675a09f918dc0a55bf415e5897c3d579c68; lctuid=37b58ca0320755b01340cef1c7bc2ed8; acw_tc=f5bc4421-16fd-4e02-bc68-d908ee1b3054907b9b4602d24acc7ac211f4c2ec945a; intranet-sessionid=a9e49952-9e78-4900-b022-d4a142cf974b")
 //                        .header(Header.ORIGIN, "https://service.zuche.com")
-                        .header(Header.REFERER, "https://service.zuche.com/dept/detail.do?deptId=1248")
+                .header(Header.REFERER, "https://service.zuche.com/dept/detail.do?deptId=1248")
 //                        .header(Header.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36")
 //                        .header("Sec-Fetch-Dest", "empty")
 //                        .header("Sec-Fetch-Mode", "cors")
@@ -431,9 +434,9 @@ class CarRentalBackendApplicationTests {
 //                        .header("sec-ch-ua", "\"Google Chrome\";v=\"135\", \"Not-A.Brand\";v=\"8\", \"Chromium\";v=\"135\"")
 //                        .header("sec-ch-ua-mobile", "?0")
 //                        .header("sec-ch-ua-platform", "\"Windows\"")
-                        .body("data={\"deptId\":\"1248\"}")
-                        .execute()
-                        .body());
+                .body("data={\"deptId\":\"1248\"}")
+                .execute()
+                .body());
 
     }
 

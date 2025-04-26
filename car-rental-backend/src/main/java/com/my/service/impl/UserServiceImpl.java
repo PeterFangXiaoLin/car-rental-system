@@ -147,10 +147,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         stringRedisTemplate.delete(redisKey);
 
         // 3. 账户不能重复
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("userAccount", userAccount);
-        long count = this.baseMapper.selectCount(queryWrapper);
-        if (count > 0) {
+        boolean isExists = this.lambdaQuery().eq(User::getUserAccount, userAccount).exists();
+        if (isExists) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号已存在");
         }
 

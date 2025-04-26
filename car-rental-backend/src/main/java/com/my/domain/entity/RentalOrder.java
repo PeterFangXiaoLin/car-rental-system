@@ -1,11 +1,11 @@
 package com.my.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 租赁订单表
@@ -58,7 +58,7 @@ public class RentalOrder implements Serializable {
     /**
      * 日租金
      */
-    private BigDecimal dailyPrice;
+    private BigDecimal vehicleDailyPrice;
 
     /**
      * 租赁天数
@@ -68,32 +68,7 @@ public class RentalOrder implements Serializable {
     /**
      * 总金额
      */
-    private BigDecimal totalAmount;
-
-    /**
-     * 押金
-     */
-    private BigDecimal deposit;
-
-    /**
-     * 车辆损坏赔偿金额
-     */
-    private BigDecimal damageAmount;
-
-    /**
-     * 额外费用(如超时、违章等)
-     */
-    private BigDecimal extraFee;
-
-    /**
-     * 额外费用说明
-     */
-    private String extraFeeDesc;
-
-    /**
-     * 最终结算金额
-     */
-    private BigDecimal finalAmount;
+    private BigDecimal vehicleTotalAmount;
 
     /**
      * 是否需要司机：0-不需要，1-需要
@@ -108,12 +83,17 @@ public class RentalOrder implements Serializable {
     /**
      * 司机服务费用/天
      */
-    private BigDecimal driverPrice;
+    private BigDecimal driverDailyPrice;
 
     /**
      * 司机服务总费用
      */
     private BigDecimal driverTotalAmount;
+
+    /**
+     * 订单总金额
+     */
+    private BigDecimal totalAmount;
 
     /**
      * 订单状态：0-待支付，1-已支付待取车，2-已取车，3-已还车，4-已完成，5-已取消
@@ -131,16 +111,6 @@ public class RentalOrder implements Serializable {
     private Date paymentTime;
 
     /**
-     * 支付方式
-     */
-    private String paymentMethod;
-
-    /**
-     * 支付交易号
-     */
-    private String transactionId;
-
-    /**
      * 退款金额
      */
     private BigDecimal refundAmount;
@@ -151,29 +121,14 @@ public class RentalOrder implements Serializable {
     private Date refundTime;
 
     /**
-     * 退款交易号
-     */
-    private String refundTransactionId;
-
-    /**
      * 取车地点
      */
-    private String pickupLocation;
+    private Long pickupStoreId;
 
     /**
      * 还车地点
      */
-    private String returnLocation;
-
-    /**
-     * 取车操作人ID
-     */
-    private Long pickupOperatorId;
-
-    /**
-     * 还车操作人ID
-     */
-    private Long returnOperatorId;
+    private Long returnStoreId;
 
     /**
      * 取消原因
@@ -189,16 +144,6 @@ public class RentalOrder implements Serializable {
      * 订单支付过期时间
      */
     private Date expireTime;
-
-    /**
-     * 起始油量
-     */
-    private String fuelLevelStart;
-
-    /**
-     * 结束油量
-     */
-    private String fuelLevelEnd;
 
     /**
      * 备注

@@ -12,7 +12,9 @@ import * as storeController from './storeController'
 import * as userController from './userController'
 import * as vehicleController from './vehicleController'
 import * as vehicleBrandController from './vehicleBrandController'
+import * as vehicleBrowsingHistoryController from './vehicleBrowsingHistoryController'
 import * as vehicleModelController from './vehicleModelController'
+import * as vehicleFavoriteController from './vehicleFavoriteController'
 import * as vehicleTypeDictController from './vehicleTypeDictController'
 export default {
   cityController,
@@ -25,6 +27,8 @@ export default {
   userController,
   vehicleController,
   vehicleBrandController,
+  vehicleBrowsingHistoryController,
   vehicleModelController,
+  vehicleFavoriteController,
   vehicleTypeDictController,
 }

@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.my.domain.vo.VehicleVO;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
 * @author Administrator
 * @description 针对表【vehicle(车辆表)】的数据库操作Mapper
@@ -23,6 +25,30 @@ public interface VehicleMapper extends BaseMapper<Vehicle> {
      * @return
      */
     Page<VehicleVO> selectPageVO(Page<VehicleVO> page, @Param("req") VehicleQueryRequest vehicleQueryRequest);
+
+    /**
+     * 热门车辆
+     *
+     * @param count
+     * @return
+     */
+    List<VehicleVO> selectHotVehicles(@Param("count") int count);
+
+    /**
+     * 随机车辆
+     *
+     * @param count
+     * @return
+     */
+    List<VehicleVO> selectRandomVehicles(@Param("count") int count);
+
+    /**
+     * 热门车辆ID
+     *
+     * @param limit
+     * @return
+     */
+    List<Long> selectHotVehicleIds(@Param("limit") int limit);
 }
 
 

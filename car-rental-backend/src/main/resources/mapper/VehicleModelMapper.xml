@@ -23,6 +23,7 @@
         select
             vehicle_model.id,
             vehicle_model.brandId,
+            vehicle_brand.brandName,
             vehicle_model.modelName,
             vehicle_model.modelLogo,
             vehicle_model.createTime

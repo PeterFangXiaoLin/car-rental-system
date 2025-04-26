@@ -71,6 +71,24 @@ export const routes = [
         },
       },
       {
+        path: 'user/history',
+        name: '浏览历史',
+        component: () => import('@/views/user/HistoryPage.vue'),
+        meta: {
+          access: ACCESS_ENUM.USER,
+          hideInMenu: true,
+        },
+      },
+      {
+        path: 'user/favorite',
+        name: '我的收藏',
+        component: () => import('@/views/user/FavoritePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.USER,
+          hideInMenu: true,
+        },
+      },
+      {
         path: 'user/manage',
         name: '用户管理',
         component: () => import('@/views/admin/UserManagePage.vue'),
@@ -82,6 +100,14 @@ export const routes = [
         path: 'driver/manage',
         name: '司机管理',
         component: () => import('@/views/driver/DriverManagePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+      {
+        path: 'store/manage',
+        name: '门店管理',
+        component: () => import('@/views/store/StoreManagePage.vue'),
         meta: {
           access: ACCESS_ENUM.ADMIN,
         },
@@ -125,7 +151,7 @@ export const routes = [
         meta: {
           access: ACCESS_ENUM.ADMIN,
         },
-      }
+      },
     ],
   },
   {

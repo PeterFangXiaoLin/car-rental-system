@@ -36,7 +36,7 @@
             <h3 class="form-section-title">预订信息</h3>
             <el-form ref="formRef" :model="orderForm" :rules="formRules" label-width="100px">
               <!-- 租车时间 -->
-              <el-form-item label="租车时间" prop="rentalPeriod" required>
+              <el-form-item label="租车时间" prop="rentalPeriod">
                 <el-date-picker
                   v-model="rentalPeriod"
                   type="daterange"
@@ -64,25 +64,18 @@
               </el-form-item>
 
               <!-- 选择司机 -->
-              <el-form-item v-if="orderForm.needDriver" label="选择司机" prop="driverId" required>
-                <el-select v-model="orderForm.driverId" placeholder="请选择司机">
-                  <el-option
-                    v-for="driver in driverOptions"
-                    :key="driver.id"
-                    :label="driver.name"
-                    :value="driver.id"
-                  />
-                </el-select>
+              <el-form-item v-if="orderForm.needDriver" label="选择司机" prop="driverId">
+                <SelectDriver v-model:driverId="orderForm.driverId" />
               </el-form-item>
 
               <!-- 取车地点 -->
-              <el-form-item label="取车地点" prop="pickupLocation" required>
-                <el-input v-model="orderForm.pickupLocation" placeholder="请输入取车地点" />
+              <el-form-item label="取车地点" prop="pickupStoreId">
+                <SelectStore v-model:store-id="orderForm.pickupStoreId" />
               </el-form-item>
 
               <!-- 还车地点 -->
-              <el-form-item label="还车地点" prop="returnLocation" required>
-                <el-input v-model="orderForm.returnLocation" placeholder="请输入还车地点" />
+              <el-form-item label="还车地点" prop="returnStoreId">
+                <SelectStore v-model:store-id="orderForm.returnStoreId" />
               </el-form-item>
 
               <!-- 备注 -->
@@ -114,7 +107,7 @@
               <el-descriptions-item label="车辆费用">
                 <div>{{ (vehicle?.dailyPrice ?? 0) * rentalDays }} 元</div>
               </el-descriptions-item>
-              <el-descriptions-item v-if="orderForm.needDriver" label="司机费用">
+              <el-descriptions-item v-if="orderForm.needDriver && orderForm.driverId" label="司机费用">
                 <div>{{ driverPrice * rentalDays }} 元</div>
               </el-descriptions-item>
               <el-descriptions-item label="总计费用" class="total-amount">
@@ -145,7 +138,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
@@ -153,6 +146,9 @@ import { getVehicleByIdUsingGet } from '@/api/vehicleController.ts'
 import { createRentalOrderUsingPost } from '@/api/rentalOrderController'
 import VehicleStatusEnum from '@/enums/VehicleStatusEnum.ts'
 import dayjs from 'dayjs'
+import SelectStore from '@/components/SelectStore.vue'
+import SelectDriver from '@/components/SelectDriver.vue'
+import { getDriverVoByIdUsingGet } from '@/api/driverController.ts'
 
 const router = useRouter()
 const route = useRoute()
@@ -183,14 +179,17 @@ const rentalDays = computed(() => {
   return end.diff(start, 'day') + 1
 })
 
-// 司机费用（示例值，实际应从API获取）
-const driverPrice = 200
+// 当前选择的司机信息
+const selectedDriver = ref<API.DriverVO | null>(null)
+
+// 司机费用（从选择的司机信息中获取）
+const driverPrice = computed(() => selectedDriver.value?.dailyPrice ?? 200)
 
 // 总价计算
 const totalPrice = computed(() => {
   let price = (vehicle.value?.dailyPrice ?? 0) * rentalDays.value
-  if (orderForm.value.needDriver) {
-    price += driverPrice * rentalDays.value
+  if (orderForm.value.needDriver && orderForm.value.driverId) {
+    price += driverPrice.value * rentalDays.value
   }
   return price
 })
@@ -206,16 +205,16 @@ const orderForm = ref({
   startDate: today,
   endDate: tomorrow,
   needDriver: false,
-  driverId: null,
-  pickupLocation: '',
-  returnLocation: '',
+  driverId: '',
+  pickupStoreId: '',
+  returnStoreId: '',
   remark: '',
 })
 
 // 表单验证规则
 const formRules = {
-  pickupLocation: [{ required: true, message: '请输入取车地点', trigger: 'blur' }],
-  returnLocation: [{ required: true, message: '请输入还车地点', trigger: 'blur' }],
+  pickupStoreId: [{ required: true, message: '请选择取车地点', trigger: 'change' }],
+  returnStoreId: [{ required: true, message: '请选择还车地点', trigger: 'change' }],
   driverId: [{ required: true, message: '请选择司机', trigger: 'change' }],
 }
 
@@ -235,7 +234,7 @@ const handleDateChange = (dates: string[]) => {
 // 司机选择变化处理
 const handleDriverChange = (value: boolean) => {
   if (!value) {
-    orderForm.value.driverId = null
+    orderForm.value.driverId = ''
   }
 }
 
@@ -277,13 +276,16 @@ const handleSubmitOrder = async () => {
     try {
       // 构建提交数据
       const orderData: API.RentalOrderCreateRequest = {
-        vehicleId: orderForm.value.vehicleId,
-        startDate: orderForm.value.startDate,
-        endDate: orderForm.value.endDate,
+        vehicleId: Number(orderForm.value.vehicleId),
+        startTime: orderForm.value.startDate,
+        endTime: orderForm.value.endDate,
         needDriver: orderForm.value.needDriver ? 1 : 0, // 将布尔值转换为数字
-        driverId: orderForm.value.needDriver ? Number(orderForm.value.driverId) : undefined,
-        pickupLocation: orderForm.value.pickupLocation,
-        returnLocation: orderForm.value.returnLocation,
+        driverId:
+          orderForm.value.needDriver && orderForm.value.driverId
+            ? Number(orderForm.value.driverId)
+            : undefined,
+        pickupStoreId: Number(orderForm.value.pickupStoreId),
+        returnStoreId: Number(orderForm.value.returnStoreId),
         remark: orderForm.value.remark || undefined,
       }
 

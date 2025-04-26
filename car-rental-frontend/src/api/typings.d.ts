@@ -40,6 +40,12 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseListStoreVO_ = {
+    code?: number
+    data?: StoreVO[]
+    message?: string
+  }
+
   type BaseResponseListString_ = {
     code?: number
     data?: string[]
@@ -61,6 +67,12 @@ declare namespace API {
   type BaseResponseListVehicleTypeDictVO_ = {
     code?: number
     data?: VehicleTypeDictVO[]
+    message?: string
+  }
+
+  type BaseResponseListVehicleVO_ = {
+    code?: number
+    data?: VehicleVO[]
     message?: string
   }
 
@@ -103,6 +115,18 @@ declare namespace API {
   type BaseResponsePageVehicleBrandVO_ = {
     code?: number
     data?: PageVehicleBrandVO_
+    message?: string
+  }
+
+  type BaseResponsePageVehicleBrowsingHistoryVO_ = {
+    code?: number
+    data?: PageVehicleBrowsingHistoryVO_
+    message?: string
+  }
+
+  type BaseResponsePageVehicleFavoriteVO_ = {
+    code?: number
+    data?: PageVehicleFavoriteVO_
     message?: string
   }
 
@@ -170,6 +194,23 @@ declare namespace API {
     code?: number
     data?: VehicleVO
     message?: string
+  }
+
+  type BrowsHistoryAddRequest = {
+    vehicleId?: number
+  }
+
+  type BrowsHistoryQueryRequest = {
+    current?: number
+    pageSize?: number
+    searchText?: string
+    sortField?: string
+    sortOrder?: string
+  }
+
+  type checkVehicleFavoriteUsingGETParams = {
+    /** vehicleId */
+    vehicleId: number
   }
 
   type CityAddRequest = {
@@ -336,9 +377,28 @@ declare namespace API {
     id: number
   }
 
+  type listStoreByCityNameUsingGETParams = {
+    /** cityName */
+    cityName: string
+  }
+
   type listVehicleBrandByLetterUsingGETParams = {
     /** letter */
     letter: string
+  }
+
+  type LocalTime = {
+    hour?: number
+    minute?: number
+    nano?: number
+    second?: number
+  }
+
+  type LocalTime1 = {
+    hour?: number
+    minute?: number
+    nano?: number
+    second?: number
   }
 
   type LoginUserVO = {
@@ -426,6 +486,32 @@ declare namespace API {
     total?: number
   }
 
+  type PageVehicleBrowsingHistoryVO_ = {
+    countId?: string
+    current?: number
+    maxLimit?: number
+    optimizeCountSql?: boolean
+    orders?: OrderItem[]
+    pages?: number
+    records?: VehicleBrowsingHistoryVO[]
+    searchCount?: boolean
+    size?: number
+    total?: number
+  }
+
+  type PageVehicleFavoriteVO_ = {
+    countId?: string
+    current?: number
+    maxLimit?: number
+    optimizeCountSql?: boolean
+    orders?: OrderItem[]
+    pages?: number
+    records?: VehicleFavoriteVO[]
+    searchCount?: boolean
+    size?: number
+    total?: number
+  }
+
   type PageVehicleModelVO_ = {
     countId?: string
     current?: number
@@ -474,46 +560,36 @@ declare namespace API {
     driverId?: number
     endTime?: string
     needDriver?: number
-    pickupLocation?: string
+    pickupStoreId?: number
     remark?: string
-    returnLocation?: string
+    returnStoreId?: number
     startTime?: string
     totalDays?: number
     vehicleId?: number
   }
 
   type StoreCreateRequest = {
-    adcode?: string
     address?: string
-    city?: string
-    citycode?: string
-    closeTime?: string
-    contactPhone?: string
-    description?: string
-    district?: string
+    cityName?: string
+    closeTime?: LocalTime1
     images?: string
     latitude?: number
     longitude?: number
-    openTime?: string
-    province?: string
+    mobile?: string
+    openTime?: LocalTime1
     status?: number
     storeName?: string
   }
 
   type StoreQueryRequest = {
-    adcode?: string
     address?: string
-    city?: string
-    citycode?: string
-    closeTime?: string
+    cityName?: string
+    closeTime?: LocalTime1
     contactPhone?: string
     current?: number
-    description?: string
-    district?: string
     id?: number
-    openTime?: string
+    openTime?: LocalTime1
     pageSize?: number
-    province?: string
     sortField?: string
     sortOrder?: string
     status?: number
@@ -521,39 +597,29 @@ declare namespace API {
   }
 
   type StoreUpdateRequest = {
-    adcode?: string
     address?: string
-    city?: string
-    citycode?: string
-    closeTime?: string
-    contactPhone?: string
-    description?: string
-    district?: string
+    cityName?: string
+    closeTime?: LocalTime1
     id?: number
     images?: string
     latitude?: number
     longitude?: number
-    openTime?: string
-    province?: string
+    mobile?: string
+    openTime?: LocalTime1
     status?: number
     storeName?: string
   }
 
   type StoreVO = {
-    adcode?: string
     address?: string
-    city?: string
-    citycode?: string
-    closeTime?: string
-    contactPhone?: string
-    description?: string
-    district?: string
+    cityName?: string
+    closeTime?: LocalTime
     id?: number
     images?: string
     latitude?: number
     longitude?: number
-    openTime?: string
-    province?: string
+    mobile?: string
+    openTime?: LocalTime
     status?: number
     storeName?: string
   }
@@ -701,6 +767,50 @@ declare namespace API {
     createTime?: string
     firstLetter?: string
     id?: number
+  }
+
+  type VehicleBrowsingHistoryVO = {
+    brandId?: number
+    brandName?: string
+    browseTime?: string
+    dailyPrice?: number
+    description?: string
+    energyTypeId?: number
+    energyTypeName?: string
+    id?: number
+    imageUrl?: string
+    modelId?: number
+    modelName?: string
+    productionYear?: number
+    seatCount?: number
+    status?: number
+    vehicleId?: number
+    vehicleName?: string
+    vehicleTypeId?: number
+    vehicleTypeName?: string
+  }
+
+  type VehicleFavoriteAddRequest = {
+    vehicleId?: number
+  }
+
+  type VehicleFavoriteCancelRequest = {
+    vehicleId?: number
+  }
+
+  type VehicleFavoriteQueryRequest = {
+    current?: number
+    pageSize?: number
+    searchText?: string
+    sortField?: string
+    sortOrder?: string
+  }
+
+  type VehicleFavoriteVO = {
+    createTime?: string
+    id?: number
+    userId?: number
+    vehicleId?: number
   }
 
   type VehicleModelAddRequest = {
