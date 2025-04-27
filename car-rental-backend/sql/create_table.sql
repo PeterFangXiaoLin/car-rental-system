@@ -140,8 +140,10 @@ CREATE TABLE IF NOT EXISTS `rental_order`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='租赁订单表';
 
+drop table if exists `vehicle_comment`;
+
 -- 评论表
-CREATE TABLE IF NOT EXISTS `vehicle_comment`
+CREATE TABLE IF NOT EXISTS `comment`
 (
     `id`             bigint       NOT NULL AUTO_INCREMENT COMMENT '评论ID',
     `orderId`        bigint       NOT NULL COMMENT '订单ID',
@@ -164,7 +166,7 @@ CREATE TABLE IF NOT EXISTS `vehicle_comment`
     KEY `idx_createTime` (`createTime`),
     KEY `idx_vehicleRating` (`vehicleRating`)
 ) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='车辆评论表';
+  DEFAULT CHARSET = utf8mb4 COMMENT ='评论表';
 
 -- 评论回复表
 CREATE TABLE IF NOT EXISTS `comment_reply`
