@@ -27,9 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.my.constant.RedisConstant.VEHICLE_LOCK_PREFIX;
 
@@ -62,7 +62,7 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
     private AlipayConfigProperties alipayConfigProperties;
     
     @Resource
-    private RabbitMQService rabbitMQService;
+    private OrderDelayQueueService orderDelayQueueService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -100,8 +100,8 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单创建失败");
             }
             
-            // 发送延迟消息，30分钟后自动取消订单
-            rabbitMQService.sendOrderDelayMessage(rentalOrder.getId());
+            // 使用Redisson的延迟队列，添加30分钟后自动取消的订单
+            orderDelayQueueService.addOrderToDelayQueue(rentalOrder.getId());
             
             return rentalOrder.getId();
         }
