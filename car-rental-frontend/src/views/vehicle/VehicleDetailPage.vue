@@ -71,8 +71,71 @@
             </el-button>
           </el-space>
         </el-card>
+
+        <!-- 猜你喜欢 -->
+        <el-card header="猜你喜欢" class="mt-4" v-loading="recommendLoading">
+          <div v-if="recommendedVehicles.length > 0">
+            <el-scrollbar height="400px">
+              <div v-for="item in recommendedVehicles" :key="item.id" class="recommend-item mb-3 cursor-pointer" @click="goToVehicleDetail(item.id)">
+                <el-row :gutter="8">
+                  <el-col :span="8">
+                    <el-image :src="item.imageUrl" fit="cover" style="width: 100%; height: 60px; border-radius: 4px;" />
+                  </el-col>
+                  <el-col :span="16">
+                    <div class="text-sm font-bold truncate">{{ item.name }}</div>
+                    <div class="text-xs text-gray-500 truncate">{{ item.brandName }} {{ item.modelName }}</div>
+                    <div class="text-xs color-#f56c6c font-bold">¥{{ item.dailyPrice }}/天</div>
+                  </el-col>
+                </el-row>
+              </div>
+            </el-scrollbar>
+          </div>
+          <el-empty v-else description="暂无推荐车辆" />
+        </el-card>
       </el-col>
     </el-row>
+
+    <!-- 评论区 -->
+    <el-card header="用户评价" class="mb-4">
+      <div v-loading="commentsLoading">
+        <div v-if="comments.length > 0">
+          <div v-for="comment in comments" :key="comment.id" class="comment-item py-3 border-b border-gray-200">
+            <el-row>
+              <el-col :span="2">
+                <el-avatar :src="comment.userAvatar" :size="50">
+                  {{ comment.userName?.charAt(0) }}
+                </el-avatar>
+              </el-col>
+              <el-col :span="22">
+                <div class="flex justify-between">
+                  <div class="font-bold">{{ comment.userName }}</div>
+                  <div class="text-gray-500 text-sm">{{ comment.createTime }}</div>
+                </div>
+                <div class="my-2">
+                  <el-rate
+                    v-model="comment.vehicleRating"
+                    disabled
+                    show-score
+                    text-color="#ff9900"
+                  />
+                </div>
+                <div class="my-2">{{ comment.content }}</div>
+                <div v-if="comment.images && comment.images.length > 0" class="mt-2 flex gap-2">
+                  <el-image
+                    v-for="(img, index) in comment.images"
+                    :key="index"
+                    :src="img"
+                    style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;"
+                    :preview-src-list="comment.images"
+                  />
+                </div>
+              </el-col>
+            </el-row>
+          </div>
+        </div>
+        <el-empty v-else description="暂无评价" />
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -82,14 +145,15 @@ import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { ElMessage } from 'element-plus'
 import { ShoppingCart, Star } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
-import { getVehicleByIdUsingGet } from '@/api/vehicleController.ts'
+import { getVehicleByIdUsingGet, recommendVehicleUsingPost } from '@/api/vehicleController.ts'
 import VehicleStatusEnum from '@/enums/VehicleStatusEnum.ts'
 import {
   addVehicleFavoriteUsingPost,
   cancelVehicleFavoriteUsingPost,
   checkVehicleFavoriteUsingGet
 } from "@/api/vehicleFavoriteController.ts";
-import {addOrUpdateBrowsHistoryUsingPost} from "@/api/vehicleBrowsingHistoryController.ts";
+import { addOrUpdateBrowsHistoryUsingPost } from "@/api/vehicleBrowsingHistoryController.ts";
+import { listCommentByVehicleIdUsingGet } from "@/api/commentController.ts";
 
 interface Props {
   id: string | number
@@ -103,6 +167,14 @@ const vehicle = ref<API.VehicleVO>()
 const loading = ref(false)
 const isFavorite = ref(false)
 const favoriteLoading = ref(false)
+
+// 评论相关
+const comments = ref<API.CommentVO[]>([])
+const commentsLoading = ref(false)
+
+// 推荐车辆相关
+const recommendedVehicles = ref<API.VehicleVO[]>([])
+const recommendLoading = ref(false)
 
 // 获取车辆详情
 const fetchPictureDetail = async () => {
@@ -121,6 +193,48 @@ const fetchPictureDetail = async () => {
   }
 }
 
+// 获取评论列表
+const fetchComments = async () => {
+  commentsLoading.value = true
+  try {
+    const res = await listCommentByVehicleIdUsingGet({ vehicleId: props.id })
+    if (res.data.code === 0 && res.data.data) {
+      comments.value = res.data.data
+    } else {
+      ElMessage.error('获取评论失败：' + res.data.message)
+    }
+  } catch (error) {
+    ElMessage.error('获取评论失败：' + error)
+  } finally {
+    commentsLoading.value = false
+  }
+}
+
+// 获取推荐车辆
+const fetchRecommendedVehicles = async () => {
+  recommendLoading.value = true
+  try {
+    const res = await recommendVehicleUsingPost()
+    if (res.data.code === 0 && res.data.data) {
+      // 过滤掉当前车辆
+      recommendedVehicles.value = res.data.data.filter(item => item.id != props.id).slice(0, 5)
+    } else {
+      ElMessage.error('获取推荐车辆失败：' + res.data.message)
+    }
+  } catch (error) {
+    ElMessage.error('获取推荐车辆失败：' + error)
+  } finally {
+    recommendLoading.value = false
+  }
+}
+
+// 跳转到车辆详情页
+const goToVehicleDetail = (id: string | undefined) => {
+  if (id) {
+    router.push(`/vehicle/detail/${id}`)
+  }
+}
+
 // 记录浏览历史
 const recordBrowsingHistory = async () => {
   // 如果用户已登录，记录浏览历史
@@ -128,7 +242,7 @@ const recordBrowsingHistory = async () => {
     try {
       await addOrUpdateBrowsHistoryUsingPost({ vehicleId: props.id })
     } catch (error) {
-      console.error('记录浏览历史失败：', error)
+      ElMessage.error('记录浏览历史失败：' + error)
     }
   }
 }
@@ -143,7 +257,7 @@ const checkFavoriteStatus = async () => {
         isFavorite.value = !!res.data.data
       }
     } catch (error) {
-      console.error('检查收藏状态失败：', error)
+      ElMessage.error('检查收藏状态失败：' + error)
     }
   }
 }
@@ -226,11 +340,27 @@ onMounted(() => {
   fetchPictureDetail()
   recordBrowsingHistory()
   checkFavoriteStatus()
+  fetchComments()
+  fetchRecommendedVehicles()
 })
 </script>
 
 <style scoped>
 #vehicleDetailPage {
   margin-bottom: 16px;
+}
+
+.recommend-item {
+  transition: all 0.3s;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.recommend-item:hover {
+  background-color: #f5f7fa;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
 }
 </style>

@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,7 +55,7 @@ public class RentalOrderController{
 
     @ApiOperation(value = "支付订单")
     @PostMapping("/pay")
-    public BaseResponse<String> payOrder(@RequestBody RentalOrderPayRequest payRequest) {
+    public void payOrder(@RequestBody RentalOrderPayRequest payRequest, HttpServletResponse httpServletResponse) {
         if (payRequest == null || payRequest.getOrderId() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单参数错误");
         }
@@ -80,15 +82,18 @@ public class RentalOrderController{
             alipayRequest.setBizContent(bizContent);
             
             // 调用支付宝API
+            // 调用阿里的SDK生成表单
+            // 会收到支付宝的响应，响应的是一个页面，一开始是登陆，然后显示金额，让用户输入密码进行付款
             AlipayTradePagePayResponse response = alipayClient.pageExecute(alipayRequest);
             
             // 处理响应
             if (response.isSuccess()) {
-                // 更新订单状态为支付中
-                rentalOrderService.updateOrderPayStatus(payRequest.getOrderId(), 1);
-                
                 // 返回支付表单
-                return success(response.getBody());
+                httpServletResponse.setContentType("text/html;charset=UTF-8");
+                // 直接将完整的表单html输出到页面
+                httpServletResponse.getWriter().write(response.getBody());
+                httpServletResponse.getWriter().flush();
+                httpServletResponse.getWriter().close();
             } else {
                 log.error("生成支付订单失败: {}", response.getMsg());
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成支付订单失败");
@@ -96,6 +101,8 @@ public class RentalOrderController{
         } catch (AlipayApiException e) {
             log.error("调用支付宝接口异常", e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "支付系统异常");
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "响应写入失败");
         }
     }
     

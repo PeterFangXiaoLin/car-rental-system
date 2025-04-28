@@ -27,4 +27,52 @@
         images,createTime,updateTime,
         isDelete
     </sql>
+    <select id="selectCommentVOPage" resultType="com.my.domain.vo.CommentVO">
+        SELECT
+            comment.id,
+            comment.orderId,
+            comment.userId,
+            user.userName as userName,
+            user.avatarUrl as userAvatar,
+            comment.vehicleId,
+            vehicle.name as vehicleName,
+            comment.driverId,
+            comment.content,
+            comment.vehicleRating,
+            comment.driverRating,
+            comment.commentTime,
+            comment.images,
+            comment.createTime,
+        FROM
+            comment
+        INNER JOIN vehicle ON comment.vehicleId = vehicle.id AND vehicle.isDelete = 0
+        INNER JOIN user ON comment.userId = user.id AND user.isDelete = 0
+        INNER JOIN driver ON comment.driverId = driver.id AND driver.isDelete = 0
+        WHERE comment.isDelete = 0
+        <if test="req.vehicleId!= null">
+            AND comment.vehicleId = #{req.vehicleId}
+        </if>
+        <if test="req.userId!= null">
+            AND comment.userId = #{req.userId}
+        </if>
+        <if test="req.driverId!= null">
+            AND comment.driverId = #{req.driverId}
+        </if>
+        <if test="req.orderId!= null">
+            AND comment.orderId = #{req.orderId}
+        </if>
+        <if test="req.searchText!= null and req.searchText!= ''">
+            and (
+                comment.content like concat('%', #{req.searchText}, '%')
+                or user.userName like concat('%', #{req.searchText}, '%')
+                or vehicle.name like concat('%', #{req.searchText}, '%')
+            )
+        </if>
+        <if test="req.sortField != null and req.sortField!= ''">
+            order by #{req.sortField}
+            <if test="req.sortOrder!= null and req.sortOrder == 'descend'">
+                desc
+            </if>
+        </if>
+    </select>
 </mapper>

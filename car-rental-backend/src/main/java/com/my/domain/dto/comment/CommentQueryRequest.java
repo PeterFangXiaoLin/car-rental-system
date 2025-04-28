@@ -33,14 +33,9 @@ public class CommentQueryRequest extends PageRequest implements Serializable {
     private Long orderId;
 
     /**
-     * 评分最小值
+     * 关键词
      */
-    private Integer minRating;
-
-    /**
-     * 评分最大值
-     */
-    private Integer maxRating;
+    private String searchText;
 
     private static final long serialVersionUID = 1L;
 } 

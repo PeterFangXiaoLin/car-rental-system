@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,6 +60,9 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
 
     @Resource
     private AlipayConfigProperties alipayConfigProperties;
+    
+    @Resource
+    private RabbitMQService rabbitMQService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -95,6 +99,10 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
             if (!saveResult) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单创建失败");
             }
+            
+            // 发送延迟消息，30分钟后自动取消订单
+            rabbitMQService.sendOrderDelayMessage(rentalOrder.getId());
+            
             return rentalOrder.getId();
         }
     }
@@ -201,6 +209,49 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
         if (!storesExist) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "取车或还车门店不存在");
         }
+    }
+
+    /**
+     * 取消未支付订单
+     * @param orderId 订单ID
+     * @return 是否成功取消
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean cancelUnpaidOrder(Long orderId) {
+        RentalOrder order = this.getById(orderId);
+        if (order == null) {
+            log.error("取消订单失败，订单不存在: {}", orderId);
+            return false;
+        }
+        
+        // 只有未支付的订单才能被取消
+        if (!OrderStatusEnum.UNPAID.getValue().equals(order.getStatus()) || 
+            !PaymentStatusEnum.UNPAID.getValue().equals(order.getPaymentStatus())) {
+            log.error("取消订单失败，订单状态不是未支付: {}", orderId);
+            return false;
+        }
+        
+        // 更新订单状态为已取消
+        order.setStatus(OrderStatusEnum.CANCELLED.getValue());
+        
+        // 释放车辆资源
+        Long vehicleId = order.getVehicleId();
+        String lockKey = VEHICLE_LOCK_PREFIX + vehicleId;
+        synchronized (lockKey.intern()) {
+            Vehicle vehicle = vehicleService.getById(vehicleId);
+            // 确保车辆状态是已租出
+            if (vehicle != null && VehicleStatusEnum.RENTED.getValue().equals(vehicle.getStatus())) {
+                vehicle.setStatus(VehicleStatusEnum.AVAILABLE.getValue());
+                boolean updateResult = vehicleService.updateById(vehicle);
+                if (!updateResult) {
+                    log.error("取消订单失败，车辆状态更新失败: {}", vehicleId);
+                    throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆状态更新失败");
+                }
+            }
+        }
+        
+        return this.updateById(order);
     }
 }
 

@@ -3,6 +3,7 @@
 // API 更新时间：
 // API 唯一标识：
 import * as cityController from './cityController'
+import * as commentController from './commentController'
 import * as driverController from './driverController'
 import * as energyTypeDictController from './energyTypeDictController'
 import * as fileUploadController from './fileUploadController'
@@ -18,6 +19,7 @@ import * as vehicleFavoriteController from './vehicleFavoriteController'
 import * as vehicleTypeDictController from './vehicleTypeDictController'
 export default {
   cityController,
+  commentController,
   driverController,
   energyTypeDictController,
   fileUploadController,

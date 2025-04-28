@@ -51,4 +51,11 @@ public interface RentalOrderService extends IService<RentalOrder> {
      * @return 订单分页结果
      */
     Page<RentalOrderVO> pageRentalOrder(RentalOrderPageRequest pageRequest, HttpServletRequest request);
+    
+    /**
+     * 取消未支付订单
+     * @param orderId 订单ID
+     * @return 是否成功取消
+     */
+    boolean cancelUnpaidOrder(Long orderId);
 }

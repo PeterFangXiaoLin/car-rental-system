@@ -15,10 +15,7 @@ import com.my.domain.entity.Vehicle;
 import com.my.domain.vo.CommentVO;
 import com.my.domain.vo.LoginUserVO;
 import com.my.exception.BusinessException;
-import com.my.mapper.CommentMapper;
-import com.my.mapper.DriverMapper;
-import com.my.mapper.UserMapper;
-import com.my.mapper.VehicleMapper;
+import com.my.mapper.*;
 import com.my.service.CommentService;
 import com.my.service.UserService;
 import cn.hutool.core.bean.BeanUtil;
@@ -44,6 +41,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
     private CommentMapper commentMapper;
 
     @Resource
+    private RentalOrderMapper rentalOrderMapper;
+
+    @Resource
     private UserMapper userMapper;
 
     @Resource
@@ -62,14 +62,16 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         }
         
         // 获取当前登录用户
-        LoginUserVO loginUserVO = userService.getLoginUser(request);
-        if (loginUserVO == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        LoginUserVO loginUser = userService.getLoginUser(request);
+
+        // 校验订单是否存在
+        Long orderId = commentAddRequest.getOrderId();
+        if (orderId == null || orderId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单ID不能为空");
         }
-        // 获取用户完整信息
-        User loginUser = userMapper.selectById(loginUserVO.getId());
-        if (loginUser == null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        // 检查订单是否存在
+        if (rentalOrderMapper.selectById(orderId) == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "订单不存在");
         }
 
         // 校验车辆是否存在
@@ -91,13 +93,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         }
 
         // 组装评论对象
-        Comment comment = new Comment();
-        BeanUtil.copyProperties(commentAddRequest, comment);
+        Comment comment = BeanUtil.toBean(commentAddRequest, Comment.class);
         comment.setUserId(loginUser.getId());
         comment.setCommentTime(new Date());
-        comment.setCreateTime(new Date());
-        comment.setUpdateTime(new Date());
-        comment.setIsDelete(0);
 
         // 插入数据
         boolean saveResult = this.save(comment);
@@ -110,23 +108,18 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
 
     @Override
     public Boolean deleteComment(DeleteRequest deleteRequest, HttpServletRequest request) {
-        if (deleteRequest == null || deleteRequest.getId() <= 0) {
+        if (deleteRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        
+        Long id = deleteRequest.getId();
+        if (id == null || id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
         // 获取当前登录用户
-        LoginUserVO loginUserVO = userService.getLoginUser(request);
-        if (loginUserVO == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        // 获取用户完整信息
-        User loginUser = userMapper.selectById(loginUserVO.getId());
-        if (loginUser == null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
-        }
+        LoginUserVO loginUser = userService.getLoginUser(request);
         
         // 获取评论
-        Long id = deleteRequest.getId();
         Comment comment = this.getById(id);
         if (comment == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "评论不存在");
@@ -153,15 +146,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         }
         
         // 获取当前登录用户
-        LoginUserVO loginUserVO = userService.getLoginUser(request);
-        if (loginUserVO == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        // 获取用户完整信息
-        User loginUser = userMapper.selectById(loginUserVO.getId());
-        if (loginUser == null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在");
-        }
+        LoginUserVO loginUser = userService.getLoginUser(request);
         
         // 获取评论
         Long id = commentUpdateRequest.getId();
@@ -176,9 +161,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         }
         
         // 更新评论
-        Comment updateComment = new Comment();
-        BeanUtil.copyProperties(commentUpdateRequest, updateComment);
-        updateComment.setUpdateTime(new Date());
+        Comment updateComment = BeanUtil.toBean(commentUpdateRequest, Comment.class);
         
         boolean result = this.updateById(updateComment);
         if (!result) {
@@ -207,61 +190,16 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         if (commentQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        
-        // 构建查询条件
-        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        
-        // 按条件筛选
-        Long userId = commentQueryRequest.getUserId();
-        Long vehicleId = commentQueryRequest.getVehicleId();
-        Long driverId = commentQueryRequest.getDriverId();
-        Long orderId = commentQueryRequest.getOrderId();
-        Integer minRating = commentQueryRequest.getMinRating();
-        Integer maxRating = commentQueryRequest.getMaxRating();
-        
-        if (userId != null && userId > 0) {
-            queryWrapper.eq(Comment::getUserId, userId);
-        }
-        
-        if (vehicleId != null && vehicleId > 0) {
-            queryWrapper.eq(Comment::getVehicleId, vehicleId);
-        }
-        
-        if (driverId != null && driverId > 0) {
-            queryWrapper.eq(Comment::getDriverId, driverId);
-        }
-        
-        if (orderId != null && orderId > 0) {
-            queryWrapper.eq(Comment::getOrderId, orderId);
-        }
-        
-        if (minRating != null) {
-            queryWrapper.ge(Comment::getVehicleRating, minRating).or().ge(Comment::getDriverRating, minRating);
-        }
-        
-        if (maxRating != null) {
-            queryWrapper.le(Comment::getVehicleRating, maxRating).or().le(Comment::getDriverRating, maxRating);
-        }
-        
-        // 未删除
-        queryWrapper.eq(Comment::getIsDelete, 0);
-        // 按时间倒序
-        queryWrapper.orderByDesc(Comment::getCommentTime);
-        
+
         // 分页查询
         int current = commentQueryRequest.getCurrent();
         int pageSize = commentQueryRequest.getPageSize();
-        Page<Comment> commentPage = this.page(new Page<>(current, pageSize), queryWrapper);
-        
-        // 转换为VO
-        List<CommentVO> commentVOList = commentPage.getRecords().stream()
-                .map(this::getCommentVO)
-                .collect(Collectors.toList());
-        
-        Page<CommentVO> commentVOPage = new Page<>(current, pageSize, commentPage.getTotal());
-        commentVOPage.setRecords(commentVOList);
-        
-        return commentVOPage;
+        if (current <= 0 || pageSize <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        Page<CommentVO> commentVOPage = new Page<>(current, pageSize);
+        return commentMapper.selectCommentVOPage(commentVOPage, commentQueryRequest);
     }
 
     @Override
@@ -273,7 +211,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         // 查询车辆的评论
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getVehicleId, vehicleId);
-        queryWrapper.eq(Comment::getIsDelete, 0);
         queryWrapper.orderByDesc(Comment::getCommentTime);
         
         List<Comment> commentList = this.list(queryWrapper);
@@ -290,7 +227,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
             return null;
         }
         
-        CommentVO commentVO = BeanUtil.copyProperties(comment, CommentVO.class);
+        CommentVO commentVO = BeanUtil.toBean(comment, CommentVO.class);
         
         // 获取用户信息
         Long userId = comment.getUserId();
@@ -316,7 +253,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         if (driverId != null && driverId > 0) {
             Driver driver = driverMapper.selectById(driverId);
             if (driver != null) {
-                commentVO.setDriverName(driver.getName());
+                commentVO.setDriverName(driver.getDriverName());
             }
         }
         

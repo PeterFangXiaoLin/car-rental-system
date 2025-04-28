@@ -114,6 +114,12 @@
             <version>4.34.0.ALL</version>
         </dependency>
 
+        <!-- RabbitMQ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
         <!-- 协同推荐-->
         <!-- 引入Apache Mahout推荐系统库 -->
         <dependency>
