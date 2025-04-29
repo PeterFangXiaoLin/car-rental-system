@@ -1,7 +1,6 @@
 package com.my.domain.enums;
 
 import cn.hutool.core.util.ObjUtil;
-import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
 
 @Getter
@@ -12,9 +11,9 @@ public enum VehicleStatusEnum {
     SCRAPPED("报废", 3);
 
     private final String text;
-    private final int value;
+    private final Integer value;
 
-    VehicleStatusEnum(String text, int value) {
+    VehicleStatusEnum(String text, Integer value) {
         this.text = text;  
         this.value = value;  
     }  
@@ -27,7 +26,7 @@ public enum VehicleStatusEnum {
             return null;  
         }  
         for (VehicleStatusEnum userRoleEnum : VehicleStatusEnum.values()) {
-            if (userRoleEnum.value == value) {
+            if (userRoleEnum.value.equals(value)) {
                 return userRoleEnum;
             }
         }  

@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static com.my.constant.RedisConstant.VEHICLE_LOCK_PREFIX;
 
@@ -101,7 +100,12 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
             }
             
             // 使用Redisson的延迟队列，添加30分钟后自动取消的订单
-            orderDelayQueueService.addOrderToDelayQueue(rentalOrder.getId());
+            boolean addQueueResult = orderDelayQueueService.addOrderToDelayQueue(rentalOrder.getId());
+            if (!addQueueResult) {
+                log.warn("添加订单到延迟队列失败，将在系统任务中处理，订单ID: {}", rentalOrder.getId());
+                // 这里我们不抛出异常导致事务回滚，因为订单已经创建成功
+                // 如果延迟队列失败，可以通过定时任务扫描超时未支付订单来处理
+            }
             
             return rentalOrder.getId();
         }
@@ -136,7 +140,7 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
         order.setPaymentStatus(status);
         
         // 如果支付成功，更新订单状态为已支付待取车
-        if (status == PaymentStatusEnum.PAID.getValue()) {
+        if (status.equals(PaymentStatusEnum.PAID.getValue())) {
             order.setStatus(OrderStatusEnum.PAID_UNPICKED.getValue());
         }
         
