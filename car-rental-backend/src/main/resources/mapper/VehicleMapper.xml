@@ -147,7 +147,7 @@
             GROUP BY vehicleId
         ) hotness ON v.id = hotness.vehicleId
         WHERE v.isDelete = 0
-        ORDER BY hotness.hotness DESC NULLS LAST, v.createTime DESC
+        ORDER BY IFNULL(hotness.hotness, 0) DESC, v.createTime DESC
         LIMIT #{count}
     </select>
     <select id="selectRandomVehicles" resultType="com.my.domain.vo.VehicleVO">

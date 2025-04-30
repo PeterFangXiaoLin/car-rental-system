@@ -17,24 +17,4 @@ public class RentalOrderPayRequest implements Serializable {
      * 订单ID
      */
     private Long orderId;
-
-    /**
-     * 订单编号
-     */
-    private String orderNo;
-
-    /**
-     * 订单金额
-     */
-    private BigDecimal totalAmount;
-
-    /**
-     * 订单标题
-     */
-    private String subject;
-
-    /**
-     * 订单描述
-     */
-    private String body;
 } 

@@ -2,6 +2,21 @@
 /* eslint-disable */
 import request from '@/request'
 
+/** 取消订单 POST /api/rentalOrder/cancel */
+export async function cancelRentalOrderUsingPost(
+  body: API.RentalOrderCancelRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/rentalOrder/cancel', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** 创建订单 POST /api/rentalOrder/create */
 export async function createRentalOrderUsingPost(
   body: API.RentalOrderCreateRequest,
@@ -40,17 +55,17 @@ export async function pageRentalOrderUsingPost(
   })
 }
 
-/** 支付订单 POST /api/rentalOrder/pay */
-export async function payOrderUsingPost(
-  body: API.RentalOrderPayRequest,
+/** 支付订单 GET /api/rentalOrder/pay */
+export async function payOrderUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.payOrderUsingGETParams,
   options?: { [key: string]: any }
 ) {
-  return request<API.BaseResponseString_>('/api/rentalOrder/pay', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  return request<string>('/api/rentalOrder/pay', {
+    method: 'GET',
+    params: {
+      ...params,
     },
-    data: body,
     ...(options || {}),
   })
 }

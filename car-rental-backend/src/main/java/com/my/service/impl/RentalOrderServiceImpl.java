@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.common.ErrorCode;
 import com.my.config.AlipayConfigProperties;
+import com.my.domain.dto.rentalorder.RentalOrderCancelRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCreateRequest;
 import com.my.domain.dto.rentalorder.RentalOrderPageRequest;
 import com.my.domain.entity.Driver;
@@ -256,6 +257,63 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
         }
         
         return this.updateById(order);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean cancelRentalOrder(RentalOrderCancelRequest rentalOrderCancelRequest, HttpServletRequest request) {
+        if (rentalOrderCancelRequest == null || rentalOrderCancelRequest.getOrderId() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单参数错误");
+        }
+
+        // 获取当前登录用户
+        LoginUserVO loginUser = userService.getLoginUser(request);
+        Long orderId = rentalOrderCancelRequest.getOrderId();
+
+        // 查询订单是否存在
+        RentalOrder order = this.getById(orderId);
+        if (order == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "订单不存在");
+        }
+
+        // 验证订单是否属于当前用户
+        if (!order.getUserId().equals(loginUser.getId())) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限取消该订单");
+        }
+
+        // 验证订单状态是否允许取消
+        if (!OrderStatusEnum.UNPAID.getValue().equals(order.getStatus()) ||
+           !PaymentStatusEnum.UNPAID.getValue().equals(order.getPaymentStatus())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "订单状态不允许取消");
+        }
+
+        // 释放车辆资源
+        Long vehicleId = order.getVehicleId();
+        String lockKey = VEHICLE_LOCK_PREFIX + vehicleId;
+        synchronized (lockKey.intern()) {
+            Vehicle vehicle = vehicleService.getById(vehicleId);
+            // 确保车辆状态是已租出
+            if (vehicle != null && VehicleStatusEnum.RENTED.getValue().equals(vehicle.getStatus())) {
+                vehicle.setStatus(VehicleStatusEnum.AVAILABLE.getValue());
+                boolean updateResult = vehicleService.updateById(vehicle);
+                if (!updateResult) {
+                    log.error("取消订单失败，车辆状态更新失败: {}", vehicleId);
+                    throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆状态更新失败");
+                }
+
+                // 更新订单状态为已取消
+                order.setStatus(OrderStatusEnum.CANCELLED.getValue());
+                boolean saveResult = this.updateById(order);
+                if (!saveResult) {
+                    log.error("取消订单失败，订单状态更新失败: {}", orderId);
+                    throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单状态更新失败");
+                }
+
+                return true;
+            }
+        }
+        log.error("取消订单失败，车辆状态更新失败: {}", vehicleId);
+        throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆状态更新失败");
     }
 }
 

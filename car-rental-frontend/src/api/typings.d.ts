@@ -659,9 +659,18 @@ declare namespace API {
     total?: number
   }
 
+  type payOrderUsingGETParams = {
+    /** orderId */
+    orderId: number
+  }
+
   type refreshCaptchaUsingGETParams = {
     /** captchaKey */
     captchaKey: string
+  }
+
+  type RentalOrderCancelRequest = {
+    orderId?: number
   }
 
   type RentalOrderCreateRequest = {
@@ -684,14 +693,6 @@ declare namespace API {
     searchText?: string
     sortField?: string
     sortOrder?: string
-  }
-
-  type RentalOrderPayRequest = {
-    body?: string
-    orderId?: number
-    orderNo?: string
-    subject?: string
-    totalAmount?: number
   }
 
   type RentalOrderVO = {

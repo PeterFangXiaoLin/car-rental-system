@@ -8,17 +8,19 @@
             <!-- 车辆基本信息 -->
             <div class="vehicle-info-container">
               <div class="vehicle-image">
-                <el-image :src="vehicle?.imageUrl" fit="cover" class="vehicle-thumbnail" />
+                <el-image :src="vehicle?.imageUrl" fit="cover" class="vehicle-thumbnail"/>
               </div>
               <div class="vehicle-details">
                 <h3 class="vehicle-name">{{ vehicle?.name ?? '未命名' }}</h3>
                 <el-descriptions :column="1" border size="small" class="mb-2">
                   <el-descriptions-item label="车牌号">{{
-                    vehicle?.vehicleNo ?? '-'
-                  }}</el-descriptions-item>
+                      vehicle?.vehicleNo ?? '-'
+                    }}
+                  </el-descriptions-item>
                   <el-descriptions-item label="车型">{{
-                    vehicle?.vehicleTypeName ?? '-'
-                  }}</el-descriptions-item>
+                      vehicle?.vehicleTypeName ?? '-'
+                    }}
+                  </el-descriptions-item>
                   <el-descriptions-item label="座位数">
                     {{ vehicle?.seatCount ?? '-' }}
                     <span v-if="vehicle?.seatCount">座</span>
@@ -65,17 +67,17 @@
 
               <!-- 选择司机 -->
               <el-form-item v-if="orderForm.needDriver" label="选择司机" prop="driverId">
-                <SelectDriver v-model:driverId="orderForm.driverId" />
+                <SelectDriver v-model:driverId="orderForm.driverId"/>
               </el-form-item>
 
               <!-- 取车地点 -->
               <el-form-item label="取车地点" prop="pickupStoreId">
-                <SelectStore v-model:store-id="orderForm.pickupStoreId" />
+                <SelectStore v-model:store-id="orderForm.pickupStoreId"/>
               </el-form-item>
 
               <!-- 还车地点 -->
               <el-form-item label="还车地点" prop="returnStoreId">
-                <SelectStore v-model:store-id="orderForm.returnStoreId" />
+                <SelectStore v-model:store-id="orderForm.returnStoreId"/>
               </el-form-item>
 
               <!-- 备注 -->
@@ -107,7 +109,8 @@
               <el-descriptions-item label="车辆费用">
                 <div>{{ (vehicle?.dailyPrice ?? 0) * rentalDays }} 元</div>
               </el-descriptions-item>
-              <el-descriptions-item v-if="orderForm.needDriver && orderForm.driverId" label="司机费用">
+              <el-descriptions-item v-if="orderForm.needDriver && orderForm.driverId"
+                                    label="司机费用">
                 <div>{{ driverPrice * rentalDays }} 元</div>
               </el-descriptions-item>
               <el-descriptions-item label="总计费用" class="total-amount">
@@ -138,17 +141,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { useRoute, useRouter } from 'vue-router'
-import { getVehicleByIdUsingGet } from '@/api/vehicleController.ts'
-import { createRentalOrderUsingPost } from '@/api/rentalOrderController'
+import {computed, onMounted, ref} from 'vue'
+import {useLoginUserStore} from '@/stores/useLoginUserStore.ts'
+import {ElMessage, ElMessageBox, ElLoading} from 'element-plus'
+import {useRoute, useRouter} from 'vue-router'
+import {getVehicleByIdUsingGet} from '@/api/vehicleController.ts'
+import {createRentalOrderUsingPost, payOrderUsingGet,} from '@/api/rentalOrderController'
 import VehicleStatusEnum from '@/enums/VehicleStatusEnum.ts'
 import dayjs from 'dayjs'
 import SelectStore from '@/components/SelectStore.vue'
 import SelectDriver from '@/components/SelectDriver.vue'
-import { getDriverVoByIdUsingGet } from '@/api/driverController.ts'
 
 const router = useRouter()
 const route = useRoute()
@@ -213,9 +215,9 @@ const orderForm = ref({
 
 // 表单验证规则
 const formRules = {
-  pickupStoreId: [{ required: true, message: '请选择取车地点', trigger: 'change' }],
-  returnStoreId: [{ required: true, message: '请选择还车地点', trigger: 'change' }],
-  driverId: [{ required: true, message: '请选择司机', trigger: 'change' }],
+  pickupStoreId: [{required: true, message: '请选择取车地点', trigger: 'change'}],
+  returnStoreId: [{required: true, message: '请选择还车地点', trigger: 'change'}],
+  driverId: [{required: true, message: '请选择司机', trigger: 'change'}],
 }
 
 // 禁用的日期（今天之前的日期不可选）
@@ -242,7 +244,7 @@ const handleDriverChange = (value: boolean) => {
 const fetchVehicleDetail = async () => {
   loading.value = true
   try {
-    const res = await getVehicleByIdUsingGet({ id: vehicleId.value })
+    const res = await getVehicleByIdUsingGet({id: vehicleId.value})
     if (res.data.code === 0 && res.data.data) {
       vehicle.value = res.data.data
       // 设置车辆ID到表单
@@ -276,16 +278,17 @@ const handleSubmitOrder = async () => {
     try {
       // 构建提交数据
       const orderData: API.RentalOrderCreateRequest = {
-        vehicleId: Number(orderForm.value.vehicleId),
+        vehicleId: orderForm.value.vehicleId,
         startTime: orderForm.value.startDate,
         endTime: orderForm.value.endDate,
+        totalDays: rentalDays.value,
         needDriver: orderForm.value.needDriver ? 1 : 0, // 将布尔值转换为数字
         driverId:
           orderForm.value.needDriver && orderForm.value.driverId
-            ? Number(orderForm.value.driverId)
+            ? orderForm.value.driverId
             : undefined,
-        pickupStoreId: Number(orderForm.value.pickupStoreId),
-        returnStoreId: Number(orderForm.value.returnStoreId),
+        pickupStoreId: orderForm.value.pickupStoreId,
+        returnStoreId: orderForm.value.returnStoreId,
         remark: orderForm.value.remark || undefined,
       }
 
@@ -299,11 +302,33 @@ const handleSubmitOrder = async () => {
           const res = await createRentalOrderUsingPost(orderData)
           if (res.data?.code === 0) {
             ElMessage.success('订单创建成功')
-            // 跳转到订单详情页
-            router.push({
-              path: '/order/detail',
-              query: { id: res.data?.data },
+            // 跳转到支付包支付界面
+            const orderId = res.data.data
+
+            // 显示全屏加载动画，提示用户正在跳转
+            const loadingInstance = ElLoading.service({
+              fullscreen: true,
+              text: '正在跳转到支付页面，请稍候...',
+              background: 'rgba(0, 0, 0, 0.7)'
             })
+
+            try {
+              const res = await payOrderUsingGet({orderId: orderId})
+              if (res.data) {
+                const div = document.createElement('div')
+                div.innerHTML = res.data
+                document.body.appendChild(div)
+                document.forms[document.forms.length - 1].submit()
+                loadingInstance.close()
+              } else {
+                ElMessage.error('跳转支付页面失败')
+              }
+            } catch (error) {
+              loadingInstance.close()
+              ElMessage.error('跳转支付页面失败：' + error)
+            } finally {
+              loadingInstance.close()
+            }
           } else {
             ElMessage.error('订单创建失败：' + res.data?.message)
           }

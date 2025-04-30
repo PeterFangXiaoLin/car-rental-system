@@ -2,6 +2,7 @@ package com.my.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.my.domain.dto.rentalorder.RentalOrderCancelRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCreateRequest;
 import com.my.domain.dto.rentalorder.RentalOrderPageRequest;
 import com.my.domain.entity.RentalOrder;
@@ -58,4 +59,12 @@ public interface RentalOrderService extends IService<RentalOrder> {
      * @return 是否成功取消
      */
     boolean cancelUnpaidOrder(Long orderId);
+
+    /**
+     * 取消订单
+     * @param rentalOrderCancelRequest 取消订单请求
+     * @param request 当前请求
+     * @return 是否成功取消
+     */
+    Boolean cancelRentalOrder(RentalOrderCancelRequest rentalOrderCancelRequest, HttpServletRequest request);
 }

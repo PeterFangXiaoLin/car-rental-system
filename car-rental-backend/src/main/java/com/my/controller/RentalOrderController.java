@@ -9,20 +9,20 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.my.common.BaseResponse;
 import com.my.common.ErrorCode;
 import com.my.config.AlipayConfigProperties;
+import com.my.domain.dto.rentalorder.RentalOrderCancelRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCreateRequest;
 import com.my.domain.dto.rentalorder.RentalOrderPageRequest;
 import com.my.domain.dto.rentalorder.RentalOrderPayRequest;
 import com.my.domain.entity.RentalOrder;
+import com.my.domain.entity.Vehicle;
 import com.my.domain.enums.PaymentStatusEnum;
 import com.my.domain.vo.RentalOrderVO;
 import com.my.exception.BusinessException;
 import com.my.service.RentalOrderService;
+import com.my.service.VehicleService;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -40,7 +40,10 @@ public class RentalOrderController{
 
     @Resource
     private RentalOrderService rentalOrderService;
-    
+
+    @Resource
+    private VehicleService vehicleService;
+
     @Resource
     private AlipayClient alipayClient;
     
@@ -53,13 +56,32 @@ public class RentalOrderController{
         return success(rentalOrderService.createRentalOrder(rentalOrderCreateRequest, request));
     }
 
+    @ApiOperation(value = "取消订单")
+    @PostMapping("/cancel")
+    public BaseResponse<Boolean> cancelRentalOrder(@RequestBody RentalOrderCancelRequest rentalOrderCancelRequest, HttpServletRequest request) {
+        return success(rentalOrderService.cancelRentalOrder(rentalOrderCancelRequest, request));
+    }
+
     @ApiOperation(value = "支付订单")
-    @PostMapping("/pay")
-    public void payOrder(@RequestBody RentalOrderPayRequest payRequest, HttpServletResponse httpServletResponse) {
-        if (payRequest == null || payRequest.getOrderId() == null) {
+    @GetMapping("/pay")
+    public String payOrder(@RequestParam("orderId") Long orderId, HttpServletResponse httpServletResponse) {
+        if (orderId == null || orderId <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单参数错误");
         }
-        
+
+        // 查询订单
+        RentalOrder order = rentalOrderService.getById(orderId);
+        if (order == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "订单不存在");
+        }
+
+        // 查询车辆是否存在
+        Long vehicleId = order.getVehicleId();
+        Vehicle vehicle = vehicleService.getById(vehicleId);
+        if (vehicle == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "车辆不存在");
+        }
+
         try {
             // 创建API对应的request
             AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
@@ -72,11 +94,11 @@ public class RentalOrderController{
             
             // 构建业务参数
             String bizContent = "{"
-                + "\"out_trade_no\":\"" + payRequest.getOrderNo() + "\","
+                + "\"out_trade_no\":\"" + order.getOrderNo() + "\","
                 + "\"product_code\":\"FAST_INSTANT_TRADE_PAY\","
-                + "\"total_amount\":" + payRequest.getTotalAmount() + ","
-                + "\"subject\":\"" + payRequest.getSubject() + "\","
-                + "\"body\":\"" + payRequest.getBody() + "\""
+                + "\"total_amount\":" + order.getTotalAmount() + ","
+                + "\"subject\":\"" + vehicle.getName() + "\","
+                + "\"body\":\"" + order.getRemark() + "\""
                 + "}";
             
             alipayRequest.setBizContent(bizContent);
@@ -89,11 +111,7 @@ public class RentalOrderController{
             // 处理响应
             if (response.isSuccess()) {
                 // 返回支付表单
-                httpServletResponse.setContentType("text/html;charset=UTF-8");
-                // 直接将完整的表单html输出到页面
-                httpServletResponse.getWriter().write(response.getBody());
-                httpServletResponse.getWriter().flush();
-                httpServletResponse.getWriter().close();
+                return response.getBody();
             } else {
                 log.error("生成支付订单失败: {}", response.getMsg());
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成支付订单失败");
@@ -101,8 +119,6 @@ public class RentalOrderController{
         } catch (AlipayApiException e) {
             log.error("调用支付宝接口异常", e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "支付系统异常");
-        } catch (IOException e) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "响应写入失败");
         }
     }
     
