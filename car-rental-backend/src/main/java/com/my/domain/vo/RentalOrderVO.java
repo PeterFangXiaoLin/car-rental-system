@@ -39,6 +39,11 @@ public class RentalOrderVO implements Serializable {
     private String vehicleName;
 
     /**
+     * 车辆图片
+     */
+    private String vehicleImage;
+
+    /**
      * 租赁开始时间
      */
     private Date startTime;

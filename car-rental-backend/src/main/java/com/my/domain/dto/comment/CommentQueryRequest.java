@@ -18,9 +18,19 @@ public class CommentQueryRequest extends PageRequest implements Serializable {
     private Long userId;
 
     /**
+     * 用户名
+     */
+    private String userName;
+
+    /**
      * 车辆ID
      */
     private Long vehicleId;
+
+    /**
+     * 车辆名称
+     */
+    private String vehicleName;
 
     /**
      * 司机ID
@@ -28,9 +38,19 @@ public class CommentQueryRequest extends PageRequest implements Serializable {
     private Long driverId;
 
     /**
+     * 司机名称
+     */
+    private String driverName;
+
+    /**
      * 订单ID
      */
     private Long orderId;
+
+    /**
+     * 订单编号
+     */
+    private String orderNo;
 
     /**
      * 关键词

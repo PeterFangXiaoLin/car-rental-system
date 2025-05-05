@@ -79,7 +79,9 @@ public interface VehicleService extends IService<Vehicle> {
     /**
      * 推荐车辆
      *
+     * @param vehicleId
+     * @param request
      * @return
      */
-    List<VehicleVO> recommendVehicle(HttpServletRequest request);
+    List<VehicleVO> recommendVehicle(Long vehicleId, HttpServletRequest request);
 }

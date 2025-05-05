@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.mapper.CommentReplyMapper">
+
+    <resultMap id="BaseResultMap" type="com.my.domain.entity.CommentReply">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="commentId" column="commentId" jdbcType="BIGINT"/>
+            <result property="userId" column="userId" jdbcType="BIGINT"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="parentId" column="parentId" jdbcType="BIGINT"/>
+            <result property="replyToUserId" column="replyToUserId" jdbcType="BIGINT"/>
+            <result property="images" column="images" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <resultMap id="CommentReplyVOResultMap" type="com.my.domain.vo.CommentReplyVO" extends="BaseResultMap">
+        <result property="userName" column="userName" jdbcType="VARCHAR"/>
+        <result property="userAvatar" column="userAvatar" jdbcType="VARCHAR"/>
+        <result property="replyToUserName" column="replyToUserName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,commentId,userId,
+        content,parentId,replyToUserId,
+        images,createTime,updateTime,
+        isDelete
+    </sql>
+
+    <select id="selectCommentReplyVOPage" resultMap="CommentReplyVOResultMap">
+        SELECT
+            cr.*,
+            u1.userName,
+            u1.userAvatar,
+            u2.userName as replyToUserName
+        FROM
+            comment_reply cr
+            LEFT JOIN user u1 ON cr.userId = u1.id
+            LEFT JOIN user u2 ON cr.replyToUserId = u2.id
+        <where>
+            cr.isDelete = 0
+            <if test="queryRequest.commentId != null">
+                AND cr.commentId = #{queryRequest.commentId}
+            </if>
+            <if test="queryRequest.userId != null">
+                AND cr.userId = #{queryRequest.userId}
+            </if>
+            <if test="queryRequest.parentId != null">
+                AND cr.parentId = #{queryRequest.parentId}
+            </if>
+            <if test="queryRequest.replyToUserId != null">
+                AND cr.replyToUserId = #{queryRequest.replyToUserId}
+            </if>
+            <if test="queryRequest.searchText != null and queryRequest.searchText != ''">
+                AND cr.content LIKE CONCAT('%', #{queryRequest.searchText}, '%')
+            </if>
+        </where>
+        ORDER BY cr.createTime DESC
+    </select>
+
+    <select id="selectCommentReplyVOListByCommentId" resultMap="CommentReplyVOResultMap">
+        SELECT
+            cr.*,
+            u1.userName,
+            u1.userAvatar,
+            u2.userName as replyToUserName
+        FROM
+            comment_reply cr
+            LEFT JOIN user u1 ON cr.userId = u1.id
+            LEFT JOIN user u2 ON cr.replyToUserId = u2.id
+        WHERE
+            cr.commentId = #{commentId}
+            AND cr.isDelete = 0
+        ORDER BY cr.createTime ASC
+    </select>
+</mapper>

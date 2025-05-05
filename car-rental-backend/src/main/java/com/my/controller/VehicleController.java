@@ -61,8 +61,8 @@ public class VehicleController {
     }
 
     @ApiOperation(value = "推荐车辆")
-    @PostMapping("/recommend")
-    public BaseResponse<List<VehicleVO>> recommendVehicle(HttpServletRequest request) {
-        return success(vehicleService.recommendVehicle(request));
+    @GetMapping("/recommend")
+    public BaseResponse<List<VehicleVO>> recommendVehicle(@RequestParam("vehicleId") Long vehicleId, HttpServletRequest request) {
+        return success(vehicleService.recommendVehicle(vehicleId, request));
     }
 }

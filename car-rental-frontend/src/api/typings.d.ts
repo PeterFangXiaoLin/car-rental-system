@@ -16,6 +16,12 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseCommentReplyVO_ = {
+    code?: number
+    data?: CommentReplyVO
+    message?: string
+  }
+
   type BaseResponseCommentVO_ = {
     code?: number
     data?: CommentVO
@@ -37,6 +43,12 @@ declare namespace API {
   type BaseResponseListCityVO_ = {
     code?: number
     data?: CityVO[]
+    message?: string
+  }
+
+  type BaseResponseListCommentReplyVO_ = {
+    code?: number
+    data?: CommentReplyVO[]
     message?: string
   }
 
@@ -97,6 +109,12 @@ declare namespace API {
   type BaseResponseLong_ = {
     code?: number
     data?: number
+    message?: string
+  }
+
+  type BaseResponsePageCommentReplyVO_ = {
+    code?: number
+    data?: PageCommentReplyVO_
     message?: string
   }
 
@@ -169,6 +187,12 @@ declare namespace API {
   type BaseResponsePageVehicleVO_ = {
     code?: number
     data?: PageVehicleVO_
+    message?: string
+  }
+
+  type BaseResponseRentalOrderVO_ = {
+    code?: number
+    data?: RentalOrderVO
     message?: string
   }
 
@@ -286,6 +310,47 @@ declare namespace API {
     vehicleId?: number
   }
 
+  type CommentReplyAddRequest = {
+    commentId?: number
+    content?: string
+    images?: string
+    parentId?: number
+    replyToUserId?: number
+  }
+
+  type CommentReplyQueryRequest = {
+    commentId?: number
+    current?: number
+    pageSize?: number
+    parentId?: number
+    replyToUserId?: number
+    searchText?: string
+    sortField?: string
+    sortOrder?: string
+    userId?: number
+  }
+
+  type CommentReplyUpdateRequest = {
+    content?: string
+    id?: number
+    images?: string
+  }
+
+  type CommentReplyVO = {
+    commentId?: number
+    content?: string
+    createTime?: string
+    id?: number
+    images?: string
+    parentId?: number
+    replyToUserId?: number
+    replyToUserName?: string
+    updateTime?: string
+    userAvatar?: string
+    userId?: number
+    userName?: string
+  }
+
   type CommentUpdateRequest = {
     content?: string
     driverRating?: number
@@ -304,6 +369,7 @@ declare namespace API {
     id?: number
     images?: string
     orderId?: number
+    replyList?: CommentReplyVO[]
     userAvatar?: string
     userId?: number
     userName?: string
@@ -409,6 +475,11 @@ declare namespace API {
     id: number
   }
 
+  type getCommentReplyByIdUsingGETParams = {
+    /** id */
+    id: number
+  }
+
   type getDriverVOByIdUsingGETParams = {
     /** id */
     id: number
@@ -417,6 +488,11 @@ declare namespace API {
   type getEnergyTypeDictByIdUsingGETParams = {
     /** id */
     id: number
+  }
+
+  type getRentalOrderUsingGETParams = {
+    /** orderId */
+    orderId: number
   }
 
   type getStoreUsingGETParams = {
@@ -457,6 +533,11 @@ declare namespace API {
   type listCommentByVehicleIdUsingGETParams = {
     /** vehicleId */
     vehicleId: number
+  }
+
+  type listCommentReplyByCommentIdUsingGETParams = {
+    /** commentId */
+    commentId: number
   }
 
   type listStoreByCityNameUsingGETParams = {
@@ -501,6 +582,19 @@ declare namespace API {
   type OrderItem = {
     asc?: boolean
     column?: string
+  }
+
+  type PageCommentReplyVO_ = {
+    countId?: string
+    current?: number
+    maxLimit?: number
+    optimizeCountSql?: boolean
+    orders?: OrderItem[]
+    pages?: number
+    records?: CommentReplyVO[]
+    searchCount?: boolean
+    size?: number
+    total?: number
   }
 
   type PageCommentVO_ = {
@@ -664,9 +758,41 @@ declare namespace API {
     orderId: number
   }
 
+  type pickupVehicleUsingGETParams = {
+    /** orderId */
+    orderId: number
+  }
+
+  type recommendVehicleUsingGETParams = {
+    /** vehicleId */
+    vehicleId: number
+  }
+
   type refreshCaptchaUsingGETParams = {
     /** captchaKey */
     captchaKey: string
+  }
+
+  type RentalOrderAdminPageRequest = {
+    actualReturnTime?: string
+    actualStartTime?: string
+    current?: number
+    endTime?: string
+    needDriver?: number
+    orderNo?: string
+    pageSize?: number
+    paymentStatus?: number
+    pickupStoreId?: number
+    returnStoreId?: number
+    sortField?: string
+    sortOrder?: string
+    startTime?: string
+    status?: number
+    totalDays?: number
+    userId?: number
+    userName?: string
+    vehicleId?: number
+    vehicleName?: string
   }
 
   type RentalOrderCancelRequest = {
@@ -693,6 +819,7 @@ declare namespace API {
     searchText?: string
     sortField?: string
     sortOrder?: string
+    status?: number
   }
 
   type RentalOrderVO = {
@@ -727,8 +854,14 @@ declare namespace API {
     userName?: string
     vehicleDailyPrice?: number
     vehicleId?: number
+    vehicleImage?: string
     vehicleName?: string
     vehicleTotalAmount?: number
+  }
+
+  type returnVehicleUsingGETParams = {
+    /** orderId */
+    orderId: number
   }
 
   type StoreCreateRequest = {

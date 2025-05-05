@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -22,9 +21,19 @@ public class RentalOrderAdminPageRequest extends PageRequest implements Serializ
     private Long userId;
 
     /**
+     * 用户名
+     */
+    private String userName;
+
+    /**
      * 车辆ID
      */
     private Long vehicleId;
+
+    /**
+     * 车辆名称
+     */
+    private String vehicleName;
 
     /**
      * 租赁开始时间
@@ -47,44 +56,14 @@ public class RentalOrderAdminPageRequest extends PageRequest implements Serializ
     private Date actualReturnTime;
 
     /**
-     * 日租金
-     */
-    private BigDecimal vehicleDailyPrice;
-
-    /**
      * 租赁天数
      */
     private Integer totalDays;
 
     /**
-     * 总金额
-     */
-    private BigDecimal vehicleTotalAmount;
-
-    /**
      * 是否需要司机：0-不需要，1-需要
      */
     private Integer needDriver;
-
-    /**
-     * 司机ID
-     */
-    private Long driverId;
-
-    /**
-     * 司机服务费用/天
-     */
-    private BigDecimal driverDailyPrice;
-
-    /**
-     * 司机服务总费用
-     */
-    private BigDecimal driverTotalAmount;
-
-    /**
-     * 订单总金额
-     */
-    private BigDecimal totalAmount;
 
     /**
      * 订单状态：0-待支付，1-已支付待取车，2-已取车，3-已还车，4-已完成，5-已取消
@@ -95,11 +74,6 @@ public class RentalOrderAdminPageRequest extends PageRequest implements Serializ
      * 支付状态：0-未支付，1-已支付，2-已退款，3-部分退款
      */
     private Integer paymentStatus;
-
-    /**
-     * 支付时间
-     */
-    private Date paymentTime;
 
     /**
      * 取车地点

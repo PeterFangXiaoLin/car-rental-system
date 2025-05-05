@@ -1,17 +1,68 @@
 <template>
   <div id="vehicleDetailPage">
     <el-row :gutter="16" class="mb-4">
-      <!--      车辆图片-->
+      <!--      左侧区域：车辆图片和评论区-->
       <el-col :sm="14" :lg="16">
-        <el-card header="车辆图片">
+        <!-- 车辆图片 -->
+        <el-card header="车辆图片" class="mb-4">
           <div v-loading="loading">
             <el-image :src="vehicle?.imageUrl" fit="contain" style="width: 100%" />
           </div>
         </el-card>
+
+        <!-- 评论区 -->
+        <el-card header="用户评价">
+          <div v-loading="commentsLoading">
+            <div v-if="comments.length > 0">
+              <div
+                v-for="comment in comments"
+                :key="comment.id"
+                class="comment-item py-3 border-b border-gray-200"
+              >
+                <el-row>
+                  <el-col :span="2">
+                    <el-avatar :src="comment.userAvatar" :size="50">
+                      {{ comment.userName?.charAt(0) }}
+                    </el-avatar>
+                  </el-col>
+                  <el-col :span="22">
+                    <div class="flex justify-between">
+                      <div class="font-bold">{{ comment.userName }}</div>
+                      <div class="text-gray-500 text-sm">
+                        {{ dayjs(comment.createTime).format('YYYY-MM-DD HH:mm:ss') }}
+                      </div>
+                    </div>
+                    <div class="my-2">
+                      <el-rate
+                        v-model="comment.vehicleRating"
+                        disabled
+                        show-score
+                        text-color="#ff9900"
+                      />
+                    </div>
+                    <div class="my-2">{{ comment.content }}</div>
+                    <div v-if="comment.images" class="mt-2 flex gap-2">
+                      <el-image
+                        v-for="(img, index) in comment.images.split(',')"
+                        :key="index"
+                        :src="img"
+                        style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px"
+                        :preview-src-list="comment.images.split(',')"
+                      />
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </div>
+            <el-empty v-else description="暂无评价" />
+          </div>
+        </el-card>
       </el-col>
-      <!--      车辆信息-->
+
+      <!--      右侧区域：车辆信息和猜你喜欢-->
       <el-col :sm="10" :lg="8">
-        <el-card header="车辆信息">
+        <!-- 车辆信息 -->
+        <el-card header="车辆信息" class="mb-4">
           <el-descriptions :column="1" v-loading="loading" border>
             <el-descriptions-item label="名称">
               {{ vehicle?.name ?? '未命名' }}
@@ -73,17 +124,28 @@
         </el-card>
 
         <!-- 猜你喜欢 -->
-        <el-card header="猜你喜欢" class="mt-4" v-loading="recommendLoading">
+        <el-card header="猜你喜欢" v-loading="recommendLoading">
           <div v-if="recommendedVehicles.length > 0">
             <el-scrollbar height="400px">
-              <div v-for="item in recommendedVehicles" :key="item.id" class="recommend-item mb-3 cursor-pointer" @click="goToVehicleDetail(item.id)">
+              <div
+                v-for="item in recommendedVehicles"
+                :key="item.id"
+                class="recommend-item mb-3 cursor-pointer"
+                @click="goToVehicleDetail(item.id)"
+              >
                 <el-row :gutter="8">
                   <el-col :span="8">
-                    <el-image :src="item.imageUrl" fit="cover" style="width: 100%; height: 60px; border-radius: 4px;" />
+                    <el-image
+                      :src="item.imageUrl"
+                      fit="cover"
+                      style="width: 100%; height: 60px; border-radius: 4px"
+                    />
                   </el-col>
                   <el-col :span="16">
                     <div class="text-sm font-bold truncate">{{ item.name }}</div>
-                    <div class="text-xs text-gray-500 truncate">{{ item.brandName }} {{ item.modelName }}</div>
+                    <div class="text-xs text-gray-500 truncate">
+                      {{ item.brandName }} {{ item.modelName }}
+                    </div>
                     <div class="text-xs color-#f56c6c font-bold">¥{{ item.dailyPrice }}/天</div>
                   </el-col>
                 </el-row>
@@ -94,48 +156,6 @@
         </el-card>
       </el-col>
     </el-row>
-
-    <!-- 评论区 -->
-    <el-card header="用户评价" class="mb-4">
-      <div v-loading="commentsLoading">
-        <div v-if="comments.length > 0">
-          <div v-for="comment in comments" :key="comment.id" class="comment-item py-3 border-b border-gray-200">
-            <el-row>
-              <el-col :span="2">
-                <el-avatar :src="comment.userAvatar" :size="50">
-                  {{ comment.userName?.charAt(0) }}
-                </el-avatar>
-              </el-col>
-              <el-col :span="22">
-                <div class="flex justify-between">
-                  <div class="font-bold">{{ comment.userName }}</div>
-                  <div class="text-gray-500 text-sm">{{ comment.createTime }}</div>
-                </div>
-                <div class="my-2">
-                  <el-rate
-                    v-model="comment.vehicleRating"
-                    disabled
-                    show-score
-                    text-color="#ff9900"
-                  />
-                </div>
-                <div class="my-2">{{ comment.content }}</div>
-                <div v-if="comment.images && comment.images.length > 0" class="mt-2 flex gap-2">
-                  <el-image
-                    v-for="(img, index) in comment.images"
-                    :key="index"
-                    :src="img"
-                    style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;"
-                    :preview-src-list="comment.images"
-                  />
-                </div>
-              </el-col>
-            </el-row>
-          </div>
-        </div>
-        <el-empty v-else description="暂无评价" />
-      </div>
-    </el-card>
   </div>
 </template>
 
@@ -145,15 +165,16 @@ import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { ElMessage } from 'element-plus'
 import { ShoppingCart, Star } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
-import { getVehicleByIdUsingGet, recommendVehicleUsingPost } from '@/api/vehicleController.ts'
+import { getVehicleByIdUsingGet, recommendVehicleUsingGet } from '@/api/vehicleController.ts'
 import VehicleStatusEnum from '@/enums/VehicleStatusEnum.ts'
 import {
   addVehicleFavoriteUsingPost,
   cancelVehicleFavoriteUsingPost,
-  checkVehicleFavoriteUsingGet
-} from "@/api/vehicleFavoriteController.ts";
-import { addOrUpdateBrowsHistoryUsingPost } from "@/api/vehicleBrowsingHistoryController.ts";
-import { listCommentByVehicleIdUsingGet } from "@/api/commentController.ts";
+  checkVehicleFavoriteUsingGet,
+} from '@/api/vehicleFavoriteController.ts'
+import { addOrUpdateBrowsHistoryUsingPost } from '@/api/vehicleBrowsingHistoryController.ts'
+import { listCommentByVehicleIdUsingGet } from '@/api/commentController.ts'
+import dayjs from 'dayjs'
 
 interface Props {
   id: string | number
@@ -214,10 +235,10 @@ const fetchComments = async () => {
 const fetchRecommendedVehicles = async () => {
   recommendLoading.value = true
   try {
-    const res = await recommendVehicleUsingPost()
+    const res = await recommendVehicleUsingGet({ vehicleId: props.id })
     if (res.data.code === 0 && res.data.data) {
       // 过滤掉当前车辆
-      recommendedVehicles.value = res.data.data.filter(item => item.id != props.id).slice(0, 5)
+      recommendedVehicles.value = res.data.data.filter((item) => item.id != props.id).slice(0, 5)
     } else {
       ElMessage.error('获取推荐车辆失败：' + res.data.message)
     }
@@ -252,7 +273,7 @@ const checkFavoriteStatus = async () => {
   // 如果用户已登录，检查收藏状态
   if (loginUserStore.loginUser?.id) {
     try {
-      const res = await checkVehicleFavoriteUsingGet({vehicleId: props.id})
+      const res = await checkVehicleFavoriteUsingGet({ vehicleId: props.id })
       if (res.data.code === 0) {
         isFavorite.value = !!res.data.data
       }

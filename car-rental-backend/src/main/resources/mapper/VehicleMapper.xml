@@ -130,7 +130,6 @@
             -- 计算车辆热度，将浏览、收藏、下单数量加权
             SELECT
                 vehicleId,
-                COUNT(*) * 1 AS browse_count,
                 SUM(CASE WHEN source = 'browse' THEN 1 ELSE 0 END) AS browse_count,
                 SUM(CASE WHEN source = 'favorite' THEN 3 ELSE 0 END) AS favorite_count,
                 SUM(CASE WHEN source = 'order' THEN 5 ELSE 0 END) AS order_count,
@@ -148,7 +147,6 @@
         ) hotness ON v.id = hotness.vehicleId
         WHERE v.isDelete = 0
         ORDER BY IFNULL(hotness.hotness, 0) DESC, v.createTime DESC
-        LIMIT #{count}
     </select>
     <select id="selectRandomVehicles" resultType="com.my.domain.vo.VehicleVO">
         SELECT v.*,

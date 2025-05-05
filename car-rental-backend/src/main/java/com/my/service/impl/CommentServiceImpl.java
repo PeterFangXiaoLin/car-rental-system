@@ -1,5 +1,6 @@
 package com.my.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -8,19 +9,17 @@ import com.my.common.ErrorCode;
 import com.my.domain.dto.comment.CommentAddRequest;
 import com.my.domain.dto.comment.CommentQueryRequest;
 import com.my.domain.dto.comment.CommentUpdateRequest;
-import com.my.domain.entity.Comment;
-import com.my.domain.entity.Driver;
-import com.my.domain.entity.User;
-import com.my.domain.entity.Vehicle;
+import com.my.domain.entity.*;
+import com.my.domain.enums.OrderStatusEnum;
 import com.my.domain.vo.CommentVO;
 import com.my.domain.vo.LoginUserVO;
 import com.my.exception.BusinessException;
 import com.my.mapper.*;
 import com.my.service.CommentService;
+import com.my.service.CommentReplyService;
 import com.my.service.UserService;
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.ObjUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -55,7 +54,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
     @Resource
     private UserService userService;
 
+    @Resource
+    private CommentReplyService commentReplyService;
+
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long addComment(CommentAddRequest commentAddRequest, HttpServletRequest request) {
         if (commentAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -70,8 +73,18 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单ID不能为空");
         }
         // 检查订单是否存在
-        if (rentalOrderMapper.selectById(orderId) == null) {
+        RentalOrder order = rentalOrderMapper.selectById(orderId);
+        if (order == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "订单不存在");
+        }
+
+        // 检验订单所属用户是否为当前登录用户
+        if (!order.getUserId().equals(loginUser.getId())) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "您无权评论该订单");
+        }
+        // 校验订单状态是否为已还车或已完成
+        if (!order.getStatus().equals(OrderStatusEnum.RETURNED.getValue()) && !order.getStatus().equals(OrderStatusEnum.COMPLETED.getValue())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "订单状态不允许评论");
         }
 
         // 校验车辆是否存在
@@ -102,7 +115,13 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         if (!saveResult) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "评论保存失败");
         }
-        
+
+        // 更新订单状态为完成
+        order.setStatus(OrderStatusEnum.COMPLETED.getValue());
+        int count = rentalOrderMapper.updateById(order);
+        if (count == 0) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单状态更新失败");
+        }
         return comment.getId();
     }
 
@@ -256,6 +275,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
                 commentVO.setDriverName(driver.getDriverName());
             }
         }
+        
+        // 获取评论回复列表
+        commentVO.setReplyList(commentReplyService.listCommentReplyByCommentId(comment.getId()));
         
         return commentVO;
     }

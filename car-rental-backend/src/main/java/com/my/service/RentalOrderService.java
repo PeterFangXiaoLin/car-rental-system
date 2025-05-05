@@ -2,6 +2,8 @@ package com.my.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.my.common.DeleteRequest;
+import com.my.domain.dto.rentalorder.RentalOrderAdminPageRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCancelRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCreateRequest;
 import com.my.domain.dto.rentalorder.RentalOrderPageRequest;
@@ -51,7 +53,7 @@ public interface RentalOrderService extends IService<RentalOrder> {
      * @param request 当前请求
      * @return 订单分页结果
      */
-    Page<RentalOrderVO> pageRentalOrder(RentalOrderPageRequest pageRequest, HttpServletRequest request);
+    Page<RentalOrderVO> pageMyRentalOrder(RentalOrderPageRequest pageRequest, HttpServletRequest request);
     
     /**
      * 取消未支付订单
@@ -67,4 +69,53 @@ public interface RentalOrderService extends IService<RentalOrder> {
      * @return 是否成功取消
      */
     Boolean cancelRentalOrder(RentalOrderCancelRequest rentalOrderCancelRequest, HttpServletRequest request);
+
+    /**
+     * 获取订单详情
+     * @param orderId 订单ID
+     * @param request 当前请求
+     * @return 订单详情
+     */
+    RentalOrderVO getRentalOrder(Long orderId, HttpServletRequest request);
+
+    /**
+     * 支付订单VO
+     * @param orderId 订单ID
+     */
+    RentalOrderVO getRentalOrderVO(Long orderId);
+
+    /**
+     * 分页查询订单
+     *
+     * @param pageRequest 分页请求参数
+     * @return 订单分页结果
+     */
+    Page<RentalOrderVO> pageRentalOrder(RentalOrderAdminPageRequest pageRequest);
+
+    /**
+     * 删除订单
+     *
+     * @param deleteRequest 删除请求
+     * @param request 当前请求
+     * @return 是否成功删除
+     */
+    Boolean deleteRentalOrder(DeleteRequest deleteRequest, HttpServletRequest request);
+
+    /**
+     * 取车
+     *
+     * @param orderId 订单ID
+     * @param request 当前请求
+     * @return 是否成功取车
+     */
+    Boolean pickupVehicle(Long orderId, HttpServletRequest request);
+
+    /**
+     * 还车
+     *
+     * @param orderId 订单ID
+     * @param request 当前请求
+     * @return 是否成功还车
+     */
+    Boolean returnVehicle(Long orderId, HttpServletRequest request);
 }

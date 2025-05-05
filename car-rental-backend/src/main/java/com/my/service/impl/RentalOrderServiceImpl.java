@@ -3,8 +3,11 @@ package com.my.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.my.common.DeleteRequest;
 import com.my.common.ErrorCode;
 import com.my.config.AlipayConfigProperties;
+import com.my.constant.UserConstant;
+import com.my.domain.dto.rentalorder.RentalOrderAdminPageRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCancelRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCreateRequest;
 import com.my.domain.dto.rentalorder.RentalOrderPageRequest;
@@ -29,6 +32,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static com.my.constant.RedisConstant.VEHICLE_LOCK_PREFIX;
@@ -149,7 +153,7 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
     }
 
     @Override
-    public Page<RentalOrderVO> pageRentalOrder(RentalOrderPageRequest pageRequest, HttpServletRequest request) {
+    public Page<RentalOrderVO> pageMyRentalOrder(RentalOrderPageRequest pageRequest, HttpServletRequest request) {
         if (pageRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -158,13 +162,11 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
         LoginUserVO loginUser = userService.getLoginUser(request);
         Long userId = loginUser.getId();
 
-        String searchText = pageRequest.getSearchText();
-
         long pageSize = pageRequest.getPageSize();
         long current = pageRequest.getCurrent();
 
         Page<RentalOrderVO> page = new Page<>(current, pageSize);
-        return rentalOrderMapper.pageRentalOrder(page, searchText, userId);
+        return rentalOrderMapper.pageMyRentalOrder(page, pageRequest, userId);
     }
 
     private void validate(RentalOrder rentalOrder, boolean isAdd) {
@@ -314,6 +316,149 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
         }
         log.error("取消订单失败，车辆状态更新失败: {}", vehicleId);
         throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆状态更新失败");
+    }
+
+    @Override
+    public RentalOrderVO getRentalOrder(Long orderId, HttpServletRequest request) {
+        // 获取当前登录用户
+        LoginUserVO loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
+        // 查询订单是否存在
+        RentalOrder order = this.getById(orderId);
+        if (order == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "订单不存在");
+        }
+        // 验证订单是否属于当前用户
+        if (!order.getUserId().equals(userId) && !loginUser.getUserRole().equals(UserConstant.ADMIN_ROLE)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限查看该订单");
+        }
+        return getRentalOrderVO(orderId);
+    }
+
+    @Override
+    public RentalOrderVO getRentalOrderVO(Long orderId) {
+        if (orderId == null || orderId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单参数错误");
+        }
+        return rentalOrderMapper.getRentalOrderVO(orderId);
+    }
+
+    @Override
+    public Page<RentalOrderVO> pageRentalOrder(RentalOrderAdminPageRequest pageRequest) {
+        if (pageRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long pageSize = pageRequest.getPageSize();
+        long current = pageRequest.getCurrent();
+        Page<RentalOrderVO> page = new Page<>(current, pageSize);
+        return rentalOrderMapper.pageRentalOrder(page, pageRequest);
+    }
+
+    @Override
+    public Boolean deleteRentalOrder(DeleteRequest deleteRequest, HttpServletRequest request) {
+        if (deleteRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Long deleteId = deleteRequest.getId();
+        if (deleteId == null || deleteId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单参数错误");
+        }
+        // 获取当前登录用户
+        LoginUserVO loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
+        // 查询订单是否存在
+        RentalOrder order = this.getById(deleteId);
+        if (order == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "订单不存在");
+        }
+        // 验证订单是否属于当前用户
+        if (!order.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限删除该订单");
+        }
+        // 删除订单
+        boolean remove = this.removeById(deleteId);
+        if (!remove) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单删除失败");
+        }
+        return true;
+    }
+
+    @Override
+    public Boolean pickupVehicle(Long orderId, HttpServletRequest request) {
+        if (orderId == null || orderId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单参数错误");
+        }
+        // 获取当前登录用户
+        LoginUserVO loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
+        // 查询订单是否存在
+        RentalOrder order = this.getById(orderId);
+        if (order == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "订单不存在");
+        }
+        // 验证订单是否属于当前用户
+        if (!order.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限取车该订单");
+        }
+        // 验证订单状态是否允许取车
+        if (!OrderStatusEnum.PAID_UNPICKED.getValue().equals(order.getStatus())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "订单状态不允许取车");
+        }
+        // 更新订单状态为已取车
+        order.setStatus(OrderStatusEnum.PICKED.getValue());
+        order.setActualStartTime(new Date());
+        boolean update = this.updateById(order);
+        if (!update) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单状态更新失败");
+        }
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean returnVehicle(Long orderId, HttpServletRequest request) {
+        if (orderId == null || orderId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单参数错误");
+        }
+        // 获取当前登录用户
+        LoginUserVO loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
+        // 查询订单是否存在
+        RentalOrder order = this.getById(orderId);
+        if (order == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "订单不存在");
+        }
+        // 验证订单是否属于当前用户
+        if (!order.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限还车该订单");
+        }
+        // 验证订单状态是否允许还车
+        if (!OrderStatusEnum.PICKED.getValue().equals(order.getStatus())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "订单状态不允许还车");
+        }
+        // 更新订单状态为已还车
+        order.setStatus(OrderStatusEnum.RETURNED.getValue());
+        order.setActualReturnTime(new Date());
+        boolean update = this.updateById(order);
+        if (!update) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单状态更新失败");
+        }
+        // 释放车辆资源
+        Long vehicleId = order.getVehicleId();
+        String lockKey = VEHICLE_LOCK_PREFIX + vehicleId;
+        synchronized (lockKey.intern()) {
+            Vehicle vehicle = vehicleService.getById(vehicleId);
+            // 确保车辆状态是已租出
+            if (vehicle!= null && VehicleStatusEnum.RENTED.getValue().equals(vehicle.getStatus())) {
+                vehicle.setStatus(VehicleStatusEnum.AVAILABLE.getValue());
+                boolean updateResult = vehicleService.updateById(vehicle);
+                if (!updateResult) {
+                    log.error("还车失败，车辆状态更新失败: {}", vehicleId);
+                    throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆状态更新失败");
+                }
+            }
+            return true;
+        }
     }
 }
 

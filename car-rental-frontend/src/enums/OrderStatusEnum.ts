@@ -1,0 +1,10 @@
+const ORDER_STATUS_ENUM = {
+  UNPAID: 0,
+  PAID_UNPICKED: 1,
+  PICKED: 2,
+  RETURNED: 3,
+  COMPLETED: 4,
+  CANCELLED: 5,
+}
+
+export default ORDER_STATUS_ENUM

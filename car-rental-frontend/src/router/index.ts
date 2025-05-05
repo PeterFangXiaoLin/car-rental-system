@@ -71,6 +71,15 @@ export const routes = [
         },
       },
       {
+        path: 'user/order',
+        name: '我的订单',
+        component: () => import('@/views/user/OrderPage.vue'),
+        meta: {
+          access: ACCESS_ENUM.USER,
+          hideInMenu: true,
+        },
+      },
+      {
         path: 'user/history',
         name: '浏览历史',
         component: () => import('@/views/user/HistoryPage.vue'),
@@ -108,6 +117,22 @@ export const routes = [
         path: 'store/manage',
         name: '门店管理',
         component: () => import('@/views/store/StoreManagePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+      {
+        path: 'order/manage',
+        name: '订单管理',
+        component: () => import('@/views/order/OrderManagePage.vue'),
+        meta: {
+          access: ACCESS_ENUM.ADMIN,
+        },
+      },
+      {
+        path: 'comment/manage',
+        name: '评论管理',
+        component: () => import('@/views/comment/CommentManagePage.vue'),
         meta: {
           access: ACCESS_ENUM.ADMIN,
         },

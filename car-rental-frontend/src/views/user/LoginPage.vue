@@ -64,7 +64,7 @@ const loginUserStore = useLoginUserStore()
 const checkLoginStatus = async () => {
   try {
     const res = await getLoginUserUsingGet()
-    if (res?.code === 0 && res?.data) {
+    if (res.data?.code === 0) {
       // 用户已登录，重定向到首页
       router.replace('/')
     }

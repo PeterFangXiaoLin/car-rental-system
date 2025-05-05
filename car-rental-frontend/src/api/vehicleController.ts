@@ -62,10 +62,17 @@ export async function listVehicleByPageUsingPost(
   })
 }
 
-/** 推荐车辆 POST /api/vehicle/recommend */
-export async function recommendVehicleUsingPost(options?: { [key: string]: any }) {
+/** 推荐车辆 GET /api/vehicle/recommend */
+export async function recommendVehicleUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.recommendVehicleUsingGETParams,
+  options?: { [key: string]: any }
+) {
   return request<API.BaseResponseListVehicleVO_>('/api/vehicle/recommend', {
-    method: 'POST',
+    method: 'GET',
+    params: {
+      ...params,
+    },
     ...(options || {}),
   })
 }

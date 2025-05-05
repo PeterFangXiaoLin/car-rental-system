@@ -6,13 +6,16 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.alipay.api.response.AlipayTradePagePayResponse;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.my.annotation.AuthCheck;
 import com.my.common.BaseResponse;
+import com.my.common.DeleteRequest;
 import com.my.common.ErrorCode;
 import com.my.config.AlipayConfigProperties;
+import com.my.constant.UserConstant;
+import com.my.domain.dto.rentalorder.RentalOrderAdminPageRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCancelRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCreateRequest;
 import com.my.domain.dto.rentalorder.RentalOrderPageRequest;
-import com.my.domain.dto.rentalorder.RentalOrderPayRequest;
 import com.my.domain.entity.RentalOrder;
 import com.my.domain.entity.Vehicle;
 import com.my.domain.enums.PaymentStatusEnum;
@@ -27,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,6 +62,12 @@ public class RentalOrderController{
     @PostMapping("/cancel")
     public BaseResponse<Boolean> cancelRentalOrder(@RequestBody RentalOrderCancelRequest rentalOrderCancelRequest, HttpServletRequest request) {
         return success(rentalOrderService.cancelRentalOrder(rentalOrderCancelRequest, request));
+    }
+
+    @ApiOperation(value = "获取订单详情")
+    @GetMapping("/get")
+    public BaseResponse<RentalOrderVO> getRentalOrder(@RequestParam("orderId") Long orderId, HttpServletRequest request) {
+        return success(rentalOrderService.getRentalOrder(orderId, request));
     }
 
     @ApiOperation(value = "支付订单")
@@ -123,7 +131,7 @@ public class RentalOrderController{
     }
     
     @ApiOperation(value = "支付宝异步通知")
-    @PostMapping("/notify")
+    @PostMapping(value = "/notify", produces = "text/html;charset=UTF-8")
     public String alipayNotify(HttpServletRequest request) {
         // 获取支付宝POST过来的信息
         Map<String, String> params = new HashMap<>();
@@ -185,10 +193,34 @@ public class RentalOrderController{
         }
     }
 
-    @ApiOperation("获取订单列表")
-    @PostMapping("/page")
-    public BaseResponse<Page<RentalOrderVO>> pageRentalOrder(@RequestBody RentalOrderPageRequest pageRequest, HttpServletRequest request) {
-        return success(rentalOrderService.pageRentalOrder(pageRequest, request));
+    @ApiOperation(value = "获取当前登录用户的订单列表")
+    @PostMapping("/page/my")
+    public BaseResponse<Page<RentalOrderVO>> pageMyRentalOrder(@RequestBody RentalOrderPageRequest pageRequest, HttpServletRequest request) {
+        return success(rentalOrderService.pageMyRentalOrder(pageRequest, request));
     }
 
+    @ApiOperation(value = "获取订单分页")
+    @PostMapping("/page")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Page<RentalOrderVO>> pageRentalOrder(@RequestBody RentalOrderAdminPageRequest pageRequest) {
+        return success(rentalOrderService.pageRentalOrder(pageRequest));
+    }
+
+    @ApiOperation(value = "删除订单")
+    @PostMapping("/delete")
+    public BaseResponse<Boolean> deleteRentalOrder(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
+        return success(rentalOrderService.deleteRentalOrder(deleteRequest, request));
+    }
+
+    @ApiOperation(value = "取车")
+    @GetMapping("/pickup")
+    public BaseResponse<Boolean> pickupVehicle(@RequestParam("orderId") Long orderId, HttpServletRequest request) {
+        return success(rentalOrderService.pickupVehicle(orderId, request));
+    }
+
+    @ApiOperation(value = "还车")
+    @GetMapping("/return")
+    public BaseResponse<Boolean> returnVehicle(@RequestParam("orderId") Long orderId, HttpServletRequest request) {
+        return success(rentalOrderService.returnVehicle(orderId, request));
+    }
 }

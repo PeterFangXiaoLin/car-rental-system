@@ -48,6 +48,18 @@
             <template #title>门店管理</template>
           </el-menu-item>
 
+          <!-- 订单管理 -->
+          <el-menu-item index="/order/manage">
+            <el-icon><tickets /></el-icon>
+            <template #title>订单管理</template>
+          </el-menu-item>
+
+          <!-- 评论管理 -->
+          <el-menu-item index="/comment/manage">
+            <el-icon><chat-dot-round /></el-icon>
+            <template #title>评论管理</template>
+          </el-menu-item>
+
           <!-- 车辆管理 -->
           <el-sub-menu index="/vehicle">
             <template #title>
@@ -80,7 +92,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
-import { Van, User, HomeFilled, Box, Shop } from '@element-plus/icons-vue'
+import { Van, User, HomeFilled, Box, Shop, Tickets, ChatDotRound } from '@element-plus/icons-vue'
 import ACCESS_ENUM from '@/access/accessEnum'
 
 // 定义props

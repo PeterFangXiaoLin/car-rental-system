@@ -34,8 +34,8 @@
             <el-dropdown-item command="profile">
               <el-icon><user /></el-icon>个人中心
             </el-dropdown-item>
-            <el-dropdown-item command="settings">
-              <el-icon><setting /></el-icon>个人设置
+            <el-dropdown-item command="order">
+              <el-icon><tickets /></el-icon>我的订单
             </el-dropdown-item>
             <el-dropdown-item command="favorite">
               <el-icon><star /></el-icon>我的收藏
@@ -60,11 +60,11 @@ import {
   Fold,
   Expand,
   User,
-  Setting,
   SwitchButton,
   ArrowDown,
   Clock,
   Star,
+  Tickets,
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
@@ -115,6 +115,7 @@ const getBreadcrumbTitle = (path: string): string => {
     '/user/manage': '用户管理',
     '/user/history': '浏览历史',
     '/user/favorite': '我的收藏',
+    '/user/order': '我的订单',
     '/driver': '司机',
     '/driver/manage': '司机管理',
     '/store': '门店',
@@ -129,7 +130,11 @@ const getBreadcrumbTitle = (path: string): string => {
     '/vehicle/type/manage': '车型管理',
     '/vehicle/energy': '能源类型',
     '/vehicle/energy/manage': '能源类型管理',
+    '/order': '订单',
     '/order/create': '创建订单',
+    '/order/manage': '订单管理',
+    '/comment': '评论',
+    '/comment/manage': '评论管理',
     '/401': '无权限',
     '/404': '页面不存在',
   }
@@ -195,8 +200,8 @@ const handleCommand = async (command: string) => {
     case 'profile':
       router.push('/user/profile')
       break
-    case 'settings':
-      router.push('/user/profile')
+    case 'order':
+      router.push('/user/order')
       break
     case 'favorite':
       router.push('/user/favorite')

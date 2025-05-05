@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 评论视图对象
@@ -84,6 +85,11 @@ public class CommentVO implements Serializable {
      * 创建时间
      */
     private Date createTime;
+
+    /**
+     * 评论回复列表
+     */
+    private List<CommentReplyVO> replyList;
 
     private static final long serialVersionUID = 1L;
 } 

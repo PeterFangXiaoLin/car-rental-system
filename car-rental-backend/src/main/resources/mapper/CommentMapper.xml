@@ -33,7 +33,7 @@
             comment.orderId,
             comment.userId,
             user.userName as userName,
-            user.avatarUrl as userAvatar,
+            user.userAvatar as userAvatar,
             comment.vehicleId,
             vehicle.name as vehicleName,
             comment.driverId,
@@ -42,12 +42,12 @@
             comment.driverRating,
             comment.commentTime,
             comment.images,
-            comment.createTime,
+            comment.createTime
         FROM
             comment
         INNER JOIN vehicle ON comment.vehicleId = vehicle.id AND vehicle.isDelete = 0
         INNER JOIN user ON comment.userId = user.id AND user.isDelete = 0
-        INNER JOIN driver ON comment.driverId = driver.id AND driver.isDelete = 0
+        LEFT JOIN driver ON comment.driverId = driver.id AND driver.isDelete = 0
         WHERE comment.isDelete = 0
         <if test="req.vehicleId!= null">
             AND comment.vehicleId = #{req.vehicleId}
@@ -69,7 +69,7 @@
             )
         </if>
         <if test="req.sortField != null and req.sortField!= ''">
-            order by #{req.sortField}
+            order by comment.${req.sortField}
             <if test="req.sortOrder!= null and req.sortOrder == 'descend'">
                 desc
             </if>

@@ -4,6 +4,7 @@
 // API 唯一标识：
 import * as cityController from './cityController'
 import * as commentController from './commentController'
+import * as commentReplyController from './commentReplyController'
 import * as driverController from './driverController'
 import * as energyTypeDictController from './energyTypeDictController'
 import * as fileUploadController from './fileUploadController'
@@ -20,6 +21,7 @@ import * as vehicleTypeDictController from './vehicleTypeDictController'
 export default {
   cityController,
   commentController,
+  commentReplyController,
   driverController,
   energyTypeDictController,
   fileUploadController,

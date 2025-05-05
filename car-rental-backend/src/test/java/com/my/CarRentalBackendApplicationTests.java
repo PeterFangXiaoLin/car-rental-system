@@ -231,10 +231,10 @@ class CarRentalBackendApplicationTests {
 
                 // 遍历处理每个series
                 for (JSONObject series : seriesList) {
-                    String seriesName = series.getStr("outter_name");
-                    String coverUrl = series.getStr("cover_url");
-                    String concernId = series.getStr("concern_id");
-                    List<Integer> carIds = series.getJSONArray("car_ids").toList(Integer.class);
+                    String seriesName = series.getStr("outter_name"); // 车系名称
+                    String coverUrl = series.getStr("cover_url"); // 车系封面
+                    String concernId = series.getStr("concern_id"); // 车系ID
+                    List<Integer> carIds = series.getJSONArray("car_ids").toList(Integer.class); // 该系下的车辆id列表
 
 
                     // 新增车系

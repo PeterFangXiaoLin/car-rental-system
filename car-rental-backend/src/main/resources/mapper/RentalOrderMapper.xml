@@ -49,7 +49,7 @@
         cancelTime,expireTime,remark,
         createTime,updateTime,isDelete
     </sql>
-    <select id="pageRentalOrder" resultType="com.my.domain.vo.RentalOrderVO">
+    <select id="pageMyRentalOrder" resultType="com.my.domain.vo.RentalOrderVO">
         SELECT
             rental_order.id,
             rental_order.orderNo,
@@ -57,6 +57,7 @@
             user.userName,
             rental_order.vehicleId,
             vehicle.name AS vehicleName,
+            vehicle.imageUrl AS vehicleImage,
             rental_order.startTime,
             rental_order.endTime,
             rental_order.actualStartTime,
@@ -87,21 +88,169 @@
         FROM rental_order
         INNER JOIN user ON rental_order.userId = user.id AND user.isDelete = 0
         INNER JOIN vehicle ON rental_order.vehicleId = vehicle.id AND vehicle.isDelete = 0
-        INNER JOIN driver ON rental_order.driverId = driver.id AND driver.isDelete = 0
+        LEFT JOIN driver ON rental_order.driverId = driver.id AND driver.isDelete = 0
         INNER JOIN store pickup_store ON rental_order.pickupStoreId = pickup_store.id AND pickup_store.isDelete = 0
         INNER JOIN store return_store ON rental_order.returnStoreId = return_store.id AND return_store.isDelete = 0
-        WHERE isDelete = 0
+        WHERE rental_order.isDelete = 0
         <if test="userId != null">
             AND rental_order.userId = #{userId}
         </if>
-        <if test="searchText != null and searchText != ''">
+        <if test="req.status != null">
+            AND rental_order.status = #{req.status}
+        </if>
+        <if test="req.searchText != null and req.searchText != ''">
             AND (
-                user.userName LIKE CONCAT('%', #{searchText}, '%') OR
-                vehicle.name LIKE CONCAT('%', #{searchText}, '%') OR
-                driver.driverName LIKE CONCAT('%', #{searchText}, '%') OR
-                pickup_store.storeName LIKE CONCAT('%', #{searchText}, '%')
-                return_store.storeName LIKE CONCAT('%', #{searchText}, '%')
+                user.userName LIKE CONCAT('%', #{req.searchText}, '%') OR
+                vehicle.name LIKE CONCAT('%', #{req.searchText}, '%') OR
+                driver.driverName LIKE CONCAT('%', #{req.searchText}, '%') OR
+                pickup_store.storeName LIKE CONCAT('%', #{req.searchText}, '%')
+                return_store.storeName LIKE CONCAT('%', #{req.searchText}, '%')
             )
+        </if>
+        <if test="req.sortField != null and req.sortField!= ''">
+            order by rental_order.${req.sortField}
+            <if test="req.sortOrder!= null and req.sortOrder == 'descend'">
+                desc
+            </if>
+        </if>
+    </select>
+    <select id="getRentalOrderVO" resultType="com.my.domain.vo.RentalOrderVO">
+        SELECT
+            rental_order.id,
+            rental_order.orderNo,
+            rental_order.userId,
+            user.userName,
+            rental_order.vehicleId,
+            vehicle.name AS vehicleName,
+            vehicle.imageUrl AS vehicleImage,
+            rental_order.startTime,
+            rental_order.endTime,
+            rental_order.actualStartTime,
+            rental_order.actualReturnTime,
+            rental_order.vehicleDailyPrice,
+            rental_order.totalDays,
+            rental_order.vehicleTotalAmount,
+            rental_order.needDriver,
+            rental_order.driverId,
+            driver.driverName,
+            rental_order.driverDailyPrice,
+            rental_order.driverTotalAmount,
+            rental_order.totalAmount,
+            rental_order.status,
+            rental_order.paymentStatus,
+            rental_order.paymentTime,
+            rental_order.refundAmount,
+            rental_order.refundTime,
+            rental_order.pickupStoreId,
+            pickup_store.storeName AS pickupStoreName,
+            rental_order.returnStoreId,
+            return_store.storeName AS returnStoreName,
+            rental_order.cancelReason,
+            rental_order.cancelTime,
+            rental_order.expireTime,
+            rental_order.remark,
+            rental_order.createTime
+        FROM rental_order
+                 INNER JOIN user ON rental_order.userId = user.id AND user.isDelete = 0
+                 INNER JOIN vehicle ON rental_order.vehicleId = vehicle.id AND vehicle.isDelete = 0
+                 LEFT JOIN driver ON rental_order.driverId = driver.id AND driver.isDelete = 0
+                 INNER JOIN store pickup_store ON rental_order.pickupStoreId = pickup_store.id AND pickup_store.isDelete = 0
+                 INNER JOIN store return_store ON rental_order.returnStoreId = return_store.id AND return_store.isDelete = 0
+        WHERE rental_order.isDelete = 0 AND rental_order.id = #{orderId}
+    </select>
+    <select id="pageRentalOrder" resultType="com.my.domain.vo.RentalOrderVO">
+        SELECT
+        rental_order.id,
+        rental_order.orderNo,
+        rental_order.userId,
+        user.userName AS userName,
+        rental_order.vehicleId,
+        vehicle.name AS vehicleName,
+        vehicle.imageUrl AS vehicleImage,
+        rental_order.startTime,
+        rental_order.endTime,
+        rental_order.actualStartTime,
+        rental_order.actualReturnTime,
+        rental_order.vehicleDailyPrice,
+        rental_order.totalDays,
+        rental_order.vehicleTotalAmount,
+        rental_order.needDriver,
+        rental_order.driverId,
+        driver.driverName,
+        rental_order.driverDailyPrice,
+        rental_order.driverTotalAmount,
+        rental_order.totalAmount,
+        rental_order.status,
+        rental_order.paymentStatus,
+        rental_order.paymentTime,
+        rental_order.refundAmount,
+        rental_order.refundTime,
+        rental_order.pickupStoreId,
+        pickup_store.storeName AS pickupStoreName,
+        rental_order.returnStoreId,
+        return_store.storeName AS returnStoreName,
+        rental_order.cancelReason,
+        rental_order.cancelTime,
+        rental_order.expireTime,
+        rental_order.remark,
+        rental_order.createTime
+        FROM rental_order
+        INNER JOIN user ON rental_order.userId = user.id AND user.isDelete = 0
+        INNER JOIN vehicle ON rental_order.vehicleId = vehicle.id AND vehicle.isDelete = 0
+        LEFT JOIN driver ON rental_order.driverId = driver.id AND driver.isDelete = 0
+        INNER JOIN store pickup_store ON rental_order.pickupStoreId = pickup_store.id AND pickup_store.isDelete = 0
+        INNER JOIN store return_store ON rental_order.returnStoreId = return_store.id AND return_store.isDelete = 0
+        WHERE rental_order.isDelete = 0
+        <if test="req.orderNo != null and req.orderNo!= ''">
+            AND rental_order.orderNo LIKE CONCAT('%', #{req.orderNo}, '%')
+        </if>
+        <if test="req.userId != null">
+            AND rental_order.userId = #{req.userId}
+        </if>
+        <if test="req.userName != null and req.userName!= ''">
+            AND user.userName LIKE CONCAT('%', #{req.userName}, '%')
+        </if>
+        <if test="req.vehicleId!= null">
+            AND rental_order.vehicleId = #{req.vehicleId}
+        </if>
+        <if test="req.vehicleName!= null and req.vehicleName!= ''">
+            AND vehicle.name LIKE CONCAT('%', #{req.vehicleName}, '%')
+        </if>
+        <if test="req.startTime!= null">
+            AND rental_order.startTime &gt;= #{req.startTime}
+        </if>
+        <if test="req.endTime!= null">
+            AND rental_order.endTime &lt;= #{req.endTime}
+        </if>
+        <if test="req.actualStartTime!= null">
+            AND rental_order.actualStartTime &gt;= #{req.actualStartTime}
+        </if>
+        <if test="req.actualReturnTime!= null">
+            AND rental_order.actualReturnTime &lt;= #{req.actualReturnTime}
+        </if>
+        <if test="req.totalDays!= null">
+            AND rental_order.totalDays = #{req.totalDays}
+        </if>
+        <if test="req.needDriver!= null">
+            AND rental_order.needDriver = #{req.needDriver}
+        </if>
+        <if test="req.status != null">
+            AND rental_order.status = #{req.status}
+        </if>
+        <if test="req.paymentStatus!= null">
+            AND rental_order.paymentStatus = #{req.paymentStatus}
+        </if>
+        <if test="req.pickupStoreId!= null">
+            AND rental_order.pickupStoreId = #{req.pickupStoreId}
+        </if>
+        <if test="req.returnStoreId!= null">
+            AND rental_order.returnStoreId = #{req.returnStoreId}
+        </if>
+        <if test="req.sortField != null and req.sortField!= ''">
+            order by rental_order.${req.sortField}
+            <if test="req.sortOrder!= null and req.sortOrder == 'descend'">
+                desc
+            </if>
         </if>
     </select>
 </mapper>

@@ -14,7 +14,6 @@ import com.my.domain.dto.vehicle.VehicleQueryRequest;
 import com.my.domain.dto.vehicle.VehicleUpdateRequest;
 import com.my.domain.entity.*;
 import com.my.domain.enums.VehicleStatusEnum;
-import com.my.domain.vo.LoginUserVO;
 import com.my.domain.vo.VehicleVO;
 import com.my.exception.BusinessException;
 import com.my.mapper.RentalOrderMapper;
@@ -32,7 +31,7 @@ import org.apache.mahout.cf.taste.impl.model.GenericDataModel;
 import org.apache.mahout.cf.taste.impl.model.GenericPreference;
 import org.apache.mahout.cf.taste.impl.model.GenericUserPreferenceArray;
 import org.apache.mahout.cf.taste.impl.recommender.GenericItemBasedRecommender;
-import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
+import org.apache.mahout.cf.taste.impl.similarity.UncenteredCosineSimilarity;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.model.Preference;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
@@ -47,6 +46,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.my.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
 * @author Administrator
@@ -304,8 +305,10 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
     }
 
     @Override
-    public List<VehicleVO> recommendVehicle(HttpServletRequest request) {
-        LoginUserVO loginUser = userService.getLoginUser(request);
+    public List<VehicleVO> recommendVehicle(Long vehicleId, HttpServletRequest request) {
+        // 先判断是否已登录
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User loginUser = (User) userObj;
         if (loginUser == null) {
             return getPopularVehicles(); // 未登录用户返回热门推荐
         }
@@ -326,7 +329,7 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
             }
 
             // 4. 使用基于物品的协同过滤进行推荐
-            List<Long> recommendedIds = getItemBasedRecommendations(userId);
+            List<Long> recommendedIds = getItemBasedRecommendations(vehicleId, userId);
 
             // 5. 如果推荐数量不足，补充基于内容的推荐
             if (recommendedIds.size() < RECOMMEND_LIMIT) {
@@ -358,6 +361,8 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
             // 从数据库获取所有用户-车辆交互数据
             List<UserVehiclePreference> preferences = collectAllUserPreferences();
 
+
+
             // 构建Mahout数据模型
             FastByIDMap<PreferenceArray> preferencesMap = new FastByIDMap<>();
             
@@ -381,8 +386,8 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
             // 创建数据模型
             dataModel = new GenericDataModel(preferencesMap);
 
-            // 使用对数似然相似度作为物品相似度度量
-            itemSimilarity = new LogLikelihoodSimilarity(dataModel);
+            // 使用余弦相似度计算，避免异常
+            itemSimilarity = new UncenteredCosineSimilarity(dataModel);
 
             lastModelUpdateTime = currentTime;
             log.info("推荐模型构建完成");
@@ -428,21 +433,31 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
     /**
      * 使用基于物品的协同过滤进行推荐
      */
-    private List<Long> getItemBasedRecommendations(Long userId) throws TasteException {
+    private List<Long> getItemBasedRecommendations(Long vehicleId, Long userId) {
         try {
             // 使用Mahout的物品推荐器
             ItemBasedRecommender recommender = new GenericItemBasedRecommender(dataModel, itemSimilarity);
 
-            // 获取推荐结果
-            List<RecommendedItem> recommendations = recommender.recommend(userId, RECOMMEND_LIMIT);
-
-            // 转换为车辆ID列表
-            return recommendations.stream()
-                    .map(RecommendedItem::getItemID)
-                    .collect(Collectors.toList());
+            // 检查用户是否有足够的数据
+            if (!dataModel.getItemIDsFromUser(userId).isEmpty()) {
+                // 获取推荐结果
+                List<RecommendedItem> recommendations = recommender.recommendedBecause(userId, vehicleId, RECOMMEND_LIMIT);
+                
+                // 转换为车辆ID列表
+                return recommendations.stream()
+                        .map(RecommendedItem::getItemID)
+                        .collect(Collectors.toList());
+            } else {
+                log.info("用户[{}]没有足够的交互记录，降级使用热门推荐", userId);
+                return getPopularVehicleIds(RECOMMEND_LIMIT);
+            }
         } catch (NoSuchUserException e) {
             // 用户没有足够的交互记录
             log.info("用户[{}]没有足够的交互记录，降级使用热门推荐", userId);
+            return getPopularVehicleIds(RECOMMEND_LIMIT);
+        } catch (TasteException e) {
+            // 捕获所有其他TasteException类型的异常
+            log.warn("为用户[{}]生成推荐时出现异常: {}", userId, e.getMessage());
             return getPopularVehicleIds(RECOMMEND_LIMIT);
         }
     }
