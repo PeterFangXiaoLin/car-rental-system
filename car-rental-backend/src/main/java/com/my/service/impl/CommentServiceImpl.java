@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.common.DeleteRequest;
 import com.my.common.ErrorCode;
 import com.my.domain.dto.comment.CommentAddRequest;
+import com.my.domain.dto.comment.CommentAdminQueryRequest;
 import com.my.domain.dto.comment.CommentQueryRequest;
 import com.my.domain.dto.comment.CommentUpdateRequest;
 import com.my.domain.entity.*;
@@ -205,20 +206,20 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
     }
 
     @Override
-    public Page<CommentVO> listCommentByPage(CommentQueryRequest commentQueryRequest) {
-        if (commentQueryRequest == null) {
+    public Page<CommentVO> listCommentByPage(CommentAdminQueryRequest commentAdminQueryRequest) {
+        if (commentAdminQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
         // 分页查询
-        int current = commentQueryRequest.getCurrent();
-        int pageSize = commentQueryRequest.getPageSize();
+        int current = commentAdminQueryRequest.getCurrent();
+        int pageSize = commentAdminQueryRequest.getPageSize();
         if (current <= 0 || pageSize <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
         Page<CommentVO> commentVOPage = new Page<>(current, pageSize);
-        return commentMapper.selectCommentVOPage(commentVOPage, commentQueryRequest);
+        return commentMapper.selectCommentVOPage(commentVOPage, commentAdminQueryRequest);
     }
 
     @Override
@@ -280,6 +281,25 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         commentVO.setReplyList(commentReplyService.listCommentReplyByCommentId(comment.getId()));
         
         return commentVO;
+    }
+
+    @Override
+    public Page<CommentVO> pageCommentByVehicleId(CommentQueryRequest commentQueryRequest) {
+        if (commentQueryRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 分页查询
+        int current = commentQueryRequest.getCurrent();
+        int pageSize = commentQueryRequest.getPageSize();
+        if (current <= 0 || pageSize <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Long vehicleId = commentQueryRequest.getVehicleId();
+        if (vehicleId == null || vehicleId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Page<CommentVO> commentVOPage = new Page<>(current, pageSize);
+        return commentMapper.selectCommentVOByVehicleId(commentVOPage, commentQueryRequest);
     }
 }
 

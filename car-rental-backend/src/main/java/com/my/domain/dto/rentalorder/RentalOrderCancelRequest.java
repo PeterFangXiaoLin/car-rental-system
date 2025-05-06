@@ -11,4 +11,9 @@ public class RentalOrderCancelRequest implements Serializable {
      * 订单id
      */
     private Long orderId;
+
+    /**
+     * 取消原因
+     */
+    private String cancelReason;
 }

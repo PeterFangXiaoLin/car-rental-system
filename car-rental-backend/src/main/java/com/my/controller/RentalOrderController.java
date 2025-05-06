@@ -16,6 +16,7 @@ import com.my.domain.dto.rentalorder.RentalOrderAdminPageRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCancelRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCreateRequest;
 import com.my.domain.dto.rentalorder.RentalOrderPageRequest;
+import com.my.domain.dto.rentalorder.RentalOrderRefundRequest;
 import com.my.domain.entity.RentalOrder;
 import com.my.domain.entity.Vehicle;
 import com.my.domain.enums.PaymentStatusEnum;
@@ -222,5 +223,11 @@ public class RentalOrderController{
     @GetMapping("/return")
     public BaseResponse<Boolean> returnVehicle(@RequestParam("orderId") Long orderId, HttpServletRequest request) {
         return success(rentalOrderService.returnVehicle(orderId, request));
+    }
+
+    @ApiOperation(value = "退款")
+    @PostMapping("/refund")
+    public BaseResponse<Boolean> refundOrder(@RequestBody RentalOrderRefundRequest refundRequest, HttpServletRequest request) {
+        return success(rentalOrderService.refundOrder(refundRequest, request));
     }
 }

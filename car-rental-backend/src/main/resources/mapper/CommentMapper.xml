@@ -75,4 +75,48 @@
             </if>
         </if>
     </select>
+    <select id="selectCommentVOByVehicleId" resultType="com.my.domain.vo.CommentVO">
+        SELECT
+            comment.id,
+            comment.orderId,
+            comment.userId,
+            user.userName as userName,
+            user.userAvatar as userAvatar,
+            comment.vehicleId,
+            vehicle.name as vehicleName,
+            comment.driverId,
+            comment.content,
+            comment.vehicleRating,
+            comment.driverRating,
+            comment.commentTime,
+            comment.images,
+            comment.createTime
+        FROM
+            comment
+                INNER JOIN vehicle ON comment.vehicleId = vehicle.id AND vehicle.isDelete = 0
+                INNER JOIN user ON comment.userId = user.id AND user.isDelete = 0
+                LEFT JOIN driver ON comment.driverId = driver.id AND driver.isDelete = 0
+        WHERE comment.isDelete = 0
+        <if test="req.vehicleId!= null">
+            AND comment.vehicleId = #{req.vehicleId}
+        </if>
+        <choose>
+            <when test="req.sortField == 'createTime'">
+                ORDER BY comment.createTime
+            </when>
+            <when test="req.sortField == 'commentTime'">
+                ORDER BY comment.commentTime
+            </when>
+            <!-- 可添加更多允许的排序字段 -->
+            <otherwise>
+                ORDER BY comment.createTime -- 默认排序
+            </otherwise>
+        </choose>
+        <if test="req.sortOrder == 'descend'">
+            DESC
+        </if>
+        <if test="req.sortOrder == 'ascend'">
+            ASC
+        </if>
+    </select>
 </mapper>

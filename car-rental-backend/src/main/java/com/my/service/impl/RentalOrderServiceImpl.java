@@ -1,16 +1,22 @@
 package com.my.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alipay.api.AlipayApiException;
+import com.alipay.api.AlipayClient;
+import com.alipay.api.request.AlipayTradeRefundRequest;
+import com.alipay.api.response.AlipayTradeRefundResponse;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.common.DeleteRequest;
 import com.my.common.ErrorCode;
 import com.my.config.AlipayConfigProperties;
+import com.my.constant.OrderConstant;
 import com.my.constant.UserConstant;
 import com.my.domain.dto.rentalorder.RentalOrderAdminPageRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCancelRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCreateRequest;
 import com.my.domain.dto.rentalorder.RentalOrderPageRequest;
+import com.my.domain.dto.rentalorder.RentalOrderRefundRequest;
 import com.my.domain.entity.Driver;
 import com.my.domain.entity.RentalOrder;
 import com.my.domain.entity.Store;
@@ -67,6 +73,9 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
     
     @Resource
     private OrderDelayQueueService orderDelayQueueService;
+    
+    @Resource
+    private AlipayClient alipayClient;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -239,9 +248,11 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
             return false;
         }
         
-        // 更新订单状态为已取消
+        // 更新订单状态为已取消 并设置取消原因
         order.setStatus(OrderStatusEnum.CANCELLED.getValue());
-        
+        order.setCancelReason(OrderConstant.DEFAULT_CANCEL_REASON);
+        order.setCancelTime(new Date());
+
         // 释放车辆资源
         Long vehicleId = order.getVehicleId();
         String lockKey = VEHICLE_LOCK_PREFIX + vehicleId;
@@ -303,8 +314,10 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
                     throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆状态更新失败");
                 }
 
-                // 更新订单状态为已取消
+                // 更新订单状态为已取消 并设置取消原因
                 order.setStatus(OrderStatusEnum.CANCELLED.getValue());
+                order.setCancelReason(rentalOrderCancelRequest.getCancelReason());
+                order.setCancelTime(new Date());
                 boolean saveResult = this.updateById(order);
                 if (!saveResult) {
                     log.error("取消订单失败，订单状态更新失败: {}", orderId);
@@ -458,6 +471,117 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
                 }
             }
             return true;
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean refundOrder(RentalOrderRefundRequest refundRequest, HttpServletRequest request) {
+        if (refundRequest == null || refundRequest.getOrderId() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单参数错误");
+        }
+
+        // 获取当前登录用户
+        LoginUserVO loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
+        Long orderId = refundRequest.getOrderId();
+
+        // 查询订单是否存在
+        RentalOrder order = this.getById(orderId);
+        if (order == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "订单不存在");
+        }
+
+        // 验证订单是否属于当前用户或是否为管理员
+        boolean isAdmin = UserConstant.ADMIN_ROLE.equals(loginUser.getUserRole());
+        if (!order.getUserId().equals(userId) && !isAdmin) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限退款该订单");
+        }
+
+        // 验证订单状态是否允许退款（已支付但未取车）
+        boolean canRefund = OrderStatusEnum.PAID_UNPICKED.getValue().equals(order.getStatus());
+        boolean isPaid = PaymentStatusEnum.PAID.getValue().equals(order.getPaymentStatus());
+        
+        if (!canRefund || !isPaid) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "订单状态不允许退款");
+        }
+
+        // 计算退款金额
+        BigDecimal refundAmount = refundRequest.getRefundAmount();
+        if (refundAmount == null) {
+            // 全额退款
+            refundAmount = order.getTotalAmount();
+        } else if (refundAmount.compareTo(BigDecimal.ZERO) <= 0 || refundAmount.compareTo(order.getTotalAmount()) > 0) {
+            // 退款金额必须大于0且不能超过订单总金额
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "退款金额无效");
+        }
+
+        try {
+            // 创建支付宝退款请求
+            AlipayTradeRefundRequest alipayRequest = new AlipayTradeRefundRequest();
+            
+            // 构建业务参数
+            String bizContent = "{"
+                + "\"out_trade_no\":\"" + order.getOrderNo() + "\","
+                + "\"refund_amount\":" + refundAmount + ","
+                + "\"refund_reason\":\"" + refundRequest.getRefundReason() + "\""
+                + "}";
+            
+            alipayRequest.setBizContent(bizContent);
+            
+            // 调用支付宝API执行退款
+            AlipayTradeRefundResponse response = alipayClient.execute(alipayRequest);
+            
+            // 处理退款响应
+            if (response.isSuccess()) {
+                // 退款成功，更新订单状态
+                order.setRefundAmount(refundAmount);
+                order.setRefundTime(new Date());
+                
+                // 判断是全额退款还是部分退款
+                boolean isFullRefund = refundAmount.compareTo(order.getTotalAmount()) == 0;
+                
+                if (isFullRefund) {
+                    // 全额退款
+                    order.setPaymentStatus(PaymentStatusEnum.REFUNDED.getValue());
+                    order.setStatus(OrderStatusEnum.CANCELLED.getValue());
+                    
+                    // 如果车辆已经被租出，需要释放车辆资源
+                    if (OrderStatusEnum.PAID_UNPICKED.getValue().equals(order.getStatus())) {
+                        Long vehicleId = order.getVehicleId();
+                        String lockKey = VEHICLE_LOCK_PREFIX + vehicleId;
+                        synchronized (lockKey.intern()) {
+                            Vehicle vehicle = vehicleService.getById(vehicleId);
+                            if (vehicle != null && VehicleStatusEnum.RENTED.getValue().equals(vehicle.getStatus())) {
+                                vehicle.setStatus(VehicleStatusEnum.AVAILABLE.getValue());
+                                boolean updateResult = vehicleService.updateById(vehicle);
+                                if (!updateResult) {
+                                    log.error("退款失败，车辆状态更新失败: {}", vehicleId);
+                                    throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆状态更新失败");
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // 部分退款
+                    order.setPaymentStatus(PaymentStatusEnum.PARTIALLY_REFUNDED.getValue());
+                }
+                
+                boolean updateResult = this.updateById(order);
+                if (!updateResult) {
+                    log.error("退款成功但更新订单状态失败，订单ID: {}", orderId);
+                    throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单状态更新失败");
+                }
+                
+                log.info("订单退款成功，订单ID: {}，退款金额: {}", orderId, refundAmount);
+                return true;
+            } else {
+                log.error("调用支付宝退款接口失败: {}", response.getMsg());
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "退款失败: " + response.getSubMsg());
+            }
+        } catch (AlipayApiException e) {
+            log.error("调用支付宝退款接口异常", e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "支付系统异常");
         }
     }
 }

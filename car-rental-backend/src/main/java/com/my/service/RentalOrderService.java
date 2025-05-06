@@ -7,6 +7,7 @@ import com.my.domain.dto.rentalorder.RentalOrderAdminPageRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCancelRequest;
 import com.my.domain.dto.rentalorder.RentalOrderCreateRequest;
 import com.my.domain.dto.rentalorder.RentalOrderPageRequest;
+import com.my.domain.dto.rentalorder.RentalOrderRefundRequest;
 import com.my.domain.entity.RentalOrder;
 import com.my.domain.vo.RentalOrderVO;
 
@@ -118,4 +119,12 @@ public interface RentalOrderService extends IService<RentalOrder> {
      * @return 是否成功还车
      */
     Boolean returnVehicle(Long orderId, HttpServletRequest request);
+
+    /**
+     * 订单退款
+     * @param refundRequest 退款请求
+     * @param request 当前请求
+     * @return 是否成功退款
+     */
+    Boolean refundOrder(RentalOrderRefundRequest refundRequest, HttpServletRequest request);
 }

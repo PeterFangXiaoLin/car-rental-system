@@ -1,11 +1,12 @@
 package com.my.service;
 
+import com.my.domain.dto.comment.CommentQueryRequest;
 import com.my.domain.entity.Comment;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.my.common.DeleteRequest;
 import com.my.domain.dto.comment.CommentAddRequest;
-import com.my.domain.dto.comment.CommentQueryRequest;
+import com.my.domain.dto.comment.CommentAdminQueryRequest;
 import com.my.domain.dto.comment.CommentUpdateRequest;
 import com.my.domain.vo.CommentVO;
 
@@ -52,10 +53,10 @@ public interface CommentService extends IService<Comment> {
 
     /**
      * 分页获取评论列表
-     * @param commentQueryRequest 评论查询请求
+     * @param commentAdminQueryRequest 评论查询请求
      * @return 评论分页列表
      */
-    Page<CommentVO> listCommentByPage(CommentQueryRequest commentQueryRequest);
+    Page<CommentVO> listCommentByPage(CommentAdminQueryRequest commentAdminQueryRequest);
 
     /**
      * 获取车辆的评论列表
@@ -70,4 +71,6 @@ public interface CommentService extends IService<Comment> {
      * @return 评论视图对象
      */
     CommentVO getCommentVO(Comment comment);
+
+    Page<CommentVO> pageCommentByVehicleId(CommentQueryRequest commentQueryRequest);
 }

@@ -1,10 +1,13 @@
 package com.my.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.my.annotation.AuthCheck;
 import com.my.common.BaseResponse;
 import com.my.common.DeleteRequest;
 import com.my.common.ResultUtils;
+import com.my.constant.UserConstant;
 import com.my.domain.dto.comment.CommentAddRequest;
+import com.my.domain.dto.comment.CommentAdminQueryRequest;
 import com.my.domain.dto.comment.CommentQueryRequest;
 import com.my.domain.dto.comment.CommentUpdateRequest;
 import com.my.domain.vo.CommentVO;
@@ -14,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 @RestController
 @RequestMapping("/comment")
@@ -49,13 +51,14 @@ public class CommentController {
 
     @PostMapping("/list/page")
     @ApiOperation(value = "分页获取评论列表")
-    public BaseResponse<Page<CommentVO>> listCommentByPage(@RequestBody CommentQueryRequest commentQueryRequest) {
-        return ResultUtils.success(commentService.listCommentByPage(commentQueryRequest));
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Page<CommentVO>> listCommentByPage(@RequestBody CommentAdminQueryRequest commentAdminQueryRequest) {
+        return ResultUtils.success(commentService.listCommentByPage(commentAdminQueryRequest));
     }
 
-    @GetMapping("/list/vehicle")
+    @GetMapping("/page")
     @ApiOperation(value = "获取车辆的评论列表")
-    public BaseResponse<List<CommentVO>> listCommentByVehicleId(@RequestParam("vehicleId") Long vehicleId) {
-        return ResultUtils.success(commentService.listCommentByVehicleId(vehicleId));
+    public BaseResponse<Page<CommentVO>> pageCommentByVehicleId(@RequestBody CommentQueryRequest commentQueryRequest) {
+        return ResultUtils.success(commentService.pageCommentByVehicleId(commentQueryRequest));
     }
 }
