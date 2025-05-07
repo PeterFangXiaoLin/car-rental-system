@@ -130,6 +130,21 @@ export async function pickupVehicleUsingGet(
   })
 }
 
+/** 退款 POST /api/rentalOrder/refund */
+export async function refundOrderUsingPost(
+  body: API.RentalOrderRefundRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/rentalOrder/refund', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** 还车 GET /api/rentalOrder/return */
 export async function returnVehicleUsingGet(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)

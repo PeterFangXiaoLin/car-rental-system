@@ -52,12 +52,6 @@ declare namespace API {
     message?: string
   }
 
-  type BaseResponseListCommentVO_ = {
-    code?: number
-    data?: CommentVO[]
-    message?: string
-  }
-
   type BaseResponseListEnergyTypeDictVO_ = {
     code?: number
     data?: EnergyTypeDictVO[]
@@ -298,15 +292,27 @@ declare namespace API {
     vehicleRating?: number
   }
 
-  type CommentQueryRequest = {
+  type CommentAdminQueryRequest = {
     current?: number
     driverId?: number
+    driverName?: string
     orderId?: number
+    orderNo?: string
     pageSize?: number
     searchText?: string
     sortField?: string
     sortOrder?: string
     userId?: number
+    userName?: string
+    vehicleId?: number
+    vehicleName?: string
+  }
+
+  type CommentQueryRequest = {
+    current?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
     vehicleId?: number
   }
 
@@ -528,11 +534,6 @@ declare namespace API {
   type getVehicleTypeDictByIdUsingGETParams = {
     /** id */
     id: number
-  }
-
-  type listCommentByVehicleIdUsingGETParams = {
-    /** vehicleId */
-    vehicleId: number
   }
 
   type listCommentReplyByCommentIdUsingGETParams = {
@@ -796,6 +797,7 @@ declare namespace API {
   }
 
   type RentalOrderCancelRequest = {
+    cancelReason?: string
     orderId?: number
   }
 
@@ -820,6 +822,12 @@ declare namespace API {
     sortField?: string
     sortOrder?: string
     status?: number
+  }
+
+  type RentalOrderRefundRequest = {
+    orderId?: number
+    refundAmount?: number
+    refundReason?: string
   }
 
   type RentalOrderVO = {

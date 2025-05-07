@@ -49,7 +49,7 @@ export async function getCommentByIdUsingGet(
 
 /** 分页获取评论列表 POST /api/comment/list/page */
 export async function listCommentByPageUsingPost(
-  body: API.CommentQueryRequest,
+  body: API.CommentAdminQueryRequest,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResponsePageCommentVO_>('/api/comment/list/page', {
@@ -62,17 +62,17 @@ export async function listCommentByPageUsingPost(
   })
 }
 
-/** 获取车辆的评论列表 GET /api/comment/list/vehicle */
-export async function listCommentByVehicleIdUsingGet(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.listCommentByVehicleIdUsingGETParams,
+/** 获取车辆的评论列表 GET /api/comment/page */
+export async function pageCommentByVehicleIdUsingGet(
+  body: API.CommentQueryRequest,
   options?: { [key: string]: any }
 ) {
-  return request<API.BaseResponseListCommentVO_>('/api/comment/list/vehicle', {
+  return request<API.BaseResponsePageCommentVO_>('/api/comment/page', {
     method: 'GET',
-    params: {
-      ...params,
+    headers: {
+      'Content-Type': 'application/json',
     },
+    data: body,
     ...(options || {}),
   })
 }
