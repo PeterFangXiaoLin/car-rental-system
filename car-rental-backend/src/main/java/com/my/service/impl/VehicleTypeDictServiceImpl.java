@@ -14,6 +14,7 @@ import com.my.domain.dto.vehicletypedict.VehicleTypeDictUpdateRequest;
 import com.my.domain.entity.VehicleTypeDict;
 import com.my.domain.vo.VehicleTypeDictVO;
 import com.my.exception.BusinessException;
+import com.my.mapper.VehicleMapper;
 import com.my.mapper.VehicleTypeDictMapper;
 import com.my.service.VehicleTypeDictService;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,9 @@ public class VehicleTypeDictServiceImpl extends ServiceImpl<VehicleTypeDictMappe
 
     @Resource
     private VehicleTypeDictMapper vehicleTypeDictMapper;
+
+    @Resource
+    private VehicleMapper vehicleMapper;
 
     @Override
     public Long addVehicleTypeDict(VehicleTypeDictAddRequest vehicleTypeDictAddRequest) {
@@ -88,6 +92,11 @@ public class VehicleTypeDictServiceImpl extends ServiceImpl<VehicleTypeDictMappe
         VehicleTypeDict vehicleTypeDict = this.getById(id);
         if (vehicleTypeDict == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        // 检查是否有车辆关联
+        long count = vehicleMapper.countByTypeId(id);
+        if (count > 0) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "该车型下有车辆关联，无法删除");
         }
         boolean remove = this.removeById(id);
         if (!remove) {

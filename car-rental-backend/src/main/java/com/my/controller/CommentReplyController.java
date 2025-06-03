@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.my.common.BaseResponse;
 import com.my.common.DeleteRequest;
 import com.my.common.ResultUtils;
+import com.my.domain.dto.comment.ReplyToCommentRequest;
 import com.my.domain.dto.commentreply.CommentReplyAddRequest;
 import com.my.domain.dto.commentreply.CommentReplyQueryRequest;
 import com.my.domain.dto.commentreply.CommentReplyUpdateRequest;
@@ -57,5 +58,11 @@ public class CommentReplyController {
     @ApiOperation(value = "获取评论的回复列表")
     public BaseResponse<List<CommentReplyVO>> listCommentReplyByCommentId(@RequestParam("commentId") Long commentId) {
         return ResultUtils.success(commentReplyService.listCommentReplyByCommentId(commentId));
+    }
+
+    @PostMapping("/add/reply")
+    @ApiOperation(value = "追加评论")
+    public BaseResponse<Boolean> addReplyToComment(@RequestBody ReplyToCommentRequest replyToCommentRequest, HttpServletRequest request) {
+        return ResultUtils.success(commentReplyService.addReplyToComment(replyToCommentRequest, request));
     }
 }

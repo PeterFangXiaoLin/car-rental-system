@@ -16,6 +16,7 @@ import com.my.domain.vo.EnergyTypeDictVO;
 import com.my.exception.BusinessException;
 import com.my.exception.ThrowUtils;
 import com.my.mapper.EnergyTypeDictMapper;
+import com.my.mapper.VehicleMapper;
 import com.my.service.EnergyTypeDictService;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +36,9 @@ public class EnergyTypeDictServiceImpl extends ServiceImpl<EnergyTypeDictMapper,
 
     @Resource
     private EnergyTypeDictMapper energyTypeDictMapper;
+
+    @Resource
+    private VehicleMapper vehicleMapper;
 
     @Override
     public Long addEnergyTypeDict(EnergyTypeDictAddRequest energyTypeDictAddRequest) {
@@ -69,6 +73,13 @@ public class EnergyTypeDictServiceImpl extends ServiceImpl<EnergyTypeDictMapper,
         ThrowUtils.throwIf(id == null || id <= 0, ErrorCode.PARAMS_ERROR);
         EnergyTypeDict oldEnergyType = this.getById(id);
         ThrowUtils.throwIf(oldEnergyType == null, ErrorCode.NOT_FOUND_ERROR, "能源类型不存在");
+
+        // 检查能源类型是否被车辆使用
+        long count = vehicleMapper.countByEnergyTypeId(id);
+        if (count > 0) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "能源类型被车辆使用，无法删除");
+        }
+
         boolean remove = this.removeById(id);
         ThrowUtils.throwIf(!remove, ErrorCode.OPERATION_ERROR);
         return true;

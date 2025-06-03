@@ -62,13 +62,13 @@ export async function listCommentByPageUsingPost(
   })
 }
 
-/** 获取车辆的评论列表 GET /api/comment/page */
-export async function pageCommentByVehicleIdUsingGet(
+/** 获取车辆的评论列表 POST /api/comment/page */
+export async function pageCommentByVehicleIdUsingPost(
   body: API.CommentQueryRequest,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResponsePageCommentVO_>('/api/comment/page', {
-    method: 'GET',
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },

@@ -19,6 +19,38 @@
             <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
             <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
     </resultMap>
+    
+    <resultMap id="CommentVOResultMap" type="com.my.domain.vo.CommentVO">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="orderId" column="orderId" jdbcType="BIGINT"/>
+        <result property="userId" column="userId" jdbcType="BIGINT"/>
+        <result property="userName" column="userName" jdbcType="VARCHAR"/>
+        <result property="userAvatar" column="userAvatar" jdbcType="VARCHAR"/>
+        <result property="vehicleId" column="vehicleId" jdbcType="BIGINT"/>
+        <result property="vehicleName" column="vehicleName" jdbcType="VARCHAR"/>
+        <result property="driverId" column="driverId" jdbcType="BIGINT"/>
+        <result property="driverName" column="driverName" jdbcType="VARCHAR"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="vehicleRating" column="vehicleRating" jdbcType="INTEGER"/>
+        <result property="driverRating" column="driverRating" jdbcType="INTEGER"/>
+        <result property="commentTime" column="commentTime" jdbcType="TIMESTAMP"/>
+        <result property="images" column="images" jdbcType="VARCHAR"/>
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <collection property="replyList" ofType="com.my.domain.vo.CommentReplyVO">
+            <id property="id" column="reply_id" jdbcType="BIGINT"/>
+            <result property="commentId" column="reply_commentId" jdbcType="BIGINT"/>
+            <result property="userId" column="reply_userId" jdbcType="BIGINT"/>
+            <result property="userName" column="reply_userName" jdbcType="VARCHAR"/>
+            <result property="userAvatar" column="reply_userAvatar" jdbcType="VARCHAR"/>
+            <result property="content" column="reply_content" jdbcType="VARCHAR"/>
+            <result property="parentId" column="reply_parentId" jdbcType="BIGINT"/>
+            <result property="replyToUserId" column="reply_replyToUserId" jdbcType="BIGINT"/>
+            <result property="replyToUserName" column="reply_replyToUserName" jdbcType="VARCHAR"/>
+            <result property="images" column="reply_images" jdbcType="VARCHAR"/>
+            <result property="createTime" column="reply_createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="reply_updateTime" jdbcType="TIMESTAMP"/>
+        </collection>
+    </resultMap>
 
     <sql id="Base_Column_List">
         id,orderId,userId,
@@ -75,48 +107,64 @@
             </if>
         </if>
     </select>
-    <select id="selectCommentVOByVehicleId" resultType="com.my.domain.vo.CommentVO">
+    <select id="selectCommentVOByVehicleId" resultMap="CommentVOResultMap">
         SELECT
-            comment.id,
-            comment.orderId,
-            comment.userId,
-            user.userName as userName,
-            user.userAvatar as userAvatar,
-            comment.vehicleId,
-            vehicle.name as vehicleName,
-            comment.driverId,
-            comment.content,
-            comment.vehicleRating,
-            comment.driverRating,
-            comment.commentTime,
-            comment.images,
-            comment.createTime
+            c.id,
+            c.orderId,
+            c.userId,
+            u1.userName,
+            u1.userAvatar,
+            c.vehicleId,
+            v.name as vehicleName,
+            c.driverId,
+            d.driverName,
+            c.content,
+            c.vehicleRating,
+            c.driverRating,
+            c.commentTime,
+            c.images,
+            c.createTime,
+            cr.id as reply_id,
+            cr.commentId as reply_commentId,
+            cr.userId as reply_userId,
+            u2.userName as reply_userName,
+            u2.userAvatar as reply_userAvatar,
+            cr.content as reply_content,
+            cr.parentId as reply_parentId,
+            cr.replyToUserId as reply_replyToUserId,
+            u3.userName as reply_replyToUserName,
+            cr.images as reply_images,
+            cr.createTime as reply_createTime,
+            cr.updateTime as reply_updateTime
         FROM
-            comment
-                INNER JOIN vehicle ON comment.vehicleId = vehicle.id AND vehicle.isDelete = 0
-                INNER JOIN user ON comment.userId = user.id AND user.isDelete = 0
-                LEFT JOIN driver ON comment.driverId = driver.id AND driver.isDelete = 0
-        WHERE comment.isDelete = 0
+            comment c
+            INNER JOIN vehicle v ON c.vehicleId = v.id AND v.isDelete = 0
+            INNER JOIN user u1 ON c.userId = u1.id AND u1.isDelete = 0
+            LEFT JOIN driver d ON c.driverId = d.id AND d.isDelete = 0
+            LEFT JOIN comment_reply cr ON c.id = cr.commentId AND cr.isDelete = 0
+            LEFT JOIN user u2 ON cr.userId = u2.id AND u2.isDelete = 0
+            LEFT JOIN user u3 ON cr.replyToUserId = u3.id AND u3.isDelete = 0
+        WHERE c.isDelete = 0
         <if test="req.vehicleId!= null">
-            AND comment.vehicleId = #{req.vehicleId}
+            AND c.vehicleId = #{req.vehicleId}
         </if>
         <choose>
             <when test="req.sortField == 'createTime'">
-                ORDER BY comment.createTime
+                ORDER BY c.createTime
             </when>
             <when test="req.sortField == 'commentTime'">
-                ORDER BY comment.commentTime
+                ORDER BY c.commentTime
             </when>
-            <!-- 可添加更多允许的排序字段 -->
             <otherwise>
-                ORDER BY comment.createTime -- 默认排序
+                ORDER BY c.createTime
             </otherwise>
         </choose>
         <if test="req.sortOrder == 'descend'">
             DESC
         </if>
-        <if test="req.sortOrder == 'ascend'">
-            ASC
-        </if>
+        , cr.createTime ASC
+    </select>
+    <select id="selectByOrderId" resultType="com.my.domain.entity.Comment">
+        SELECT * FROM comment WHERE orderId = #{orderId} AND isDelete = 0
     </select>
 </mapper>

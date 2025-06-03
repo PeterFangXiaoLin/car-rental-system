@@ -14,6 +14,7 @@ import com.my.domain.entity.VehicleBrand;
 import com.my.domain.entity.VehicleModel;
 import com.my.domain.vo.VehicleModelVO;
 import com.my.exception.BusinessException;
+import com.my.mapper.VehicleMapper;
 import com.my.mapper.VehicleModelMapper;
 import com.my.service.VehicleBrandService;
 import com.my.service.VehicleModelService;
@@ -37,6 +38,9 @@ public class VehicleModelServiceImpl extends ServiceImpl<VehicleModelMapper, Veh
 
     @Resource
     private VehicleModelMapper vehicleModelMapper;
+
+    @Resource
+    private VehicleMapper vehicleMapper;
 
     @Override
     public Long addVehicleModel(VehicleModelAddRequest vehicleModelAddRequest) {
@@ -104,6 +108,12 @@ public class VehicleModelServiceImpl extends ServiceImpl<VehicleModelMapper, Veh
         if (vehicleModel == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "车辆型号不存在");
         }
+        // 检查是否有车辆关联
+        long count = vehicleMapper.countByModelId(id);
+        if (count > 0) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆型号关联车辆，无法删除");
+        }
+
         boolean remove = this.removeById(id);
         if (!remove) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除失败");

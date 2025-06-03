@@ -1,10 +1,11 @@
 package com.my.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.my.domain.dto.comment.CommentAdminQueryRequest;
 import com.my.domain.dto.comment.CommentQueryRequest;
 import com.my.domain.entity.Comment;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.my.domain.vo.CommentVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -25,12 +26,19 @@ public interface CommentMapper extends BaseMapper<Comment> {
     Page<CommentVO> selectCommentVOPage(Page<CommentVO> commentVOPage, @Param("req") CommentAdminQueryRequest commentAdminQueryRequest);
 
     /**
-     * 分页查询评论
+     * 分页查询评论(包含评论回复)
      * @param commentVOPage 评论分页对象
      * @param commentQueryRequest 评论查询请求对象
-     * @return 评论分页对象
+     * @return 评论分页对象(包含评论回复)
      */
     Page<CommentVO> selectCommentVOByVehicleId(Page<CommentVO> commentVOPage, @Param("req") CommentQueryRequest commentQueryRequest);
+
+    /**
+     * 根据订单ID查询评论
+     * @param orderId 订单ID
+     * @return 评论对象
+     */
+    Comment selectByOrderId(@Param("orderId") Long orderId);
 }
 
 

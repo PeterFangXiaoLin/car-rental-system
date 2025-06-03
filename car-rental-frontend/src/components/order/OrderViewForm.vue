@@ -19,7 +19,7 @@
         </div>
         <div class="detail-item">
           <span class="label">付款时间：</span>
-          <span>{{ currentOrder.payTime ? formatDate(currentOrder.payTime) : '未支付' }}</span>
+          <span>{{ currentOrder.paymentTime ? formatDate(currentOrder.paymentTime) : '未支付' }}</span>
         </div>
         <div class="detail-item">
           <span class="label">订单状态：</span>
@@ -69,11 +69,11 @@
         <h4>费用信息</h4>
         <div class="detail-item">
           <span class="label">车辆租金：</span>
-          <span>¥{{ currentOrder.vehicleAmount || '0.00' }}</span>
+          <span>¥{{ currentOrder.vehicleTotalAmount || '0.00' }}</span>
         </div>
-        <div class="detail-item">
-          <span class="label">其他费用：</span>
-          <span>¥{{ currentOrder.otherAmount || '0.00' }}</span>
+        <div v-if="currentOrder.needDriver" class="detail-item">
+          <span class="label">司机费用：</span>
+          <span>¥{{ currentOrder.driverTotalAmount || '0.00' }}</span>
         </div>
         <div class="detail-item">
           <span class="label">订单总价：</span>

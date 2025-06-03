@@ -10,4 +10,6 @@ public interface RedisConstant {
     String DRIVER_ADD_PREFIX = "driver:add:";
 
     String VEHICLE_LOCK_PREFIX = "vehicle:lock:";
+
+    String DRIVER_LOCK_PREFIX = "driver:lock:";
 }

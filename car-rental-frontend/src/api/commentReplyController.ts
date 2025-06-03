@@ -17,6 +17,21 @@ export async function addCommentReplyUsingPost(
   })
 }
 
+/** 追加评论 POST /api/comment/reply/add/reply */
+export async function addReplyToCommentUsingPost(
+  body: API.ReplyToCommentRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/comment/reply/add/reply', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** 删除评论回复 POST /api/comment/reply/delete */
 export async function deleteCommentReplyUsingPost(
   body: API.DeleteRequest,

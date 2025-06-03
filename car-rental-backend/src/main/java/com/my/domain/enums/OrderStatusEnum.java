@@ -9,7 +9,8 @@ public enum OrderStatusEnum {
     PICKED("已取车", 2),
     RETURNED("已还车", 3),
     COMPLETED("已完成", 4),
-    CANCELLED("已取消", 5);
+    CANCELLED("已取消", 5),
+    REFUNDED("已退款", 6);
     private final String name;
     private final Integer value;
 

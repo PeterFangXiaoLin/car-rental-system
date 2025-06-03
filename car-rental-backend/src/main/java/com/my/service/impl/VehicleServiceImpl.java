@@ -98,6 +98,27 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
 
     // 模型更新间隔（12小时）
     private static final long MODEL_UPDATE_INTERVAL = 12 * 60 * 60 * 1000L;
+    
+    // 用户行为权重配置
+    private float BROWSE_WEIGHT = 1.0f;
+    private float FAVORITE_WEIGHT = 3.0f;
+    private float ORDER_WEIGHT = 5.0f;
+    
+    // 时间权重配置
+    private float RECENT_TIME_WEIGHT = 1.0f; // 7天内
+    private float MEDIUM_TIME_WEIGHT = 0.7f; // 30天内
+    private float OLD_TIME_WEIGHT = 0.3f;    // 更早
+    
+    // 车辆特征相似度权重
+    private float BRAND_WEIGHT = 0.3f;
+    private float MODEL_WEIGHT = 0.2f;
+    private float TYPE_WEIGHT = 0.15f;
+    private float ENERGY_WEIGHT = 0.15f;
+    private float SEAT_WEIGHT = 0.1f;
+    private float PRICE_WEIGHT = 0.1f;
+    
+    // 权重调试标志
+    private boolean DEBUG_MODE = false;
 
     private void validate(Vehicle vehicle, boolean add) {
         if (vehicle == null) {
@@ -208,6 +229,13 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         if (oldVehicle == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "车辆不存在");
         }
+
+        // 检查是否有订单关联
+        long count = rentalOrderMapper.countByVehicleId(id);
+        if (count > 0) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "该车辆有订单关联，无法删除");
+        }
+
         // 删除数据
         boolean deleteResult = this.removeById(id);
         if (!deleteResult) {
@@ -310,6 +338,9 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User loginUser = (User) userObj;
         if (loginUser == null) {
+            if (DEBUG_MODE) {
+                log.debug("未登录用户访问推荐系统，返回热门推荐");
+            }
             return getPopularVehicles(); // 未登录用户返回热门推荐
         }
 
@@ -325,17 +356,26 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
 
             // 3. 冷启动处理 - 如果是新用户没有交互记录
             if (CollUtil.isEmpty(browsingHistories) && CollUtil.isEmpty(favorites)) {
+                if (DEBUG_MODE) {
+                    log.debug("用户[{}]无交互记录，使用冷启动推荐", userId);
+                }
                 return getNewUserRecommendations(userId);
             }
 
             // 4. 使用基于物品的协同过滤进行推荐
             List<Long> recommendedIds = getItemBasedRecommendations(vehicleId, userId);
+            if (DEBUG_MODE) {
+                log.debug("用户[{}]基于物品推荐结果: {}", userId, recommendedIds);
+            }
 
             // 5. 如果推荐数量不足，补充基于内容的推荐
             if (recommendedIds.size() < RECOMMEND_LIMIT) {
                 List<Long> contentBasedIds = getContentBasedRecommendations(userId,
                         RECOMMEND_LIMIT - recommendedIds.size(),
                         new HashSet<>(recommendedIds));
+                if (DEBUG_MODE) {
+                    log.debug("用户[{}]基于内容补充推荐: {}", userId, contentBasedIds);
+                }
                 recommendedIds.addAll(contentBasedIds);
             }
 
@@ -403,8 +443,12 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         // 浏览历史数据
         List<VehicleBrowsingHistory> browsingHistories = browsingHistoryMapper.selectList(null);
         for (VehicleBrowsingHistory history : browsingHistories) {
-            // 浏览行为评分为1.0
-            double score = calculateTimeWeight(history.getCreateTime());
+            // 浏览行为权重
+            double score = BROWSE_WEIGHT * calculateTimeWeight(history.getCreateTime());
+            if (DEBUG_MODE) {
+                log.debug("用户ID: {}, 浏览车辆ID: {}, 分值: {}", 
+                    history.getUserId(), history.getVehicleId(), score);
+            }
             preferences.add(new UserVehiclePreference(
                     history.getUserId(), history.getVehicleId(), (float) score));
         }
@@ -412,8 +456,12 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         // 收藏数据
         List<VehicleFavorite> favorites = favoriteMapper.selectList(null);
         for (VehicleFavorite favorite : favorites) {
-            // 收藏行为评分为3.0
-            double score = 3.0 * calculateTimeWeight(favorite.getCreateTime());
+            // 收藏行为权重
+            double score = FAVORITE_WEIGHT * calculateTimeWeight(favorite.getCreateTime());
+            if (DEBUG_MODE) {
+                log.debug("用户ID: {}, 收藏车辆ID: {}, 分值: {}", 
+                    favorite.getUserId(), favorite.getVehicleId(), score);
+            }
             preferences.add(new UserVehiclePreference(
                     favorite.getUserId(), favorite.getVehicleId(), (float)score));
         }
@@ -421,8 +469,12 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
         // 订单数据(如果有)
         List<RentalOrder> orders = rentalOrderMapper.selectList(null);
         for (RentalOrder order : orders) {
-            // 下单行为评分为5.0
-            double score = 5.0 * calculateTimeWeight(order.getCreateTime());
+            // 下单行为权重
+            double score = ORDER_WEIGHT * calculateTimeWeight(order.getCreateTime());
+            if (DEBUG_MODE) {
+                log.debug("用户ID: {}, 下单车辆ID: {}, 分值: {}", 
+                    order.getUserId(), order.getVehicleId(), score);
+            }
             preferences.add(new UserVehiclePreference(
                     order.getUserId(), order.getVehicleId(), (float)score));
         }
@@ -520,14 +572,6 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
      * 计算两个车辆的内容相似度
      */
     private double calculateVehicleSimilarity(Vehicle v1, Vehicle v2) {
-        // 特征权重
-        final double BRAND_WEIGHT = 0.3;
-        final double MODEL_WEIGHT = 0.2;
-        final double TYPE_WEIGHT = 0.15;
-        final double ENERGY_WEIGHT = 0.15;
-        final double SEAT_WEIGHT = 0.1;
-        final double PRICE_WEIGHT = 0.1;
-
         double similarity = 0.0;
 
         // 品牌相似度
@@ -563,6 +607,10 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
             double maxPrice = Math.max(price1, price2);
             double priceSimilarity = 1 - (priceDiff / maxPrice);
             similarity += PRICE_WEIGHT * priceSimilarity;
+        }
+        
+        if (DEBUG_MODE) {
+            log.debug("车辆相似度: {} 与 {} 的相似度: {}", v1.getId(), v2.getId(), similarity);
         }
 
         return similarity;
@@ -601,7 +649,7 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
      * 计算时间权重
      */
     private double calculateTimeWeight(Date createTime) {
-        if (createTime == null) return 0.5;
+        if (createTime == null) return OLD_TIME_WEIGHT;
 
         long now = System.currentTimeMillis();
         long created = createTime.getTime();
@@ -609,15 +657,15 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle>
 
         // 7天内的记录有较高权重
         if (diff < 7 * 24 * 60 * 60 * 1000L) {
-            return 1.0;
+            return RECENT_TIME_WEIGHT;
         }
         // 30天内的记录有中等权重
         else if (diff < 30 * 24 * 60 * 60 * 1000L) {
-            return 0.7;
+            return MEDIUM_TIME_WEIGHT;
         }
         // 更早的记录权重较低
         else {
-            return 0.3;
+            return OLD_TIME_WEIGHT;
         }
     }
 

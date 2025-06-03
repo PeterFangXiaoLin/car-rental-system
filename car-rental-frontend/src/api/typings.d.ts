@@ -867,6 +867,13 @@ declare namespace API {
     vehicleTotalAmount?: number
   }
 
+  type ReplyToCommentRequest = {
+    commentId?: number
+    content?: string
+    images?: string
+    orderId?: number
+  }
+
   type returnVehicleUsingGETParams = {
     /** orderId */
     orderId: number

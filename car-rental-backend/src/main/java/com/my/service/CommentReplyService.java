@@ -1,5 +1,6 @@
 package com.my.service;
 
+import com.my.domain.dto.comment.ReplyToCommentRequest;
 import com.my.domain.entity.CommentReply;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -70,4 +71,13 @@ public interface CommentReplyService extends IService<CommentReply> {
      * @return 评论回复视图对象
      */
     CommentReplyVO getCommentReplyVO(CommentReply commentReply);
+
+    /**
+     * 追加评论
+     *
+     * @param replyToCommentRequest
+     * @param request
+     * @return
+     */
+    Boolean addReplyToComment(ReplyToCommentRequest replyToCommentRequest, HttpServletRequest request);
 }

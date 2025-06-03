@@ -2,12 +2,12 @@ package com.my.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.my.common.DeleteRequest;
 import com.my.domain.dto.vehicle.VehicleAddRequest;
 import com.my.domain.dto.vehicle.VehicleQueryRequest;
 import com.my.domain.dto.vehicle.VehicleUpdateRequest;
 import com.my.domain.entity.Vehicle;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.my.domain.vo.VehicleVO;
 
 import javax.servlet.http.HttpServletRequest;

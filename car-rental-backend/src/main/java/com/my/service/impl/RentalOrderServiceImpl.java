@@ -21,6 +21,7 @@ import com.my.domain.entity.Driver;
 import com.my.domain.entity.RentalOrder;
 import com.my.domain.entity.Store;
 import com.my.domain.entity.Vehicle;
+import com.my.domain.enums.DriverWorkStatusEnum;
 import com.my.domain.enums.OrderStatusEnum;
 import com.my.domain.enums.PaymentStatusEnum;
 import com.my.domain.enums.VehicleStatusEnum;
@@ -42,6 +43,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.my.constant.RedisConstant.VEHICLE_LOCK_PREFIX;
+import static com.my.constant.RedisConstant.DRIVER_LOCK_PREFIX;
 
 /**
 * @author Administrator
@@ -152,7 +154,8 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
         
         // 更新支付状态
         order.setPaymentStatus(status);
-        
+        order.setPaymentTime(new Date());
+
         // 如果支付成功，更新订单状态为已支付待取车
         if (status.equals(PaymentStatusEnum.PAID.getValue())) {
             order.setStatus(OrderStatusEnum.PAID_UNPICKED.getValue());
@@ -202,14 +205,32 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
         // 如果选了司机，则校验司机是否存在
         if (rentalOrder.getNeedDriver() == 1) {
             Long driverId = rentalOrder.getDriverId();
-            Driver driver = driverService.getById(driverId);
-            if (driver == null) {
-                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "司机不存在");
+            
+            // 使用司机ID作为锁对象，确保对同一个司机的操作是线程安全的
+            String driverLockKey = DRIVER_LOCK_PREFIX + driverId;
+            synchronized (driverLockKey.intern()) {
+                Driver driver = driverService.getById(driverId);
+                if (driver == null) {
+                    throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "司机不存在");
+                }
+                
+                // 检查司机当前状态是否可接单
+                if (!DriverWorkStatusEnum.AVAILABLE.getValue().equals(driver.getWorkStatus())) {
+                    throw new BusinessException(ErrorCode.OPERATION_ERROR, "该司机当前不可接单");
+                }
+                
+                // 更新司机状态为已接单
+                driver.setWorkStatus(DriverWorkStatusEnum.OCCUPIED.getValue());
+                boolean updateDriverResult = driverService.updateById(driver);
+                if (!updateDriverResult) {
+                    throw new BusinessException(ErrorCode.SYSTEM_ERROR, "司机状态更新失败");
+                }
+                
+                // 设置司机服务费用
+                rentalOrder.setDriverDailyPrice(driver.getDailyPrice());
+                rentalOrder.setDriverTotalAmount(driver.getDailyPrice().multiply(BigDecimal.valueOf(totalDays)));
+                rentalOrder.setTotalAmount(rentalOrder.getTotalAmount().add(rentalOrder.getDriverTotalAmount()));
             }
-            // 设置司机服务费用
-            rentalOrder.setDriverDailyPrice(driver.getDailyPrice());
-            rentalOrder.setDriverTotalAmount(driver.getDailyPrice().multiply(BigDecimal.valueOf(totalDays)));
-            rentalOrder.setTotalAmount(rentalOrder.getTotalAmount().add(rentalOrder.getDriverTotalAmount()));
         }
 
         // 校验门店是否存在
@@ -267,6 +288,23 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
                     throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆状态更新失败");
                 }
             }
+            
+            // 如果订单需要司机，释放司机资源
+            if (order.getNeedDriver() == 1 && order.getDriverId() != null) {
+                Long driverId = order.getDriverId();
+                String driverLockKey = DRIVER_LOCK_PREFIX + driverId;
+                synchronized (driverLockKey.intern()) {
+                    Driver driver = driverService.getById(order.getDriverId());
+                    if (driver != null && DriverWorkStatusEnum.OCCUPIED.getValue().equals(driver.getWorkStatus())) {
+                        driver.setWorkStatus(DriverWorkStatusEnum.AVAILABLE.getValue());
+                        boolean updateDriverResult = driverService.updateById(driver);
+                        if (!updateDriverResult) {
+                            log.error("取消订单失败，司机状态更新失败: {}", order.getDriverId());
+                            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "司机状态更新失败");
+                        }
+                    }
+                }
+            }
         }
         
         return this.updateById(order);
@@ -322,6 +360,23 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
                 if (!saveResult) {
                     log.error("取消订单失败，订单状态更新失败: {}", orderId);
                     throw new BusinessException(ErrorCode.SYSTEM_ERROR, "订单状态更新失败");
+                }
+                
+                // 如果订单需要司机，释放司机资源
+                if (order.getNeedDriver() == 1 && order.getDriverId() != null) {
+                    Long driverId = order.getDriverId();
+                    String driverLockKey = DRIVER_LOCK_PREFIX + driverId;
+                    synchronized (driverLockKey.intern()) {
+                        Driver driver = driverService.getById(order.getDriverId());
+                        if (driver != null && DriverWorkStatusEnum.OCCUPIED.getValue().equals(driver.getWorkStatus())) {
+                            driver.setWorkStatus(DriverWorkStatusEnum.AVAILABLE.getValue());
+                            boolean updateDriverResult = driverService.updateById(driver);
+                            if (!updateDriverResult) {
+                                log.error("取消订单失败，司机状态更新失败: {}", order.getDriverId());
+                                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "司机状态更新失败");
+                            }
+                        }
+                    }
                 }
 
                 return true;
@@ -470,6 +525,24 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
                     throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆状态更新失败");
                 }
             }
+            
+            // 如果订单需要司机，释放司机资源
+            if (order.getNeedDriver() == 1 && order.getDriverId() != null) {
+                Long driverId = order.getDriverId();
+                String driverLockKey = DRIVER_LOCK_PREFIX + driverId;
+                synchronized (driverLockKey.intern()) {
+                    Driver driver = driverService.getById(order.getDriverId());
+                    if (driver != null && DriverWorkStatusEnum.OCCUPIED.getValue().equals(driver.getWorkStatus())) {
+                        driver.setWorkStatus(DriverWorkStatusEnum.AVAILABLE.getValue());
+                        boolean updateDriverResult = driverService.updateById(driver);
+                        if (!updateDriverResult) {
+                            log.error("还车失败，司机状态更新失败: {}", order.getDriverId());
+                            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "司机状态更新失败");
+                        }
+                    }
+                }
+            }
+            
             return true;
         }
     }
@@ -537,15 +610,14 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
                 // 退款成功，更新订单状态
                 order.setRefundAmount(refundAmount);
                 order.setRefundTime(new Date());
-                
+
                 // 判断是全额退款还是部分退款
                 boolean isFullRefund = refundAmount.compareTo(order.getTotalAmount()) == 0;
                 
                 if (isFullRefund) {
                     // 全额退款
                     order.setPaymentStatus(PaymentStatusEnum.REFUNDED.getValue());
-                    order.setStatus(OrderStatusEnum.CANCELLED.getValue());
-                    
+
                     // 如果车辆已经被租出，需要释放车辆资源
                     if (OrderStatusEnum.PAID_UNPICKED.getValue().equals(order.getStatus())) {
                         Long vehicleId = order.getVehicleId();
@@ -560,13 +632,33 @@ public class RentalOrderServiceImpl extends ServiceImpl<RentalOrderMapper, Renta
                                     throw new BusinessException(ErrorCode.SYSTEM_ERROR, "车辆状态更新失败");
                                 }
                             }
+                            
+                            // 如果订单需要司机，释放司机资源
+                            if (order.getNeedDriver() == 1 && order.getDriverId() != null) {
+                                Long driverId = order.getDriverId();
+                                String driverLockKey = DRIVER_LOCK_PREFIX + driverId;
+                                synchronized (driverLockKey.intern()) {
+                                    Driver driver = driverService.getById(order.getDriverId());
+                                    if (driver != null && DriverWorkStatusEnum.OCCUPIED.getValue().equals(driver.getWorkStatus())) {
+                                        driver.setWorkStatus(DriverWorkStatusEnum.AVAILABLE.getValue());
+                                        boolean updateDriverResult = driverService.updateById(driver);
+                                        if (!updateDriverResult) {
+                                            log.error("退款失败，司机状态更新失败: {}", order.getDriverId());
+                                            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "司机状态更新失败");
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 } else {
                     // 部分退款
                     order.setPaymentStatus(PaymentStatusEnum.PARTIALLY_REFUNDED.getValue());
                 }
-                
+
+                // 修改订单状态为已退款
+                order.setStatus(OrderStatusEnum.REFUNDED.getValue());
+
                 boolean updateResult = this.updateById(order);
                 if (!updateResult) {
                     log.error("退款成功但更新订单状态失败，订单ID: {}", orderId);

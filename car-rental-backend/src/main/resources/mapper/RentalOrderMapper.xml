@@ -253,4 +253,9 @@
             </if>
         </if>
     </select>
+    <select id="countByVehicleId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM rental_order
+        WHERE vehicleId = #{vehicleId} AND isDelete = 0
+    </select>
 </mapper>

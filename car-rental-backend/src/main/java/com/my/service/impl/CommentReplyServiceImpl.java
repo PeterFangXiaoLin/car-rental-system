@@ -5,12 +5,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.my.common.DeleteRequest;
 import com.my.common.ErrorCode;
+import com.my.domain.dto.comment.ReplyToCommentRequest;
 import com.my.domain.dto.commentreply.CommentReplyAddRequest;
 import com.my.domain.dto.commentreply.CommentReplyQueryRequest;
 import com.my.domain.dto.commentreply.CommentReplyUpdateRequest;
 import com.my.domain.entity.Comment;
 import com.my.domain.entity.CommentReply;
+import com.my.domain.entity.RentalOrder;
 import com.my.domain.entity.User;
+import com.my.domain.enums.OrderStatusEnum;
 import com.my.domain.vo.CommentReplyVO;
 import com.my.domain.vo.LoginUserVO;
 import com.my.exception.BusinessException;
@@ -18,6 +21,7 @@ import com.my.mapper.CommentMapper;
 import com.my.mapper.CommentReplyMapper;
 import com.my.mapper.UserMapper;
 import com.my.service.CommentReplyService;
+import com.my.service.RentalOrderService;
 import com.my.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +51,9 @@ public class CommentReplyServiceImpl extends ServiceImpl<CommentReplyMapper, Com
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private RentalOrderService rentalOrderService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -247,6 +254,55 @@ public class CommentReplyServiceImpl extends ServiceImpl<CommentReplyMapper, Com
         }
         
         return commentReplyVO;
+    }
+
+    @Override
+    public Boolean addReplyToComment(ReplyToCommentRequest replyToCommentRequest, HttpServletRequest request) {
+        if (replyToCommentRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        // 获取当前登录用户
+        LoginUserVO loginUser = userService.getLoginUser(request);
+
+        // 获取订单
+        Long orderId = replyToCommentRequest.getOrderId();
+        if (orderId == null || orderId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单参数错误");
+        }
+        // 校验订单是否存在
+        RentalOrder order = rentalOrderService.getById(orderId);
+        if (order == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "订单不存在");
+        }
+        // 校验订单状态
+        if (!order.getStatus().equals(OrderStatusEnum.COMPLETED.getValue())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "订单状态错误");
+        }
+        
+        // 根据订单id查询评论
+        Comment comment = commentMapper.selectByOrderId(orderId);
+        
+        // 如果评论不存在，创建一个新的评论
+        if (comment == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "评论不存在或已被删除，无法追加评论");
+        }
+        
+        // 组装评论回复对象
+        CommentReply commentReply = new CommentReply();
+        commentReply.setCommentId(comment.getId());
+        commentReply.setUserId(loginUser.getId());
+        commentReply.setReplyToUserId(order.getUserId());
+        commentReply.setContent(replyToCommentRequest.getContent());
+        commentReply.setImages(replyToCommentRequest.getImages());
+
+        // 插入数据
+        boolean result = this.save(commentReply);
+        if (!result) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "评论回复保存失败");
+        }
+
+        return true;
     }
 }
 

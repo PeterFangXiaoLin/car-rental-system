@@ -5,6 +5,7 @@ const ORDER_STATUS_ENUM = {
   RETURNED: 3,
   COMPLETED: 4,
   CANCELLED: 5,
+  REFUNDED: 6,
 }
 
 export default ORDER_STATUS_ENUM

@@ -8,7 +8,6 @@
     :prefix-icon="Location"
   />
   <el-dialog v-model="dialogVisible" title="选择门店" width="850px" destroy-on-close center>
-
     <div class="selected-store-info" v-if="selectedStoreId">
       <div class="store-info-header">当前选择的门店</div>
       <div class="store-info-content">
@@ -93,11 +92,6 @@ const init = (e: AMap.Map) => {
 
   // 获取门店列表
   fetchStoreList()
-
-  // 如果已经选择了门店，显示该门店信息
-  if (storeId.value) {
-    showSelectedStore()
-  }
 }
 
 // 获取定位
@@ -118,7 +112,6 @@ const getLocation = () => {
   })
 }
 
-
 // 获取门店列表
 const fetchStoreList = async () => {
   try {
@@ -127,6 +120,11 @@ const fetchStoreList = async () => {
       storeList.value = res.data.data
       displayStores(storeList.value)
       ElMessage.success(`已显示${cityName.value}的${storeList.value.length}家门店`)
+
+      // 如果已经选择了门店，显示该门店信息
+      if (storeId.value) {
+        showSelectedStore()
+      }
     } else {
       ElMessage.error('加载门店列表失败')
     }

@@ -47,6 +47,9 @@
         <el-tab-pane label="已取消" name="CANCELLED">
           <order-list :orders="orderList" @refresh="fetchOrders" />
         </el-tab-pane>
+        <el-tab-pane label="已退款" name="REFUNDED">
+          <order-list :orders="orderList" @refresh="fetchOrders" />
+        </el-tab-pane>
       </el-tabs>
 
       <!-- 加载中状态 -->
@@ -152,7 +155,6 @@ const handleCurrentChange = (page: number) => {
 // 组件挂载时获取订单
 onMounted(() => {
   fetchOrders()
-  console.log(orderList.value)
 })
 </script>
 

@@ -64,12 +64,13 @@ import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { getRentalOrderUsingGet } from '@/api/rentalOrderController'
-import { addCommentUsingPost, updateCommentUsingPost } from '@/api/commentController'
+import { addCommentUsingPost } from '@/api/commentController'
+import { addReplyToCommentUsingPost } from '@/api/commentReplyController'
 import { uploadFileUsingPost } from '@/api/fileUploadController'
 
 const dialogVisible = ref(false)
 const formRef = ref()
-const orderId = ref<string>('')
+const orderId = ref<string | number>('')
 const isAddComment = ref(false)
 const existingCommentId = ref<number | null>(null)
 const orderDetail = ref<API.RentalOrderVO | null>(null)
@@ -118,7 +119,7 @@ const handleImageChange = async (file: { uid: string; raw: File; name: string })
       commentForm.images.push(res.data.data)
       ElMessage.success('图片上传成功')
     } else {
-      ElMessage.error((res && res.data && res.data.message) || '图片上传失败')
+      ElMessage.error(res.data.message || '图片上传失败')
       // 从文件列表中移除上传失败的文件
       const index = fileList.value.findIndex((item) => item.uid === file.uid)
       if (index !== -1) {
@@ -180,23 +181,23 @@ const submitComment = async () => {
         return
       }
 
-      if (isAddComment.value && existingCommentId.value) {
-        // 追加评论，更新现有评论
-        const res = await updateCommentUsingPost({
-          id: existingCommentId.value,
+      if (isAddComment.value) {
+        // 追加评论，使用回复接口
+        const res = await addReplyToCommentUsingPost({
+          orderId: orderId.value,
           content: commentForm.content,
-          vehicleRating: commentForm.vehicleRating,
-          driverRating: hasDriver.value ? commentForm.driverRating : undefined,
           images: commentForm.images.length > 0 ? commentForm.images.join(',') : undefined,
         })
 
-        if (res.data?.code === 0 && res.data.data) {
-          ElMessage.success('评论更新成功')
+        // 类型断言，确保TypeScript正确识别响应结构
+        const response = res.data as any
+        if (response?.code === 0 && response.data) {
+          ElMessage.success('追加评论成功')
           dialogVisible.value = false
           // 触发刷新事件
           emit('refresh')
         } else {
-          ElMessage.error(res.data?.message || '评论更新失败')
+          ElMessage.error(response?.message || '追加评论失败')
         }
       } else {
         // 新增评论

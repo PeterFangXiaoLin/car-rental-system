@@ -56,7 +56,7 @@ public class CommentController {
         return ResultUtils.success(commentService.listCommentByPage(commentAdminQueryRequest));
     }
 
-    @GetMapping("/page")
+    @PostMapping("/page")
     @ApiOperation(value = "获取车辆的评论列表")
     public BaseResponse<Page<CommentVO>> pageCommentByVehicleId(@RequestBody CommentQueryRequest commentQueryRequest) {
         return ResultUtils.success(commentService.pageCommentByVehicleId(commentQueryRequest));

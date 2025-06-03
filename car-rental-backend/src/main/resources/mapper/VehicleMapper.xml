@@ -184,4 +184,28 @@
         ORDER BY hotness DESC
         LIMIT #{limit}
     </select>
+    <select id="countByBrandId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM vehicle
+        WHERE brandId = #{brandId}
+          AND isDelete = 0
+    </select>
+    <select id="countByModelId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM vehicle
+        WHERE modelId = #{modelId}
+          AND isDelete = 0
+    </select>
+    <select id="countByTypeId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM vehicle
+        WHERE vehicleTypeId = #{vehicleTypeId}
+          AND isDelete = 0
+    </select>
+    <select id="countByEnergyTypeId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM vehicle
+        WHERE energyTypeId = #{energyTypeId}
+          AND isDelete = 0
+    </select>
 </mapper>

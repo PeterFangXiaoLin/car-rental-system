@@ -49,6 +49,38 @@ public interface VehicleMapper extends BaseMapper<Vehicle> {
      * @return
      */
     List<Long> selectHotVehicleIds(@Param("limit") int limit);
+
+    /**
+     * 根据品牌ID统计车辆数量
+     *
+     * @param id
+     * @return
+     */
+    long countByBrandId(@Param("brandId") Long id);
+
+    /**
+     * 根据车型ID统计车辆数量
+     *
+     * @param id
+     * @return
+     */
+    long countByModelId(@Param("modelId") Long id);
+
+    /**
+     * 根据类型ID统计车辆数量
+     *
+     * @param id
+     * @return
+     */
+    long countByTypeId(@Param("typeId") Long id);
+
+    /**
+     * 根据能源类型ID统计车辆数量
+     *
+     * @param id
+     * @return
+     */
+    long countByEnergyTypeId(@Param("energyTypeId") Long id);
 }
 
 

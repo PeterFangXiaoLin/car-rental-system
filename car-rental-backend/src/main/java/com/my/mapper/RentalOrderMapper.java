@@ -41,6 +41,13 @@ public interface RentalOrderMapper extends BaseMapper<RentalOrder> {
      * @return 订单分页结果
      */
     Page<RentalOrderVO> pageRentalOrder(Page<RentalOrderVO> page,@Param("req") RentalOrderAdminPageRequest pageRequest);
+
+    /**
+     * 根据车辆ID查询订单数量
+     * @param id 车辆ID
+     * @return 订单数量
+     */
+    long countByVehicleId(@Param("orderId") Long id);
 }
 
 

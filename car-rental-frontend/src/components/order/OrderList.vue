@@ -72,6 +72,16 @@
           </el-button>
 
           <el-button
+            v-if="order.status === ORDER_STATUS_ENUM.PAID_UNPICKED"
+            type="danger"
+            plain
+            :loading="refundingOrderId === String(order.id)"
+            @click="handleRefund(order)"
+          >
+            申请退款
+          </el-button>
+
+          <el-button
             v-if="order.status === ORDER_STATUS_ENUM.PICKED"
             type="warning"
             @click="handleReturn(order)"
@@ -129,6 +139,7 @@ import {
   deleteRentalOrderUsingPost,
   pickupVehicleUsingGet,
   returnVehicleUsingGet,
+  refundOrderUsingPost,
 } from '@/api/rentalOrderController'
 import ORDER_STATUS_ENUM from '@/enums/OrderStatusEnum'
 import OrderViewForm from './OrderViewForm.vue'
@@ -168,6 +179,7 @@ const getStatusText = (status: number | undefined) => {
     [ORDER_STATUS_ENUM.RETURNED]: '已还车',
     [ORDER_STATUS_ENUM.COMPLETED]: '已完成',
     [ORDER_STATUS_ENUM.CANCELLED]: '已取消',
+    [ORDER_STATUS_ENUM.REFUNDED]: '已退款',
   }
 
   return statusMap[status] || '未知状态'
@@ -356,18 +368,58 @@ const handleAddComment = (order: API.RentalOrderVO) => {
     ElMessage.error('订单ID不存在')
     return
   }
-  // 第二个参数传入1，表示这是追加评论，实际使用时应该传入真实的评论ID
-  // 这里简化处理，可以根据实际情况传入真实评论ID
+  // 第二个参数传入1，表示这是追加评论
   commentFormRef.value?.open(String(order.id), 1)
 }
 
 // 跳转到车辆详情页
-const navigateToVehicleDetail = (vehicleId: string | undefined) => {
+const navigateToVehicleDetail = (vehicleId: string | number | undefined) => {
   if (!vehicleId) {
     ElMessage.warning('车辆信息不存在')
     return
   }
   router.push(`/vehicle/${vehicleId}`)
+}
+
+// 存储当前正在退款的订单ID
+const refundingOrderId = ref('')
+
+// 处理退款
+const handleRefund = async (order: API.RentalOrderVO) => {
+  if (!order.id) {
+    ElMessage.error('订单ID不存在')
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm('确定要申请退款吗？申请后将无法取消', '退款确认', {
+      confirmButtonText: '确定退款',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+
+    // 设置正在退款的订单ID
+    refundingOrderId.value = String(order.id)
+
+    try {
+      const res = await refundOrderUsingPost({ orderId: order.id })
+      if (res.data?.code === 0 && res.data.data) {
+        ElMessage.success('退款申请成功')
+        // 通知父组件刷新数据
+        emit('refresh')
+      } else {
+        ElMessage.error(res.data?.message || '退款申请失败')
+      }
+    } finally {
+      // 清除退款状态
+      refundingOrderId.value = ''
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('退款申请失败', error)
+      ElMessage.error('退款申请失败，请稍后再试')
+    }
+  }
 }
 
 // 定义事件

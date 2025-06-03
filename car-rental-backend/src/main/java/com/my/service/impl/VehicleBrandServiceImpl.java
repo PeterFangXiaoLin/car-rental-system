@@ -16,6 +16,7 @@ import com.my.domain.entity.VehicleBrand;
 import com.my.domain.vo.VehicleBrandVO;
 import com.my.exception.BusinessException;
 import com.my.mapper.VehicleBrandMapper;
+import com.my.mapper.VehicleMapper;
 import com.my.service.VehicleBrandService;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,9 @@ public class VehicleBrandServiceImpl extends ServiceImpl<VehicleBrandMapper, Veh
 
     @Resource
     private VehicleBrandMapper vehicleBrandMapper;
+
+    @Resource
+    private VehicleMapper vehicleMapper;
 
     @Override
     public Long addVehicleBrand(VehicleBrandAddRequest vehicleBrandAddRequest) {
@@ -86,6 +90,12 @@ public class VehicleBrandServiceImpl extends ServiceImpl<VehicleBrandMapper, Veh
         if (ObjUtil.isNull(vehicleBrand)) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "品牌不存在");
         }
+        // 检查是否有车辆关联
+        long count = vehicleMapper.countByBrandId(id);
+        if (count > 0) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "该品牌下有车辆关联，无法删除");
+        }
+
         boolean remove = this.removeById(id);
         if (!remove) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR);
