@@ -1,0 +1,68 @@
+server:
+  port: 8080 # 端口
+  servlet:
+    context-path: /api
+    session:
+      cookie:
+        max-age: 2592000 # cookie 30 天过期
+
+spring:
+  application:
+    name: car-rental-backend # 应用名称
+
+  profiles:
+    active: local
+
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/car_system?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # 支持 swagger3
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  # 文件上传大小设置
+  servlet:
+    multipart:
+      max-file-size: 50MB # 单个文件大小
+      max-request-size: 50MB # 设置总上传的文件大小
+
+  redis:
+    database: 2
+    host: localhost
+    port: 6379
+    timeout: 50000
+    password:
+  session:
+    store-type: redis
+    timeout: 2592000 # session 30 天过期
+
+# mybatis-plus 配置
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 控制台打印sql日志
+    map-underscore-to-camel-case: false # 关闭下划线转驼峰
+  mapper-locations: classpath:mapper/*.xml # 扫描所有xml文件
+  global-config:
+    db-config:
+      id-type: assign_id # 主键生成策略 默认雪花算法
+      logic-delete-field: isDelete # 逻辑删除字段
+      logic-delete-value: 1 # 逻辑删除值
+      logic-not-delete-value: 0 # 逻辑未删除值
+
+# 接口文档配置
+knife4j:
+  enable: true
+  openapi:
+    title: 接口文档
+    version: v1.0
+    group:
+      default:
+        api-rule: package
+        api-rule-resources:
+          - com.my.controller
+
